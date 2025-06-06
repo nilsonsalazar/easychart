@@ -1,25 +1,15 @@
-import logo from './logo.svg';
-import './App.css';
+import { Routes, Route } from "react-router-dom";
+import SongReader from "./components/SongReader";
+import SongCreator from "./components/SongCreator";
 
-function App() {
+export default function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Routes>
+      {/* Ruta por defecto: modo lectura */}
+      <Route path="/" element={<SongReader />} />
+
+      {/* Ruta para crear o editar canciones */}
+      <Route path="/crear" element={<SongCreator />} />
+    </Routes>
   );
 }
-
-export default App;

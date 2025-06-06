@@ -1,38 +1,202 @@
-.App {
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* App.css */
+/* src/App.css */
+/* Agrega esto a tu App.css */
+
+.chord-grid-container {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 30px;
+  padding-bottom: 20px;
+}
+
+.chord-grid {
+  display: flex;
+  gap: 15px;
+  min-width: fit-content;
+  padding: 10px 0;
+}
+
+.chord-box {
+  min-width: 200px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  background: #f9f9f9;
+  flex: 1;
+}
+
+.chord-box.hovered {
+  border-color: #64b5f6;
+  background: #e3f2fd;
+}
+
+.box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.box-header span {
+  font-weight: bold;
+  color: #333;
+}
+
+.divide-select {
+  padding: 5px 8px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  background: white;
+}
+
+.divisions-container {
+  display: flex;
+  gap: 8px;
+  min-height: 120px;
+}
+
+.division {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 4px;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-height: 100px;
+}
+
+/* Estilos específicos para cada número de divisiones */
+.divisions-1 .division {
+  width: 100%;
+}
+
+.divisions-2 .division {
+  width: calc(50% - 4px);
+}
+
+.divisions-3 .division {
+  width: calc(33.33% - 5.33px);
+}
+
+.divisions-4 .division {
+  width: calc(25% - 6px);
+}
+
+.divisions-6 .division {
+  width: calc(16.66% - 6.66px);
+}
+
+.divisions-8 .division {
+  width: calc(12.5% - 7px);
+}
+
+.chord-item {
+  padding: 8px 12px;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  position: relative;
+  text-align: center;
+  cursor: move;
+}
+
+.remove-chord {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #ff5252;
+  color: white;
+  border: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* Estilos para móvil */
+@media (max-width: 768px) {
+  .chord-grid {
+    gap: 10px;
+  }
+  
+  .chord-box {
+    min-width: 180px;
+  }
+  
+  .divisions-container {
+    flex-direction: column;
+  }
+  
+  .division {
+    width: 100% !important;
+    min-height: 40px;
+  }
+}
+/* Agrega estos estilos adicionales */
+.division {
+  position: relative;
+  min-height: 60px;
+  border: 1px dashed #ccc;
+  border-radius: 4px;
+  padding: 8px;
+  transition: all 0.2s;
+}
+
+.division.hovered {
+  background-color: #e3f2fd;
+  border-color: #64b5f6;
+}
+
+.chord-item {
+  margin: 4px 0;
+  padding: 6px 10px;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  cursor: move;
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.sections-container {
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background-color: #f8fafc;
+  min-height: 200px; /* Altura mínima para que sea visible incluso cuando está vacío */
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.section {
+  margin-bottom: 15px;
+  padding: 12px;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.chord-box {
+  display: inline-block;
+  margin: 4px;
+  padding: 6px 10px;
+  background-color: #edf2f7;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
 }
 
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+@font-face {
+  font-family: 'Protest Revolution';
+  src: url('/fonts/ProtestRevolution-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
 }
