@@ -18,43 +18,6 @@ Font.register({
   fontStyle: 'normal'
 });
 
-// Función para transponer acordes
-const transposeChord = (chord, semitones) => {
-  if (!chord || chord === "-" || chord.trim() === "") return "-";
-  
-  const noteOrder = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-  const noteOrderFlats = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
-  
-  const baseNoteMatch = chord.match(/^[A-Ga-g][#b]?/);
-  if (!baseNoteMatch) return chord;
-  
-  const baseNote = baseNoteMatch[0].toUpperCase();
-  const suffix = chord.slice(baseNote.length);
-  
-  const originalIndexSharp = noteOrder.indexOf(baseNote);
-  const originalIndexFlat = noteOrderFlats.indexOf(baseNote);
-  const originalIndex = originalIndexSharp !== -1 ? originalIndexSharp : originalIndexFlat;
-  
-  if (originalIndex === -1) return chord;
-  
-  let newIndex = (originalIndex + semitones) % 12;
-  if (newIndex < 0) newIndex += 12;
-  
-  const useSharps = originalIndexSharp !== -1 || 
-                   (semitones > 0 && semitones % 12 <= 6) || 
-                   (semitones < 0 && semitones % 12 >= -6);
-  
-  const newBaseNote = useSharps ? noteOrder[newIndex] : noteOrderFlats[newIndex];
-  
-  if (chord.includes('/')) {
-    const [mainChord, bassNote] = chord.split('/');
-    const transposedMain = transposeChord(mainChord, semitones);
-    const transposedBass = transposeChord(bassNote, semitones);
-    return `${transposedMain}/${transposedBass}`;
-  }
-  
-  return newBaseNote + suffix;
-};
 
 export default function SongCreator() {
   const [tono, setTono] = useState("C");
@@ -92,35 +55,102 @@ export default function SongCreator() {
   const [nuevaSeccionNombre, setNuevaSeccionNombre] = useState("");
   const [editingSeccionId, setEditingSeccionId] = useState(null);
   const [tituloCancion, setTituloCancion] = useState("");
+  const [artista, setArtista] = useState("");
   const [showPDFOptions, setShowPDFOptions] = useState(false);
 
   const generarId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
-  // Función para ajustar semitonos
-  const ajustarSemitono = (delta) => {
-    const nuevoSemitono = semitono + delta;
-    setSemitono(nuevoSemitono);
-    
-    const notas = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-    const indexActual = notas.indexOf(tono);
-    const diferencialTotal = nuevoSemitono;
-    
-    setSecciones(prev =>
-      prev.map(sec => ({
-        ...sec,
-        lineas: sec.lineas.map(linea => ({
-          ...linea,
-          compasses: linea.compasses.map(compass => ({
-            ...compass,
-            acordes: compass.acordes.map(acorde => ({
-              ...acorde,
-              valor: transposeChord(acorde.valor, diferencialTotal)
-            }))
+  const transposeChord = (chord, semitones, currentKey) => {
+  if (!chord || chord === "-" || chord.trim() === "") return "-";
+
+  const noteOrderSharps = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+  const noteOrderFlats = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"];
+  
+  // Definir qué tonalidades deben usar bemoles (♭)
+  const flatKeys = ["D♭", "E♭", "G♭", "A♭", "B♭"];
+  
+  // Determinar si debemos usar bemoles para la tonalidad actual
+  const useFlats = flatKeys.includes(currentKey);
+
+  const baseNoteMatch = chord.match(/^[A-Ga-g](#|♭)?/);
+  if (!baseNoteMatch) return chord;
+
+  const baseNote = baseNoteMatch[0];
+  const suffix = chord.slice(baseNote.length);
+
+  const noteOrder = useFlats ? noteOrderFlats : noteOrderSharps;
+  const originalIndex = noteOrderSharps.includes(baseNote) 
+    ? noteOrderSharps.indexOf(baseNote) 
+    : noteOrderFlats.indexOf(baseNote);
+
+  if (originalIndex === -1) return chord;
+
+  let newIndex = (originalIndex + semitones) % 12;
+  if (newIndex < 0) newIndex += 12;
+
+  // Siempre usar la notación correcta (bemoles para flatKeys)
+  let newBaseNote = useFlats ? noteOrderFlats[newIndex] : noteOrderSharps[newIndex];
+
+  if (chord.includes('/')) {
+    const [mainChord, bassNote] = chord.split('/');
+    const transposedMain = transposeChord(mainChord, semitones, currentKey);
+    const transposedBass = transposeChord(bassNote, semitones, currentKey);
+    return `${transposedMain}/${transposedBass}`;
+  }
+
+  return newBaseNote + suffix;
+};
+
+const cambiarTonalidad = (nuevoTono, semitonos = 0) => {
+  const notas = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"];
+  const indexActual = notas.indexOf(tono);
+  const indexNuevo = notas.indexOf(nuevoTono);
+  const diferenciaTotal = (indexNuevo - indexActual) + semitonos;
+  
+  setTono(nuevoTono);
+  setSemitono(semitonos);
+  
+  setSecciones(prev =>
+    prev.map(sec => ({
+      ...sec,
+      lineas: sec.lineas.map(linea => ({
+        ...linea,
+        compasses: linea.compasses.map(compass => ({
+          ...compass,
+          acordes: compass.acordes.map(acorde => ({
+            ...acorde,
+            valor: acorde.valor ? transposeChord(acorde.valor, diferenciaTotal, nuevoTono) : ""
           }))
         }))
       }))
-    );
-  };
+    }))
+  );
+};
+  // Función para ajustar semitonos
+const ajustarSemitono = (delta) => {
+  const nuevoSemitono = semitono + delta;
+  setSemitono(nuevoSemitono);
+  
+  const notas = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+  const indexActual = notas.indexOf(tono);
+  const diferencialTotal = nuevoSemitono;
+  
+  setSecciones(prev =>
+    prev.map(sec => ({
+      ...sec,
+      lineas: sec.lineas.map(linea => ({
+        ...linea,
+        compasses: linea.compasses.map(compass => ({
+          ...compass,
+          acordes: compass.acordes.map(acorde => ({
+            ...acorde,
+            valor: transposeChord(acorde.valor, diferencialTotal, tono)
+          }))
+        }))
+      }))
+    }))
+  );
+};
 
   const getAcordesDisponibles = () => {
     const tonoActual = circulos[tono];
@@ -153,31 +183,6 @@ export default function SongCreator() {
     fetchSongs();
   }, []);
 
-  const cambiarTonalidad = (nuevoTono, semitonos = 0) => {
-    const notas = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-    const indexActual = notas.indexOf(tono);
-    const indexNuevo = notas.indexOf(nuevoTono);
-    const diferenciaTotal = (indexNuevo - indexActual) + semitonos;
-    
-    setTono(nuevoTono);
-    setSemitono(semitonos);
-    
-    setSecciones(prev =>
-      prev.map(sec => ({
-        ...sec,
-        lineas: sec.lineas.map(linea => ({
-          ...linea,
-          compasses: linea.compasses.map(compass => ({
-            ...compass,
-            acordes: compass.acordes.map(acorde => ({
-              ...acorde,
-              valor: acorde.valor ? transposeChord(acorde.valor, diferenciaTotal) : ""
-            }))
-          }))
-        }))
-      }))
-    );
-  };
 
 
 
@@ -348,6 +353,7 @@ export default function SongCreator() {
   }
     const songData = {
       title: tituloCancion,
+      artist: artista,
       key_signature: tono,
       tempo: tempo,
       song_data: {
@@ -390,6 +396,7 @@ export default function SongCreator() {
     const songData = {
       id: songId,
       title: tituloCancion,
+      artist: artista,
       key_signature: tono,
       tempo: tempo,
       song_data: {
@@ -426,6 +433,7 @@ export default function SongCreator() {
       }
       
       setTituloCancion(song.title);
+      setArtista(song.artist);
       setTono(song.key_signature);
       setTempo(song.tempo);
       setSemitono(0);
@@ -536,6 +544,13 @@ export default function SongCreator() {
           className="text-2xl font-bold w-full text-center bg-transparent focus:outline-none"
           placeholder="Título de la canción"
           style={{ fontFamily: 'Protest Revolution' }}
+        />   <input
+          type="text"
+          value={artista}
+          onChange={(e) => setArtista(e.target.value)}
+          className="text-2xl font-bold w-full text-center bg-transparent focus:outline-none"
+          placeholder="Autor o Artista"
+          style={{ fontFamily: 'Protest Revolution' }}
         />
       </header>
 
@@ -550,7 +565,7 @@ export default function SongCreator() {
               type="text"
               value={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
-              placeholder="Buscar canción guardada..."
+              placeholder="Titulo o Autor/Artista..."
               className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
             />
             
@@ -663,7 +678,7 @@ export default function SongCreator() {
 {showPDFOptions && (
   <div className="mt-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
     <PDFDownloadLink
-      document={<SongPDF title={tituloCancion} sections={secciones} keySignature={tono} tempo={tempo} />}
+      document={<SongPDF title={tituloCancion} artist={artista} sections={secciones} keySignature={tono} tempo={tempo} />}
       fileName={`${tituloCancion.replace(/\s+/g, '_')}.pdf`}
       className="block w-full text-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
     >

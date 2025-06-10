@@ -13,6 +13,7 @@ const SongReader = () => {
   const location = useLocation();
   const [tono, setTono] = useState("C");
   const [tempo, setTempo] = useState("120");
+  const [compass, setCompass] = useState("4/4");
   const [compas, setCompas] = useState("4/4");
   const [semitono, setSemitono] = useState(0);
   const [savedSongs, setSavedSongs] = useState([]);
@@ -22,6 +23,7 @@ const SongReader = () => {
   const [selectedSongId, setSelectedSongId] = useState(null);
   const [secciones, setSecciones] = useState([]);
   const [tituloCancion, setTituloCancion] = useState("");
+  const [artista, setArtista] = useState("");
 
   // Registrar la fuente
   Font.register({
@@ -32,68 +34,98 @@ const SongReader = () => {
   });
 
 
-  const transposeChord = (chord, semitones) => {
-    if (!chord || chord === "-" || chord.trim() === "") return "-";
-    
-    const noteOrder = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-    const noteOrderFlats = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
-    
-    const baseNoteMatch = chord.match(/^[A-Ga-g][#b]?/i);
-    if (!baseNoteMatch) return chord;
-    
-    const baseNote = baseNoteMatch[0].toUpperCase();
-    const suffix = chord.slice(baseNote.length);
-    
-    const originalIndexSharp = noteOrder.indexOf(baseNote);
-    const originalIndexFlat = noteOrderFlats.indexOf(baseNote);
-    const originalIndex = originalIndexSharp !== -1 ? originalIndexSharp : originalIndexFlat;
-    
-    if (originalIndex === -1) return chord;
-    
-    let newIndex = (originalIndex + semitones) % 12;
-    if (newIndex < 0) newIndex += 12;
-    
-    const useSharps = originalIndexSharp !== -1 || 
-                     (semitones > 0 && semitones % 12 <= 6) || 
-                     (semitones < 0 && semitones % 12 >= -6);
-    
-    const newBaseNote = useSharps ? noteOrder[newIndex] : noteOrderFlats[newIndex];
-    
-    if (chord.includes('/')) {
-      const [mainChord, bassNote] = chord.split('/');
-      const transposedMain = transposeChord(mainChord, semitones);
-      const transposedBass = transposeChord(bassNote, semitones);
-      return `${transposedMain}/${transposedBass}`;
-    }
-    
-    return newBaseNote + suffix;
-  };
+  const transposeChord = (chord, semitones, currentKey) => {
+  if (!chord || chord === "-" || chord.trim() === "") return "-";
 
-  const cambiarTonalidad = (nuevoTono, semitonos = 0) => {
-    const notas = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-    const indexActual = notas.indexOf(tono);
-    const indexNuevo = notas.indexOf(nuevoTono);
-    const diferenciaTotal = (indexNuevo - indexActual) + semitonos;
-    
-    setTono(nuevoTono);
-    setSemitono(semitonos);
-    
-    setSecciones(prev => 
-      prev.map(sec => ({
-        ...sec,
-        lineas: sec.lineas.map(linea => ({
-          ...linea,
-          compasses: linea.compasses.map(compass => ({
-            ...compass,
-            acordes: compass.acordes.map(acorde => ({
-              ...acorde,
-              valor: acorde.valor ? transposeChord(acorde.valor, diferenciaTotal) : ""
-            }))
+  const noteOrderSharps = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+  const noteOrderFlats = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"];
+  
+  // Definir qué tonalidades deben usar bemoles (♭)
+  const flatKeys = ["D♭", "E♭", "G♭", "A♭", "B♭"];
+  
+  // Determinar si debemos usar bemoles para la tonalidad actual
+  const useFlats = flatKeys.includes(currentKey);
+
+  const baseNoteMatch = chord.match(/^[A-Ga-g](#|♭)?/);
+  if (!baseNoteMatch) return chord;
+
+  const baseNote = baseNoteMatch[0];
+  const suffix = chord.slice(baseNote.length);
+
+  const noteOrder = useFlats ? noteOrderFlats : noteOrderSharps;
+  const originalIndex = noteOrderSharps.includes(baseNote) 
+    ? noteOrderSharps.indexOf(baseNote) 
+    : noteOrderFlats.indexOf(baseNote);
+
+  if (originalIndex === -1) return chord;
+
+  let newIndex = (originalIndex + semitones) % 12;
+  if (newIndex < 0) newIndex += 12;
+
+  // Siempre usar la notación correcta (bemoles para flatKeys)
+  let newBaseNote = useFlats ? noteOrderFlats[newIndex] : noteOrderSharps[newIndex];
+
+  if (chord.includes('/')) {
+    const [mainChord, bassNote] = chord.split('/');
+    const transposedMain = transposeChord(mainChord, semitones, currentKey);
+    const transposedBass = transposeChord(bassNote, semitones, currentKey);
+    return `${transposedMain}/${transposedBass}`;
+  }
+
+  return newBaseNote + suffix;
+};
+
+const cambiarTonalidad = (nuevoTono, semitonos = 0) => {
+  const notas = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"];
+  const indexActual = notas.indexOf(tono);
+  const indexNuevo = notas.indexOf(nuevoTono);
+  const diferenciaTotal = (indexNuevo - indexActual) + semitonos;
+  
+  setTono(nuevoTono);
+  setSemitono(semitonos);
+  
+  setSecciones(prev =>
+    prev.map(sec => ({
+      ...sec,
+      lineas: sec.lineas.map(linea => ({
+        ...linea,
+        compasses: linea.compasses.map(compass => ({
+          ...compass,
+          acordes: compass.acordes.map(acorde => ({
+            ...acorde,
+            valor: acorde.valor ? transposeChord(acorde.valor, diferenciaTotal, nuevoTono) : ""
           }))
         }))
       }))
-    );
-  };
+    }))
+  );
+};
+  // Función para ajustar semitonos
+const ajustarSemitono = (delta) => {
+  const nuevoSemitono = semitono + delta;
+  setSemitono(nuevoSemitono);
+  
+  const notas = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+  const indexActual = notas.indexOf(tono);
+  const diferencialTotal = nuevoSemitono;
+  
+  setSecciones(prev =>
+    prev.map(sec => ({
+      ...sec,
+      lineas: sec.lineas.map(linea => ({
+        ...linea,
+        compasses: linea.compasses.map(compass => ({
+          ...compass,
+          acordes: compass.acordes.map(acorde => ({
+            ...acorde,
+            valor: transposeChord(acorde.valor, diferencialTotal, tono)
+          }))
+        }))
+      }))
+    }))
+  );
+};
+
 
   useEffect(() => {
     const fetchSongs = async () => {
@@ -118,30 +150,7 @@ const SongReader = () => {
     fetchSongs();
   }, []);
 
-  const ajustarSemitono = (delta) => {
-    const nuevoSemitono = semitono + delta;
-    setSemitono(nuevoSemitono);
-    
-    const notas = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-    const indexActual = notas.indexOf(tono);
-    const diferenciaTotal = nuevoSemitono;
-    
-    setSecciones(prev => 
-      prev.map(sec => ({
-        ...sec,
-        lineas: sec.lineas.map(linea => ({
-          ...linea,
-          compasses: linea.compasses.map(compass => ({
-            ...compas,
-            acordes: compass.acordes.map(acorde => ({
-              ...acorde,
-              valor: transposeChord(acorde.valor, diferenciaTotal)
-            }))
-          }))
-        }))
-      }))
-    );
-  };
+  
 const generarId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
   const loadSong = async (songId) => {
     try {
@@ -155,6 +164,7 @@ const generarId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random(
       
       // Resetear el estado con los datos exactos de la canción
       setTituloCancion(song.title);
+      setArtista(song.artist);
       setTono(song.key_signature);
       setTempo(song.tempo);
       //setCompas(song.time_signature);
@@ -291,7 +301,7 @@ useEffect(() => {
       <header className="sticky top-0 z-10 bg-white shadow-sm py-4 px-6 rounded-xl mb-6">
         <div className="max-w-4xl mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-bold" style={{ fontFamily: 'Protest Revolution' }}>
-            {tituloCancion || "Lector de Charts"}
+            {tituloCancion || "Lector de Charts"} - {artista || "Autor / Artista"}
           </h1>
           <Link 
             to="/crear"
@@ -389,8 +399,8 @@ useEffect(() => {
 
           {/* Botón Exportar */}
           <PDFDownloadLink 
-            document={<SongPDF title={tituloCancion} sections={secciones} keySignature={tono} tempo={tempo} compas={compas} />}
-            fileName={`${tituloCancion || 'partitura'}.pdf`}
+            document={<SongPDF title={tituloCancion} artist={artista} sections={secciones} keySignature={tono} tempo={tempo} />}
+            fileName={`${tituloCancion  || 'chart'}${artista  || 'autor'}.pdf`}
             className="block w-full text-center p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
           >
             Exportar a PDF
@@ -404,7 +414,7 @@ useEffect(() => {
 }}>
   {/* Encabezado del Chart*/}
   <div className="text-center mb-8">
-    <h2 className="text-3xl font-bold mb-2">{tituloCancion || "Canción"}</h2>
+    <h2 className="text-3xl font-bold mb-2">{tituloCancion || "Canción"} - {artista || "Autor"}</h2>
     <p className="text-lg text-gray-600">
       Tonalidad: {tono} • Compás: {compas} • Tempo: {tempo}
     </p>

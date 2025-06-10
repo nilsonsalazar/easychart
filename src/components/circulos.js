@@ -47,51 +47,16 @@ const circulos = {
       }
     ]
   },
-  "C#": {
-    scale: ["C#", "D#", "F", "F#", "G#", "A#", "C"],
+  "D♭": {
+    scale: ["D♭", "E♭", "F", "G♭", "A♭", "B♭", "C"],
     degrees: [
-      {
-        name: "C#",
-        degree: "I",
-        type: "maj",
-        common_extensions: ["C#", "C#maj7", "C#add9", "C#maj7+9", "C#sus4", "C#sus2", "C#6", "C#maj9"]
-      },
-      {
-        name: "D#",
-        degree: "ii",
-        type: "min",
-        common_extensions: ["D#m", "D#m7", "D#m9", "D#m11", "D#sus4", "D#min6"]
-      },
-      {
-        name: "F",
-        degree: "iii",
-        type: "min",
-        common_extensions: ["Fm", "Fm7", "Fm9", "Fm11", "Fsus2"]
-      },
-      {
-        name: "F#",
-        degree: "IV",
-        type: "maj",
-        common_extensions: ["F#", "F#maj7", "F#add9", "F#sus4", "F#maj9"]
-      },
-      {
-        name: "G#",
-        degree: "V",
-        type: "maj",
-        common_extensions: ["G#", "G#7", "G#sus4", "G#9", "G#13"]
-      },
-      {
-        name: "A#",
-        degree: "vi",
-        type: "min",
-        common_extensions: ["A#m", "A#m7", "A#m9", "A#m11", "A#sus4"]
-      },
-      {
-        name: "C",
-        degree: "vii°",
-        type: "dim",
-        common_extensions: ["Cdim", "Cø7", "Cdim7"]
-      }
+      { name: "D♭", degree: "I", type: "maj", common_extensions: ["D♭", "D♭maj7", "D♭add9", "D♭maj7+9", "D♭sus4", "D♭sus2", "D♭6", "D♭maj9"] },
+      { name: "E♭", degree: "ii", type: "min", common_extensions: ["E♭m", "E♭m7", "E♭m9", "E♭m11", "E♭sus4", "E♭min6"] },
+      { name: "F", degree: "iii", type: "min", common_extensions: ["Fm", "Fm7", "Fm9", "Fm11", "Fsus2"] },
+      { name: "G♭", degree: "IV", type: "maj", common_extensions: ["G♭", "G♭maj7", "G♭add9", "G♭sus4", "G♭maj9"] },
+      { name: "A♭", degree: "V", type: "maj", common_extensions: ["A♭", "A♭7", "A♭sus4", "A♭9", "A♭13"] },
+      { name: "B♭", degree: "vi", type: "min", common_extensions: ["B♭m", "B♭m7", "B♭m9", "B♭m11", "B♭sus4"] },
+      { name: "C", degree: "vii°", type: "dim", common_extensions: ["Cdim", "Cø7", "Cdim7"] }
     ]
   },
   D: {
@@ -141,14 +106,14 @@ const circulos = {
       }
     ]
   },
-  "D#": {
-    scale: ["D#", "F", "G", "G#", "A#", "C", "D"],
+ "E♭": {
+    scale: ["E♭", "F", "G", "A♭", "B♭", "C", "D"],
     degrees: [
       {
-        name: "D#",
+        name: "E♭",
         degree: "I",
         type: "maj",
-        common_extensions: ["D#", "D#maj7", "D#add9", "D#maj7+9", "D#sus4", "D#sus2", "D#6", "D#maj9"]
+        common_extensions: ["E♭", "E♭maj7", "E♭add9", "E♭maj7+9", "E♭sus4", "E♭sus2", "E♭6", "E♭maj9"]
       },
       {
         name: "F",
@@ -163,16 +128,16 @@ const circulos = {
         common_extensions: ["Gm", "Gm7", "Gm9", "Gm11", "Gsus2"]
       },
       {
-        name: "G#",
+        name: "A♭",
         degree: "IV",
         type: "maj",
-        common_extensions: ["G#", "G#maj7", "G#add9", "G#sus4", "G#maj9"]
+        common_extensions: ["A♭", "A♭maj7", "A♭add9", "A♭sus4", "A♭maj9"]
       },
       {
-        name: "A#",
+        name: "B♭",
         degree: "V",
         type: "maj",
-        common_extensions: ["A#", "A#7", "A#sus4", "A#9", "A#13"]
+        common_extensions: ["B♭", "B♭7", "B♭sus4", "B♭9", "B♭13"]
       },
       {
         name: "C",
@@ -282,44 +247,44 @@ const circulos = {
       }
     ]
   },
-  "F#": {
-    scale: ["F#", "G#", "A#", "B", "C#", "D#", "F"],
+   "G♭": {
+    scale: ["G♭", "A♭", "B♭", "C♭", "D♭", "E♭", "F"],
     degrees: [
       {
-        name: "F#",
+        name: "G♭",
         degree: "I",
         type: "maj",
-        common_extensions: ["F#", "F#maj7", "F#add9", "F#maj7+9", "F#sus4", "F#sus2", "F#6", "F#maj9"]
+        common_extensions: ["G♭", "G♭maj7", "G♭add9", "G♭maj7+9", "G♭sus4", "G♭sus2", "G♭6", "G♭maj9"]
       },
       {
-        name: "G#",
+        name: "A♭",
         degree: "ii",
         type: "min",
-        common_extensions: ["G#m", "G#m7", "G#m9", "G#m11", "G#sus4", "G#min6"]
+        common_extensions: ["A♭m", "A♭m7", "A♭m9", "A♭m11", "A♭sus4", "A♭min6"]
       },
       {
-        name: "A#",
+        name: "B♭",
         degree: "iii",
         type: "min",
-        common_extensions: ["A#m", "A#m7", "A#m9", "A#m11", "A#sus2"]
+        common_extensions: ["B♭m", "B♭m7", "B♭m9", "B♭m11", "B♭sus2"]
       },
       {
-        name: "B",
+        name: "C♭",
         degree: "IV",
         type: "maj",
-        common_extensions: ["B", "Bmaj7", "Badd9", "Bsus4", "Bmaj9"]
+        common_extensions: ["C♭", "C♭maj7", "C♭add9", "C♭sus4", "C♭maj9"]
       },
       {
-        name: "C#",
+        name: "D♭",
         degree: "V",
         type: "maj",
-        common_extensions: ["C#", "C#7", "C#sus4", "C#9", "C#13"]
+        common_extensions: ["D♭", "D♭7", "D♭sus4", "D♭9", "D♭13"]
       },
       {
-        name: "D#",
+        name: "E♭",
         degree: "vi",
         type: "min",
-        common_extensions: ["D#m", "D#m7", "D#m9", "D#m11", "D#sus4"]
+        common_extensions: ["E♭m", "E♭m7", "E♭m9", "E♭m11", "E♭sus4"]
       },
       {
         name: "F",
@@ -376,20 +341,20 @@ const circulos = {
       }
     ]
   },
-  "G#": {
-    scale: ["G#", "A#", "C", "C#", "D#", "F", "G"],
+  "A♭": {
+    scale: ["A♭", "B♭", "C", "D♭", "E♭", "F", "G"],
     degrees: [
       {
-        name: "G#",
+        name: "A♭",
         degree: "I",
         type: "maj",
-        common_extensions: ["G#", "G#maj7", "G#add9", "G#maj7+9", "G#sus4", "G#sus2", "G#6", "G#maj9"]
+        common_extensions: ["A♭", "A♭maj7", "A♭add9", "A♭maj7+9", "A♭sus4", "A♭sus2", "A♭6", "A♭maj9"]
       },
       {
-        name: "A#",
+        name: "B♭",
         degree: "ii",
         type: "min",
-        common_extensions: ["A#m", "A#m7", "A#m9", "A#m11", "A#sus4", "A#min6"]
+        common_extensions: ["B♭m", "B♭m7", "B♭m9", "B♭m11", "B♭sus4", "B♭min6"]
       },
       {
         name: "C",
@@ -398,16 +363,16 @@ const circulos = {
         common_extensions: ["Cm", "Cm7", "Cm9", "Cm11", "Csus2"]
       },
       {
-        name: "C#",
+        name: "D♭",
         degree: "IV",
         type: "maj",
-        common_extensions: ["C#", "C#maj7", "C#add9", "C#sus4", "C#maj9"]
+        common_extensions: ["D♭", "D♭maj7", "D♭add9", "D♭sus4", "D♭maj9"]
       },
       {
-        name: "D#",
+        name: "E♭",
         degree: "V",
         type: "maj",
-        common_extensions: ["D#", "D#7", "D#sus4", "D#9", "D#13"]
+        common_extensions: ["E♭", "E♭7", "E♭sus4", "E♭9", "E♭13"]
       },
       {
         name: "F",
