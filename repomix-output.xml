@@ -1,0 +1,3997 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+public/
+  fonts/
+    ProtestRevolution-Regular.ttf
+  favicon.ico
+  index.html
+  logo192.png
+  logo512.png
+  manifest.json
+  ProtestRevolution-Regular.ttf
+  robots.txt
+src/
+  components/
+    ChordModal.jsx
+    ChordUtils.js
+    circulos.js
+    config.js
+    MusicKeyboard.jsx
+    SongControls.jsx
+    SongCreator.js
+    SongEditor.js
+    SongPDF.jsx
+    SongReader.js
+    SongSection.jsx
+    toRoman.jsx
+  data/
+    harmonies.json
+  fonts/
+    ProtestRevolution-Regular.ttf
+  services/
+    api.js
+  App.css
+  App.js
+  App.test.js
+  circulos.js
+  config.js
+  index.css
+  index.js
+  logo.svg
+  reportWebVitals.js
+  setupProxy.js
+  setupTests.js
+.gitignore
+package.json
+postcss.config.js
+ProtestRevolution-Regular.ttf
+README.md
+tailwind.config.js
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="public/index.html">
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Web site created using create-react-app"
+    />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <!--
+      manifest.json provides metadata used when your web app is installed on a
+      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
+    -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <!--
+      Notice the use of %PUBLIC_URL% in the tags above.
+      It will be replaced with the URL of the `public` folder during the build.
+      Only files inside the `public` folder can be referenced from the HTML.
+
+      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
+      work correctly both with client-side routing and a non-root public URL.
+      Learn how to configure a non-root public URL by running `npm run build`.
+    -->
+    <title>React App</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <!--
+      This HTML file is a template.
+      If you open it directly in the browser, you will see an empty page.
+
+      You can add webfonts, meta tags, or analytics to this file.
+      The build step will place the bundled scripts into the <body> tag.
+
+      To begin the development, run `npm start` or `yarn start`.
+      To create a production bundle, use `npm run build` or `yarn build`.
+    -->
+  </body>
+</html>
+</file>
+
+<file path="public/manifest.json">
+{
+  "short_name": "React App",
+  "name": "Create React App Sample",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
+</file>
+
+<file path="public/robots.txt">
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Disallow:
+</file>
+
+<file path="src/components/ChordModal.jsx">
+import MusicKeyboard from './MusicKeyboard';
+
+const ChordModal = ({ 
+  isOpen, 
+  onClose, 
+  onChordSelect, 
+  tono,
+  acordesDisponibles 
+}) => {
+  if (!isOpen) return null;
+
+  const handleCustomChord = () => {
+    const input = document.getElementById('customChordInput');
+    if (input.value.trim()) {
+      onChordSelect(input.value.trim());
+      input.value = '';
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="p-6 border-b border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900">Seleccionar acorde en {tono}</h3>
+        </div>
+        
+        <div className="overflow-y-auto p-6">
+          {/* Acordes predefinidos */}
+          <div className="mb-6">
+            <h4 className="text-sm font-medium text-gray-700 mb-3">Acordes comunes</h4>
+            <div className="grid grid-cols-3 gap-2">
+              {acordesDisponibles.map((ac, idx) => (
+                <button
+                  key={idx}
+                  className="px-3 py-2.5 rounded-lg bg-gray-100 hover:bg-gray-200 active:bg-gray-300 transition-colors duration-100 text-sm font-medium"
+                  style={{ fontFamily: 'Protest Revolution' }}
+                  onClick={() => onChordSelect(ac)}
+                >
+                  {ac}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          {/* Entrada manual */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Acorde personalizado</label>
+            <div className="flex rounded-lg shadow-sm">
+              <input
+                type="text"
+                id="customChordInput"
+                className="flex-1 min-w-0 block w-full rounded-l-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 py-2 px-3"
+                placeholder="Ej: C#m7, G7sus4, etc."
+                style={{ fontFamily: 'Protest Revolution' }}
+                onClick={(e) => {
+                  const keyboard = document.getElementById('musicKeyboard');
+                  if (keyboard) keyboard.classList.remove('hidden');
+                  e.stopPropagation();
+                }}
+              />
+              <button
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-r-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onClick={handleCustomChord}
+              >
+                Usar
+              </button>
+            </div>
+          </div>
+          
+          {/* Teclado virtual */}
+          <div id="musicKeyboard" className="hidden">
+            <MusicKeyboard 
+              onKeyPress={(char) => {
+                const input = document.getElementById('customChordInput');
+                input.value = (input.value || '') + char;
+                input.focus();
+              }}
+            />
+          </div>
+        </div>
+        
+        <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ChordModal;
+</file>
+
+<file path="src/components/ChordUtils.js">
+export const transposeChord = (chord, semitones) => {
+  if (!chord || chord === "-" || chord.trim() === "") return "-";
+  
+  const noteOrder = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+  const noteOrderFlats = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
+  
+  const baseNoteMatch = chord.match(/^[A-Ga-g][#b]?/);
+  if (!baseNoteMatch) return chord;
+  
+  const baseNote = baseNoteMatch[0].toUpperCase();
+  const suffix = chord.slice(baseNote.length);
+  
+  const originalIndexSharp = noteOrder.indexOf(baseNote);
+  const originalIndexFlat = noteOrderFlats.indexOf(baseNote);
+  const originalIndex = originalIndexSharp !== -1 ? originalIndexSharp : originalIndexFlat;
+  
+  if (originalIndex === -1) return chord;
+  
+  let newIndex = (originalIndex + semitones) % 12;
+  if (newIndex < 0) newIndex += 12;
+  
+  const useSharps = originalIndexSharp !== -1 || 
+                   (semitones > 0 && semitones % 12 <= 6) || 
+                   (semitones < 0 && semitones % 12 >= -6);
+  
+  const newBaseNote = useSharps ? noteOrder[newIndex] : noteOrderFlats[newIndex];
+  
+  if (chord.includes('/')) {
+    const [mainChord, bassNote] = chord.split('/');
+    const transposedMain = transposeChord(mainChord, semitones);
+    const transposedBass = transposeChord(bassNote, semitones);
+    return `${transposedMain}/${transposedBass}`;
+  }
+  
+  return newBaseNote + suffix;
+};
+
+export const cambiarTonalidad = (tonoActual, nuevoTono, secciones, semitono = 0) => {
+  const notas = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+  const indexActual = notas.indexOf(tonoActual);
+  const indexNuevo = notas.indexOf(nuevoTono);
+  const diferenciaTotal = (indexNuevo - indexActual) + semitono;
+  
+  return secciones.map(sec => ({
+    ...sec,
+    lineas: sec.lineas.map(linea => ({
+      ...linea,
+      compasses: linea.compasses.map(compass => ({
+        ...compass,
+        acordes: compass.acordes.map(acorde => ({
+          ...acorde,
+          valor: acorde.valor ? transposeChord(acorde.valor, diferenciaTotal) : ""
+        }))
+      }))
+    }))
+  }));
+};
+
+export const ajustarSemitono = (tonoActual, semitonoDelta, secciones) => {
+  const notas = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+  const indexActual = notas.indexOf(tonoActual);
+  const diferencialTotal = semitonoDelta;
+  
+  return secciones.map(sec => ({
+    ...sec,
+    lineas: sec.lineas.map(linea => ({
+      ...linea,
+      compasses: linea.compasses.map(compass => ({
+        ...compass,
+        acordes: compass.acordes.map(acorde => ({
+          ...acorde,
+          valor: transposeChord(acorde.valor, diferencialTotal)
+        }))
+      }))
+    }))
+  }));
+};
+</file>
+
+<file path="src/components/config.js">
+export const API_BASE_URL = 'https://sig-ma.es';
+export const API_ENDPOINT = '/easychart/api.php';
+export const API_URL = `${API_BASE_URL}${API_ENDPOINT}`;
+
+export const API_CONFIG = {
+  BASE_URL: 'https://sig-ma.es',
+  ENDPOINT: '/easychart/api.php',
+  get FULL_URL() {
+    return `${this.BASE_URL}${this.ENDPOINT}`;
+  }
+};
+</file>
+
+<file path="src/components/MusicKeyboard.jsx">
+// Componente del teclado virtual musical
+const MusicKeyboard = ({ onKeyPress }) => {
+  const musicalChars = [
+    'C', 'D', 'E', 'F', 'G', 'A', 'B',
+    '#', 'b', 'm', '7', '9', '11', '13',
+    'Δ', '*', 'ø', '+', '-', '(', ')',
+    '/', 'sus', 'add', 'dim', 'aug'
+  ];
+
+  return (
+    <div className="mt-2 w-full">
+      <div className="grid grid-cols-6 gap-1.5">
+        {musicalChars.map((char, idx) => (
+          <button
+            key={idx}
+            className="px-2 py-2.5 rounded-lg text-sm font-medium bg-gray-100 hover:bg-gray-200 active:bg-gray-300 transition-colors duration-100 w-full"
+            onClick={() => onKeyPress(char)}
+          >
+            {char}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default MusicKeyboard;
+</file>
+
+<file path="src/components/SongControls.jsx">
+import { useState } from 'react';
+
+const SongControls = ({ 
+  tono, 
+  setTono, 
+  compas, 
+  setCompas, 
+  tempo, 
+  setTempo, 
+  semitono, 
+  ajustarSemitono,
+  cambiarTonalidad,
+  onSave,
+  onExport
+}) => {
+  const [showPDFOptions, setShowPDFOptions] = useState(false);
+
+  return (
+    <div className="max-w-2xl mx-auto space-y-6">
+      {/* Controles principales */}
+      <div className="bg-white rounded-2xl shadow-sm p-6 space-y-4">
+        <h2 className="text-lg font-semibold text-gray-900">Configuración</h2>
+        
+        <div className="space-y-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tonalidad</label>
+            <div className="flex space-x-3">
+              <select
+                value={tono}
+                onChange={e => cambiarTonalidad(e.target.value)}
+                className="flex-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 py-2 px-3"
+              >
+                {Object.keys(circulos).map(t => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
+              
+              <select
+                value={compas}
+                onChange={(e) => setCompas(e.target.value)}
+                className="w-24 block rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 py-2 px-3"
+              >
+                <option value="3/4">3/4</option>
+                <option value="4/4">4/4</option>
+                <option value="6/8">6/8</option>
+                <option value="7/8">7/8</option>
+              </select>
+              
+              <input
+                type="number"
+                value={tempo}
+                onChange={(e) => setTempo(e.target.value)}
+                placeholder="Tempo"
+                min="0"
+                max="360"
+                step="1"
+                className="w-24 block rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 py-2 px-3"
+              />
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Ajuste fino</label>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => ajustarSemitono(-1)}
+                className="p-2 rounded-lg border border-gray-300 bg-white shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Bajar medio tono"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+              
+              <div className="flex-1 text-center px-3 py-2 bg-gray-100 rounded-lg text-sm font-medium">
+                {semitono === 0 ? "Tono completo" : `${semitono > 0 ? '+' : ''}${semitono/2} tono${Math.abs(semitono) > 1 ? 's' : ''}`}
+              </div>
+              
+              <button
+                onClick={() => ajustarSemitono(1)}
+                className="p-2 rounded-lg border border-gray-300 bg-white shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Subir medio tono"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Botón de exportar */}
+      <div className="bg-white rounded-2xl shadow-sm p-6">
+        <button
+          onClick={onSave}
+          className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z" />
+          </svg>
+          Guardar Canción
+        </button>
+        <button
+          onClick={() => setShowPDFOptions(!showPDFOptions)}
+          className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+          </svg>
+          Exportar a PDF
+        </button>
+        
+        {showPDFOptions && (
+          <div className="mt-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
+            <PDFDownloadLink 
+              document={<SongPDF title={tituloCancion} sections={secciones} keySignature={tono} tempo={tempo} compas={compas} />}
+              fileName={`${tituloCancion.replace(/\s+/g, '_')}.pdf`}
+              className="block w-full text-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              {({ loading }) => (
+                loading ? 'Preparando PDF...' : 'Descargar PDF ahora'
+              )}
+            </PDFDownloadLink>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default SongControls;
+</file>
+
+<file path="src/components/SongEditor.js">
+
+</file>
+
+<file path="src/components/SongPDF.jsx">
+import { Document, Page, Text, View, StyleSheet, Font } from "@react-pdf/renderer";
+import toRoman from "./toRoman";
+
+
+
+// Registrar la fuente
+Font.register({
+  family: 'Protest Revolution',
+  src: '/fonts/ProtestRevolution-Regular.ttf',
+  fontWeight: 'normal',
+  fontStyle: 'normal'
+});
+
+// Estilos PDF
+const styles = StyleSheet.create({
+    sectionHeaderLeft: {
+  marginRight: 8,
+  justifyContent: 'center',
+  alignItems: 'flex-end',
+  width: 60, // o ajusta al ancho deseado
+},
+  page: {
+    padding: 30,
+    fontFamily: 'Protest Revolution'
+  },
+  title: {
+    fontSize: 24,
+    marginBottom: 10,
+    textAlign: 'center'
+  },
+  key: {
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: 'center'
+  },
+  section: {
+    marginBottom: 20
+  },
+  sectionHeader: {
+    marginBottom: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: '#000'
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: 'bold'
+  },
+  line: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 15
+  },
+  measure: {
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    padding: 2,
+    marginRight: -1,
+    minWidth: 100
+  },
+  measureHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 5
+  },
+  measureNumber: {
+    fontSize: 10
+  },
+  divisions: {
+    flexDirection: 'row'
+  },
+  division: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 30
+  },
+  chord: {
+    fontSize: 12
+  },
+  repeatSymbol: {
+    fontSize: 20,
+    marginHorizontal: 5,
+    alignSelf: "center"
+  }
+});
+
+const SongPDF = ({ title, sections, keySignature, tempo }) => {
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        <Text style={styles.title}>{title || "Composición Musical"}</Text>
+        <Text style={styles.key}>Tonalidad: {keySignature} • Tempo: {tempo}</Text>
+        
+        {sections.map((sec, secIdx) => {
+          let measureCount = 0;
+          return (
+            <View key={secIdx} style={styles.section} wrap={false}>
+              {/* Header de sección */}
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>
+                  {sec.nombre} • {sec.compas}
+                </Text>
+              </View>
+              {/* Líneas */}
+              {sec.lineas.map((linea, lIdx) => (
+                <View key={lIdx} style={styles.line}>
+                  {/* Símbolo de repetición al inicio */}
+                  {linea.repetir && <Text style={styles.repeatSymbol}>||:</Text>}
+                  {/* Compases */}
+                  {linea.compasses.map((compass, cIdx) => {
+                    measureCount++;
+                    return (
+                      <View key={cIdx} style={styles.measure}>
+                        <View style={styles.measureHeader}>
+                          <Text style={styles.measureNumber}>{toRoman(measureCount)}</Text>
+                        </View>
+                        <View style={styles.divisions}>
+                          {compass.acordes.map((acorde, dIdx) => (
+                            <View key={dIdx} style={styles.division}>
+                              <Text style={styles.chord}>{acorde.valor || "-"}</Text>
+                            </View>
+                          ))}
+                        </View>
+                      </View>
+                    );
+                  })}
+                  {/* Símbolo de cierre de repetición */}
+                  {linea.repetir && <Text style={styles.repeatSymbol}>:||</Text>}
+                </View>
+              ))}
+            </View>
+          );
+        })}
+      </Page>
+    </Document>
+  );
+};
+
+export default SongPDF;
+</file>
+
+<file path="src/components/SongSection.jsx">
+import { useState } from 'react';
+
+// Función utilitaria para números romanos simples
+function toRoman(num) {
+  if (typeof num !== "number") return "";
+  const romans = ["","I","II","III","IV","V","VI","VII","VIII","IX","X"];
+  return romans[num] || num;
+}
+
+const SongSection = ({
+  section,
+  onDelete,
+  onEditName,
+  onAddLine,
+  onChordChange,
+  onChangeDivisions,
+  tono,
+  onOpenChordModal
+}) => {
+  const [editingId, setEditingId] = useState(null);
+
+  return (
+    <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+      {/* Header de sección */}
+      <div className="flex justify-between items-center p-4 border-b border-gray-100 bg-gray-50">
+        {editingId === section.id ? (
+          <input
+            type="text"
+            defaultValue={section.nombre}
+            onBlur={(e) => {
+              onEditName(section.id, e.target.value);
+              setEditingId(null);
+            }}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                onEditName(section.id, e.target.value);
+                setEditingId(null);
+              }
+            }}
+            className="text-lg font-semibold flex-1 bg-transparent focus:outline-none"
+            autoFocus
+          />
+        ) : (
+          <h2 
+            className="text-lg font-semibold text-gray-900 flex-1"
+            onClick={() => setEditingId(section.id)}
+          >
+            {section.nombre}
+          </h2>
+        )}
+        <button
+          onClick={() => onDelete(section.id)}
+          className="text-red-500 p-1 rounded-full hover:bg-red-50"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+          </svg>
+        </button>
+      </div>
+      
+      {/* Contenido de la sección */}
+      <div className="p-4 space-y-4">
+        {section.lineas.map((linea, lIdx) => {
+          let measureCount = 0;
+          for (let i = 0; i < lIdx; i++) {
+            measureCount += section.lineas[i].compases.length;
+          }
+          
+          return (
+            <div key={linea.id} className="space-y-3">
+              <div className="flex space-x-1 overflow-x-auto pb-2 -mx-2 px-2">
+                {linea.compases.map((compas, cIdx) => {
+                  measureCount++;
+                  return (
+                    <div key={compas.id} className="flex-shrink-0 w-1/4 border border-gray-200 rounded-xl p-3 bg-gray-50">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-xs font-medium text-gray-500">{toRoman(measureCount)}</span>
+                        <select
+                          value={compas.divisiones}
+                          onChange={(e) => 
+                            onChangeDivisions(section.id, lIdx, cIdx, parseInt(e.target.value))
+                          }
+                          className="text-xs rounded border-gray-300 bg-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        >
+                          {[1, 2, 3, 4, 6, 8].map(num => (
+                            <option key={num} value={num}>{num} </option>
+                          ))}
+                        </select>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-1.5">
+                        {compas.acordes.map((acorde, dIdx) => (
+                          <button
+                            key={acorde.id}
+                            style={{ fontFamily: 'Protest Revolution' }}
+                            className={`transition-all duration-150 ease-in-out 
+                              min-h-[40px] px-2 py-1 text-sm rounded-lg shadow-sm
+                              flex items-center justify-center 
+                              ${
+                                acorde.valor
+                                  ? "bg-gray-900 text-white hover:bg-gray-800"
+                                  : "bg-blue-50 text-blue-800 hover:bg-blue-100 border border-blue-100"
+                              }`}
+                            onClick={() => {
+                              onOpenChordModal({ 
+                                seccionId: section.id, 
+                                lineaIndex: lIdx, 
+                                compasIndex: cIdx, 
+                                divisionIndex: dIdx 
+                              });
+                            }}
+                          >
+                            {acorde.valor || ``}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+        
+        <button
+          onClick={() => onAddLine(section.id)}
+          className="w-full flex items-center justify-center px-4 py-2 border border-dashed border-gray-300 rounded-lg text-gray-500 hover:text-gray-700 hover:border-gray-400 hover:bg-gray-50"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+          </svg>
+          Añadir línea (4 compases)
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default SongSection;
+</file>
+
+<file path="src/components/toRoman.jsx">
+// Función para convertir a números romanos
+const toRoman = (num) => {
+  const romanNumerals = [
+    "", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X",
+    "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX"
+  ];
+  return romanNumerals[num] || num;
+};
+export default toRoman;
+</file>
+
+<file path="src/data/harmonies.json">
+{
+  "scales": {
+    "major": {
+      "degrees": ["I", "ii", "iii", "IV", "V", "vi", "vii°"],
+      "chordTypes": {
+        "I": ["maj7", "6", "6/9", "maj9", "maj7#11", "add9", "sus2", "sus4"],
+        "ii": ["m7", "m6", "m9", "m11", "m7b5"],
+        "iii": ["m7", "m6", "m9"],
+        "IV": ["maj7", "6", "6/9", "maj9", "sus4"],
+        "V": ["7", "9", "13", "7sus4"],
+        "vi": ["m7", "m6", "m9", "m11"],
+        "vii°": ["m7b5", "dim7"]
+      }
+    },
+    "minor": {
+      "degrees": ["i", "ii°", "III", "iv", "v", "VI", "VII"],
+      "chordTypes": {
+        "i": ["m7", "m6", "m9", "m11", "m(maj7)"],
+        "ii°": ["m7b5", "dim7"],
+        "III": ["maj7", "7", "6", "6/9", "maj9"],
+        "iv": ["m7", "m6", "m9"],
+        "v": ["m7", "7"],
+        "VI": ["maj7", "6", "6/9", "maj9"],
+        "VII": ["7", "9", "13"]
+      }
+    }
+  },
+  "keys": ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+}
+</file>
+
+<file path="src/services/api.js">
+import { API_CONFIG } from '../config';
+
+export const saveSong = async (songData) => {
+  try {
+    const response = await fetch(API_CONFIG.FULL_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(songData)
+    });
+
+    const responseData = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        responseData.message || 
+        `Error ${response.status}: ${response.statusText}`
+      );
+    }
+
+    return responseData;
+    
+  } catch (error) {
+    console.error('Error al guardar la canción:', error);
+    throw error;
+  }
+};
+
+export const updateSong = async (songId, songData) => {
+  try {
+    const response = await fetch(API_CONFIG.FULL_URL, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id: songId, ...songData })
+    });
+    
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('Error updating song:', error);
+    throw error;
+  }
+};
+
+export const loadSong = async (songId) => {
+  try {
+    const response = await fetch(`${API_CONFIG.FULL_URL}?id=${songId}`);
+    return await response.json();
+  } catch (error) {
+    console.error('Error loading song:', error);
+    throw error;
+  }
+};
+
+export const searchSongs = async (searchTerm) => {
+  try {
+    const response = await fetch(`${API_CONFIG.FULL_URL}?search=${encodeURIComponent(searchTerm)}`);
+    return await response.json();
+  } catch (error) {
+    console.error('Error searching songs:', error);
+    return [];
+  }
+};
+</file>
+
+<file path="src/App.test.js">
+import { render, screen } from '@testing-library/react';
+import App from './App';
+
+test('renders learn react link', () => {
+  render(<App />);
+  const linkElement = screen.getByText(/learn react/i);
+  expect(linkElement).toBeInTheDocument();
+});
+</file>
+
+<file path="src/circulos.js">
+const circulos = {
+  C: {
+    scale: ["C", "D", "E", "F", "G", "A", "B"],
+    degrees: [
+      
+      {
+        name: "C",
+        degree: "I",
+        type: "maj",
+        common_extensions: ["C", "Cmaj7", "Cadd9", "Cmaj7+9", "Csus4", "Csus2", "C6", "Cmaj9"]
+      },
+      {
+        name: "D",
+        degree: "ii",
+        type: "min",
+        common_extensions: ["Dm", "Dm7", "Dm9", "Dm11", "Dsus4", "Dmin6"]
+      },
+      {
+        name: "E",
+        degree: "iii",
+        type: "min",
+        common_extensions: ["Em", "Em7", "Em9", "Em11", "Esus2"]
+      },
+      {
+        name: "F",
+        degree: "IV",
+        type: "maj",
+        common_extensions: ["F", "Fmaj7", "Fadd9", "Fsus4", "Fmaj9"]
+      },
+      {
+        name: "G",
+        degree: "V",
+        type: "maj",
+        common_extensions: ["G", "G7", "Gsus4", "G9", "G13"]
+      },
+      {
+        name: "A",
+        degree: "vi",
+        type: "min",
+        common_extensions: ["Am", "Am7", "Am9", "Am11", "Asus4"]
+      },
+      {
+        name: "B",
+        degree: "vii°",
+        type: "dim",
+        common_extensions: ["Bdim", "Bø7", "Bdim7"]
+      }
+    ]
+  },
+  "C#": {
+    scale: ["C#", "D#", "F", "F#", "G#", "A#", "C"],
+    degrees: [
+      {
+        name: "C#",
+        degree: "I",
+        type: "maj",
+        common_extensions: ["C#", "C#maj7", "C#add9", "C#maj7+9", "C#sus4", "C#sus2", "C#6", "C#maj9"]
+      },
+      {
+        name: "D#",
+        degree: "ii",
+        type: "min",
+        common_extensions: ["D#m", "D#m7", "D#m9", "D#m11", "D#sus4", "D#min6"]
+      },
+      {
+        name: "F",
+        degree: "iii",
+        type: "min",
+        common_extensions: ["Fm", "Fm7", "Fm9", "Fm11", "Fsus2"]
+      },
+      {
+        name: "F#",
+        degree: "IV",
+        type: "maj",
+        common_extensions: ["F#", "F#maj7", "F#add9", "F#sus4", "F#maj9"]
+      },
+      {
+        name: "G#",
+        degree: "V",
+        type: "maj",
+        common_extensions: ["G#", "G#7", "G#sus4", "G#9", "G#13"]
+      },
+      {
+        name: "A#",
+        degree: "vi",
+        type: "min",
+        common_extensions: ["A#m", "A#m7", "A#m9", "A#m11", "A#sus4"]
+      },
+      {
+        name: "C",
+        degree: "vii°",
+        type: "dim",
+        common_extensions: ["Cdim", "Cø7", "Cdim7"]
+      }
+    ]
+  },
+  D: {
+    scale: ["D", "E", "F#", "G", "A", "B", "C#"],
+    degrees: [
+      {
+        name: "D",
+        degree: "I",
+        type: "maj",
+        common_extensions: ["D", "Dmaj7", "Dadd9", "Dmaj7+9", "Dsus4", "Dsus2", "D6", "Dmaj9"]
+      },
+      {
+        name: "E",
+        degree: "ii",
+        type: "min",
+        common_extensions: ["Em", "Em7", "Em9", "Em11", "Esus4", "Emin6"]
+      },
+      {
+        name: "F#",
+        degree: "iii",
+        type: "min",
+        common_extensions: ["F#m", "F#m7", "F#m9", "F#m11", "F#sus2"]
+      },
+      {
+        name: "G",
+        degree: "IV",
+        type: "maj",
+        common_extensions: ["G", "Gmaj7", "Gadd9", "Gsus4", "Gmaj9"]
+      },
+      {
+        name: "A",
+        degree: "V",
+        type: "maj",
+        common_extensions: ["A", "A7", "Asus4", "A9", "A13"]
+      },
+      {
+        name: "B",
+        degree: "vi",
+        type: "min",
+        common_extensions: ["Bm", "Bm7", "Bm9", "Bm11", "Bsus4"]
+      },
+      {
+        name: "C#",
+        degree: "vii°",
+        type: "dim",
+        common_extensions: ["C#dim", "C#ø7", "C#dim7"]
+      }
+    ]
+  },
+  "D#": {
+    scale: ["D#", "F", "G", "G#", "A#", "C", "D"],
+    degrees: [
+      {
+        name: "D#",
+        degree: "I",
+        type: "maj",
+        common_extensions: ["D#", "D#maj7", "D#add9", "D#maj7+9", "D#sus4", "D#sus2", "D#6", "D#maj9"]
+      },
+      {
+        name: "F",
+        degree: "ii",
+        type: "min",
+        common_extensions: ["Fm", "Fm7", "Fm9", "Fm11", "Fsus4", "Fmin6"]
+      },
+      {
+        name: "G",
+        degree: "iii",
+        type: "min",
+        common_extensions: ["Gm", "Gm7", "Gm9", "Gm11", "Gsus2"]
+      },
+      {
+        name: "G#",
+        degree: "IV",
+        type: "maj",
+        common_extensions: ["G#", "G#maj7", "G#add9", "G#sus4", "G#maj9"]
+      },
+      {
+        name: "A#",
+        degree: "V",
+        type: "maj",
+        common_extensions: ["A#", "A#7", "A#sus4", "A#9", "A#13"]
+      },
+      {
+        name: "C",
+        degree: "vi",
+        type: "min",
+        common_extensions: ["Cm", "Cm7", "Cm9", "Cm11", "Csus4"]
+      },
+      {
+        name: "D",
+        degree: "vii°",
+        type: "dim",
+        common_extensions: ["Ddim", "Dø7", "Ddim7"]
+      }
+    ]
+  },
+  E: {
+    scale: ["E", "F#", "G#", "A", "B", "C#", "D#"],
+    degrees: [
+      {
+        name: "E",
+        degree: "I",
+        type: "maj",
+        common_extensions: ["E", "Emaj7", "Eadd9", "Emaj7+9", "Esus4", "Esus2", "E6", "Emaj9"]
+      },
+      {
+        name: "F#",
+        degree: "ii",
+        type: "min",
+        common_extensions: ["F#m", "F#m7", "F#m9", "F#m11", "F#sus4", "F#min6"]
+      },
+      {
+        name: "G#",
+        degree: "iii",
+        type: "min",
+        common_extensions: ["G#m", "G#m7", "G#m9", "G#m11", "G#sus2"]
+      },
+      {
+        name: "A",
+        degree: "IV",
+        type: "maj",
+        common_extensions: ["A", "Amaj7", "Aadd9", "Asus4", "Amaj9"]
+      },
+      {
+        name: "B",
+        degree: "V",
+        type: "maj",
+        common_extensions: ["B", "B7", "Bsus4", "B9", "B13"]
+      },
+      {
+        name: "C#",
+        degree: "vi",
+        type: "min",
+        common_extensions: ["C#m", "C#m7", "C#m9", "C#m11", "C#sus4"]
+      },
+      {
+        name: "D#",
+        degree: "vii°",
+        type: "dim",
+        common_extensions: ["D#dim", "D#ø7", "D#dim7"]
+      }
+    ]
+  },
+  F: {
+    scale: ["F", "G", "A", "A#", "C", "D", "E"],
+    degrees: [
+      {
+        name: "F",
+        degree: "I",
+        type: "maj",
+        common_extensions: ["F", "Fmaj7", "Fadd9", "Fmaj7+9", "Fsus4", "Fsus2", "F6", "Fmaj9"]
+      },
+      {
+        name: "G",
+        degree: "ii",
+        type: "min",
+        common_extensions: ["Gm", "Gm7", "Gm9", "Gm11", "Gsus4", "Gmin6"]
+      },
+      {
+        name: "A",
+        degree: "iii",
+        type: "min",
+        common_extensions: ["Am", "Am7", "Am9", "Am11", "Asus2"]
+      },
+      {
+        name: "A#",
+        degree: "IV",
+        type: "maj",
+        common_extensions: ["A#", "A#maj7", "A#add9", "A#sus4", "A#maj9"]
+      },
+      {
+        name: "C",
+        degree: "V",
+        type: "maj",
+        common_extensions: ["C", "C7", "Csus4", "C9", "C13"]
+      },
+      {
+        name: "D",
+        degree: "vi",
+        type: "min",
+        common_extensions: ["Dm", "Dm7", "Dm9", "Dm11", "Dsus4"]
+      },
+      {
+        name: "E",
+        degree: "vii°",
+        type: "dim",
+        common_extensions: ["Edim", "Eø7", "Edim7"]
+      }
+    ]
+  },
+  "F#": {
+    scale: ["F#", "G#", "A#", "B", "C#", "D#", "F"],
+    degrees: [
+      {
+        name: "F#",
+        degree: "I",
+        type: "maj",
+        common_extensions: ["F#", "F#maj7", "F#add9", "F#maj7+9", "F#sus4", "F#sus2", "F#6", "F#maj9"]
+      },
+      {
+        name: "G#",
+        degree: "ii",
+        type: "min",
+        common_extensions: ["G#m", "G#m7", "G#m9", "G#m11", "G#sus4", "G#min6"]
+      },
+      {
+        name: "A#",
+        degree: "iii",
+        type: "min",
+        common_extensions: ["A#m", "A#m7", "A#m9", "A#m11", "A#sus2"]
+      },
+      {
+        name: "B",
+        degree: "IV",
+        type: "maj",
+        common_extensions: ["B", "Bmaj7", "Badd9", "Bsus4", "Bmaj9"]
+      },
+      {
+        name: "C#",
+        degree: "V",
+        type: "maj",
+        common_extensions: ["C#", "C#7", "C#sus4", "C#9", "C#13"]
+      },
+      {
+        name: "D#",
+        degree: "vi",
+        type: "min",
+        common_extensions: ["D#m", "D#m7", "D#m9", "D#m11", "D#sus4"]
+      },
+      {
+        name: "F",
+        degree: "vii°",
+        type: "dim",
+        common_extensions: ["Fdim", "Fø7", "Fdim7"]
+      }
+    ]
+  },
+  G: {
+    scale: ["G", "A", "B", "C", "D", "E", "F#"],
+    degrees: [
+      {
+        name: "G",
+        degree: "I",
+        type: "maj",
+        common_extensions: ["G", "Gmaj7", "Gadd9", "Gmaj7+9", "Gsus4", "Gsus2", "G6", "Gmaj9"]
+      },
+      {
+        name: "A",
+        degree: "ii",
+        type: "min",
+        common_extensions: ["Am", "Am7", "Am9", "Am11", "Asus4", "Amin6"]
+      },
+      {
+        name: "B",
+        degree: "iii",
+        type: "min",
+        common_extensions: ["Bm", "Bm7", "Bm9", "Bm11", "Bsus2"]
+      },
+      {
+        name: "C",
+        degree: "IV",
+        type: "maj",
+        common_extensions: ["C", "Cmaj7", "Cadd9", "Csus4", "Cmaj9"]
+      },
+      {
+        name: "D",
+        degree: "V",
+        type: "maj",
+        common_extensions: ["D", "D7", "Dsus4", "D9", "D13"]
+      },
+      {
+        name: "E",
+        degree: "vi",
+        type: "min",
+        common_extensions: ["Em", "Em7", "Em9", "Em11", "Esus4"]
+      },
+      {
+        name: "F#",
+        degree: "vii°",
+        type: "dim",
+        common_extensions: ["F#dim", "F#ø7", "F#dim7"]
+      }
+    ]
+  },
+  "G#": {
+    scale: ["G#", "A#", "C", "C#", "D#", "F", "G"],
+    degrees: [
+      {
+        name: "G#",
+        degree: "I",
+        type: "maj",
+        common_extensions: ["G#", "G#maj7", "G#add9", "G#maj7+9", "G#sus4", "G#sus2", "G#6", "G#maj9"]
+      },
+      {
+        name: "A#",
+        degree: "ii",
+        type: "min",
+        common_extensions: ["A#m", "A#m7", "A#m9", "A#m11", "A#sus4", "A#min6"]
+      },
+      {
+        name: "C",
+        degree: "iii",
+        type: "min",
+        common_extensions: ["Cm", "Cm7", "Cm9", "Cm11", "Csus2"]
+      },
+      {
+        name: "C#",
+        degree: "IV",
+        type: "maj",
+        common_extensions: ["C#", "C#maj7", "C#add9", "C#sus4", "C#maj9"]
+      },
+      {
+        name: "D#",
+        degree: "V",
+        type: "maj",
+        common_extensions: ["D#", "D#7", "D#sus4", "D#9", "D#13"]
+      },
+      {
+        name: "F",
+        degree: "vi",
+        type: "min",
+        common_extensions: ["Fm", "Fm7", "Fm9", "Fm11", "Fsus4"]
+      },
+      {
+        name: "G",
+        degree: "vii°",
+        type: "dim",
+        common_extensions: ["Gdim", "Gø7", "Gdim7"]
+      }
+    ]
+  },
+  A: {
+    scale: ["A", "B", "C#", "D", "E", "F#", "G#"],
+    degrees: [
+      {
+        name: "A",
+        degree: "I",
+        type: "maj",
+        common_extensions: ["A", "Amaj7", "Aadd9", "Amaj7+9", "Asus4", "Asus2", "A6", "Amaj9"]
+      },
+      {
+        name: "B",
+        degree: "ii",
+        type: "min",
+        common_extensions: ["Bm", "Bm7", "Bm9", "Bm11", "Bsus4", "Bmin6"]
+      },
+      {
+        name: "C#",
+        degree: "iii",
+        type: "min",
+        common_extensions: ["C#m", "C#m7", "C#m9", "C#m11", "C#sus2"]
+      },
+      {
+        name: "D",
+        degree: "IV",
+        type: "maj",
+        common_extensions: ["D", "Dmaj7", "Dadd9", "Dsus4", "Dmaj9"]
+      },
+      {
+        name: "E",
+        degree: "V",
+        type: "maj",
+        common_extensions: ["E", "E7", "Esus4", "E9", "E13"]
+      },
+      {
+        name: "F#",
+        degree: "vi",
+        type: "min",
+        common_extensions: ["F#m", "F#m7", "F#m9", "F#m11", "F#sus4"]
+      },
+      {
+        name: "G#",
+        degree: "vii°",
+        type: "dim",
+        common_extensions: ["G#dim", "G#ø7", "G#dim7"]
+      }
+    ]
+  },
+  "A#": {
+    scale: ["A#", "C", "D", "D#", "F", "G", "A"],
+    degrees: [
+      {
+        name: "A#",
+        degree: "I",
+        type: "maj",
+        common_extensions: ["A#", "A#maj7", "A#add9", "A#maj7+9", "A#sus4", "A#sus2", "A#6", "A#maj9"]
+      },
+      {
+        name: "C",
+        degree: "ii",
+        type: "min",
+        common_extensions: ["Cm", "Cm7", "Cm9", "Cm11", "Csus4", "Cmin6"]
+      },
+      {
+        name: "D",
+        degree: "iii",
+        type: "min",
+        common_extensions: ["Dm", "Dm7", "Dm9", "Dm11", "Dsus2"]
+      },
+      {
+        name: "D#",
+        degree: "IV",
+        type: "maj",
+        common_extensions: ["D#", "D#maj7", "D#add9", "D#sus4", "D#maj9"]
+      },
+      {
+        name: "F",
+        degree: "V",
+        type: "maj",
+        common_extensions: ["F", "F7", "Fsus4", "F9", "F13"]
+      },
+      {
+        name: "G",
+        degree: "vi",
+        type: "min",
+        common_extensions: ["Gm", "Gm7", "Gm9", "Gm11", "Gsus4"]
+      },
+      {
+        name: "A",
+        degree: "vii°",
+        type: "dim",
+        common_extensions: ["Adim", "Aø7", "Adim7"]
+      }
+    ]
+  },
+  B: {
+    scale: ["B", "C#", "D#", "E", "F#", "G#", "A#"],
+    degrees: [
+      {
+        name: "B",
+        degree: "I",
+        type: "maj",
+        common_extensions: ["B", "Bmaj7", "Badd9", "Bmaj7+9", "Bsus4", "Bsus2", "B6", "Bmaj9"]
+      },
+      {
+        name: "C#",
+        degree: "ii",
+        type: "min",
+        common_extensions: ["C#m", "C#m7", "C#m9", "C#m11", "C#sus4", "C#min6"]
+      },
+      {
+        name: "D#",
+        degree: "iii",
+        type: "min",
+        common_extensions: ["D#m", "D#m7", "D#m9", "D#m11", "D#sus2"]
+      },
+      {
+        name: "E",
+        degree: "IV",
+        type: "maj",
+        common_extensions: ["E", "Emaj7", "Eadd9", "Esus4", "Emaj9"]
+      },
+      {
+        name: "F#",
+        degree: "V",
+        type: "maj",
+        common_extensions: ["F#", "F#7", "F#sus4", "F#9", "F#13"]
+      },
+      {
+        name: "G#",
+        degree: "vi",
+        type: "min",
+        common_extensions: ["G#m", "G#m7", "G#m9", "G#m11", "G#sus4"]
+      },
+      {
+        name: "A#",
+        degree: "vii°",
+        type: "dim",
+        common_extensions: ["A#dim", "A#ø7", "A#dim7"]
+      }
+    ]
+  }
+};
+
+export default circulos;
+</file>
+
+<file path="src/config.js">
+export const API_BASE_URL = 'https://sig-ma.es';
+export const API_ENDPOINT = '/easychart/api.php';
+export const API_URL = `${API_BASE_URL}${API_ENDPOINT}`;
+
+export const API_CONFIG = {
+  BASE_URL: 'https://sig-ma.es',
+  ENDPOINT: '/easychart/api.php',
+  get FULL_URL() {
+    return `${this.BASE_URL}${this.ENDPOINT}`;
+  }
+};
+</file>
+
+<file path="src/logo.svg">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 841.9 595.3"><g fill="#61DAFB"><path d="M666.3 296.5c0-32.5-40.7-63.3-103.1-82.4 14.4-63.6 8-114.2-20.2-130.4-6.5-3.8-14.1-5.6-22.4-5.6v22.3c4.6 0 8.3.9 11.4 2.6 13.6 7.8 19.5 37.5 14.9 75.7-1.1 9.4-2.9 19.3-5.1 29.4-19.6-4.8-41-8.5-63.5-10.9-13.5-18.5-27.5-35.3-41.6-50 32.6-30.3 63.2-46.9 84-46.9V78c-27.5 0-63.5 19.6-99.9 53.6-36.4-33.8-72.4-53.2-99.9-53.2v22.3c20.7 0 51.4 16.5 84 46.6-14 14.7-28 31.4-41.3 49.9-22.6 2.4-44 6.1-63.6 11-2.3-10-4-19.7-5.2-29-4.7-38.2 1.1-67.9 14.6-75.8 3-1.8 6.9-2.6 11.5-2.6V78.5c-8.4 0-16 1.8-22.6 5.6-28.1 16.2-34.4 66.7-19.9 130.1-62.2 19.2-102.7 49.9-102.7 82.3 0 32.5 40.7 63.3 103.1 82.4-14.4 63.6-8 114.2 20.2 130.4 6.5 3.8 14.1 5.6 22.5 5.6 27.5 0 63.5-19.6 99.9-53.6 36.4 33.8 72.4 53.2 99.9 53.2 8.4 0 16-1.8 22.6-5.6 28.1-16.2 34.4-66.7 19.9-130.1 62-19.1 102.5-49.9 102.5-82.3zm-130.2-66.7c-3.7 12.9-8.3 26.2-13.5 39.5-4.1-8-8.4-16-13.1-24-4.6-8-9.5-15.8-14.4-23.4 14.2 2.1 27.9 4.7 41 7.9zm-45.8 106.5c-7.8 13.5-15.8 26.3-24.1 38.2-14.9 1.3-30 2-45.2 2-15.1 0-30.2-.7-45-1.9-8.3-11.9-16.4-24.6-24.2-38-7.6-13.1-14.5-26.4-20.8-39.8 6.2-13.4 13.2-26.8 20.7-39.9 7.8-13.5 15.8-26.3 24.1-38.2 14.9-1.3 30-2 45.2-2 15.1 0 30.2.7 45 1.9 8.3 11.9 16.4 24.6 24.2 38 7.6 13.1 14.5 26.4 20.8 39.8-6.3 13.4-13.2 26.8-20.7 39.9zm32.3-13c5.4 13.4 10 26.8 13.8 39.8-13.1 3.2-26.9 5.9-41.2 8 4.9-7.7 9.8-15.6 14.4-23.7 4.6-8 8.9-16.1 13-24.1zM421.2 430c-9.3-9.6-18.6-20.3-27.8-32 9 .4 18.2.7 27.5.7 9.4 0 18.7-.2 27.8-.7-9 11.7-18.3 22.4-27.5 32zm-74.4-58.9c-14.2-2.1-27.9-4.7-41-7.9 3.7-12.9 8.3-26.2 13.5-39.5 4.1 8 8.4 16 13.1 24 4.7 8 9.5 15.8 14.4 23.4zM420.7 163c9.3 9.6 18.6 20.3 27.8 32-9-.4-18.2-.7-27.5-.7-9.4 0-18.7.2-27.8.7 9-11.7 18.3-22.4 27.5-32zm-74 58.9c-4.9 7.7-9.8 15.6-14.4 23.7-4.6 8-8.9 16-13 24-5.4-13.4-10-26.8-13.8-39.8 13.1-3.1 26.9-5.8 41.2-7.9zm-90.5 125.2c-35.4-15.1-58.3-34.9-58.3-50.6 0-15.7 22.9-35.6 58.3-50.6 8.6-3.7 18-7 27.7-10.1 5.7 19.6 13.2 40 22.5 60.9-9.2 20.8-16.6 41.1-22.2 60.6-9.9-3.1-19.3-6.5-28-10.2zM310 490c-13.6-7.8-19.5-37.5-14.9-75.7 1.1-9.4 2.9-19.3 5.1-29.4 19.6 4.8 41 8.5 63.5 10.9 13.5 18.5 27.5 35.3 41.6 50-32.6 30.3-63.2 46.9-84 46.9-4.5-.1-8.3-1-11.3-2.7zm237.2-76.2c4.7 38.2-1.1 67.9-14.6 75.8-3 1.8-6.9 2.6-11.5 2.6-20.7 0-51.4-16.5-84-46.6 14-14.7 28-31.4 41.3-49.9 22.6-2.4 44-6.1 63.6-11 2.3 10.1 4.1 19.8 5.2 29.1zm38.5-66.7c-8.6 3.7-18 7-27.7 10.1-5.7-19.6-13.2-40-22.5-60.9 9.2-20.8 16.6-41.1 22.2-60.6 9.9 3.1 19.3 6.5 28.1 10.2 35.4 15.1 58.3 34.9 58.3 50.6-.1 15.7-23 35.6-58.4 50.6zM320.8 78.4z"/><circle cx="420.9" cy="296.5" r="45.7"/><path d="M520.5 78.1z"/></g></svg>
+</file>
+
+<file path="src/reportWebVitals.js">
+const reportWebVitals = onPerfEntry => {
+  if (onPerfEntry && onPerfEntry instanceof Function) {
+    import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
+      getCLS(onPerfEntry);
+      getFID(onPerfEntry);
+      getFCP(onPerfEntry);
+      getLCP(onPerfEntry);
+      getTTFB(onPerfEntry);
+    });
+  }
+};
+
+export default reportWebVitals;
+</file>
+
+<file path="src/setupProxy.js">
+const { createProxyMiddleware } = require('http-proxy-middleware');
+
+module.exports = function(app) {
+  app.use(
+    '/api',
+    createProxyMiddleware({
+      target: 'https://sig-ma.es',
+      changeOrigin: true,
+      secure: false,
+      pathRewrite: {
+        '^/api': ''
+      }
+    })
+  );
+};
+</file>
+
+<file path="src/setupTests.js">
+// jest-dom adds custom jest matchers for asserting on DOM nodes.
+// allows you to do things like:
+// expect(element).toHaveTextContent(/react/i)
+// learn more: https://github.com/testing-library/jest-dom
+import '@testing-library/jest-dom';
+</file>
+
+<file path=".gitignore">
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# production
+/build
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+</file>
+
+<file path="postcss.config.js">
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+}
+</file>
+
+<file path="README.md">
+# Getting Started with Create React App
+
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+
+## Available Scripts
+
+In the project directory, you can run:
+
+### `npm start`
+
+Runs the app in the development mode.\
+Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+
+The page will reload when you make changes.\
+You may also see any lint errors in the console.
+
+### `npm test`
+
+Launches the test runner in the interactive watch mode.\
+See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+
+### `npm run build`
+
+Builds the app for production to the `build` folder.\
+It correctly bundles React in production mode and optimizes the build for the best performance.
+
+The build is minified and the filenames include the hashes.\
+Your app is ready to be deployed!
+
+See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+
+### `npm run eject`
+
+**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+
+If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+
+Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+
+You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+
+## Learn More
+
+You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+
+To learn React, check out the [React documentation](https://reactjs.org/).
+
+### Code Splitting
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+
+### Analyzing the Bundle Size
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+
+### Making a Progressive Web App
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+
+### Advanced Configuration
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+
+### Deployment
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+
+### `npm run build` fails to minify
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+</file>
+
+<file path="tailwind.config.js">
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: ["./src/**/*.{js,jsx,ts,tsx}"],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+</file>
+
+<file path="src/components/circulos.js">
+const circulos = {
+  C: {
+    scale: ["C", "D", "E", "F", "G", "A", "B"],
+    degrees: [
+      
+      {
+        name: "C",
+        degree: "I",
+        type: "maj",
+        common_extensions: ["C", "Cmaj7", "Cadd9", "Cmaj7+9", "Csus4", "Csus2", "C6", "Cmaj9"]
+      },
+      {
+        name: "D",
+        degree: "ii",
+        type: "min",
+        common_extensions: ["Dm", "Dm7", "Dm9", "Dm11", "Dsus4", "Dmin6"]
+      },
+      {
+        name: "E",
+        degree: "iii",
+        type: "min",
+        common_extensions: ["Em", "Em7", "Em9", "Em11", "Esus2"]
+      },
+      {
+        name: "F",
+        degree: "IV",
+        type: "maj",
+        common_extensions: ["F", "Fmaj7", "Fadd9", "Fsus4", "Fmaj9"]
+      },
+      {
+        name: "G",
+        degree: "V",
+        type: "maj",
+        common_extensions: ["G", "G7", "Gsus4", "G9", "G13"]
+      },
+      {
+        name: "A",
+        degree: "vi",
+        type: "min",
+        common_extensions: ["Am", "Am7", "Am9", "Am11", "Asus4"]
+      },
+      {
+        name: "B",
+        degree: "vii°",
+        type: "dim",
+        common_extensions: ["Bdim", "Bø7", "Bdim7"]
+      }
+    ]
+  },
+  "D♭": {
+    scale: ["D♭", "E♭", "F", "G♭", "A♭", "B♭", "C"],
+    degrees: [
+      { name: "D♭", degree: "I", type: "maj", common_extensions: ["D♭", "D♭maj7", "D♭add9", "D♭maj7+9", "D♭sus4", "D♭sus2", "D♭6", "D♭maj9"] },
+      { name: "E♭", degree: "ii", type: "min", common_extensions: ["E♭m", "E♭m7", "E♭m9", "E♭m11", "E♭sus4", "E♭min6"] },
+      { name: "F", degree: "iii", type: "min", common_extensions: ["Fm", "Fm7", "Fm9", "Fm11", "Fsus2"] },
+      { name: "G♭", degree: "IV", type: "maj", common_extensions: ["G♭", "G♭maj7", "G♭add9", "G♭sus4", "G♭maj9"] },
+      { name: "A♭", degree: "V", type: "maj", common_extensions: ["A♭", "A♭7", "A♭sus4", "A♭9", "A♭13"] },
+      { name: "B♭", degree: "vi", type: "min", common_extensions: ["B♭m", "B♭m7", "B♭m9", "B♭m11", "B♭sus4"] },
+      { name: "C", degree: "vii°", type: "dim", common_extensions: ["Cdim", "Cø7", "Cdim7"] }
+    ]
+  },
+  D: {
+    scale: ["D", "E", "F#", "G", "A", "B", "C#"],
+    degrees: [
+      {
+        name: "D",
+        degree: "I",
+        type: "maj",
+        common_extensions: ["D", "Dmaj7", "Dadd9", "Dmaj7+9", "Dsus4", "Dsus2", "D6", "Dmaj9"]
+      },
+      {
+        name: "E",
+        degree: "ii",
+        type: "min",
+        common_extensions: ["Em", "Em7", "Em9", "Em11", "Esus4", "Emin6"]
+      },
+      {
+        name: "F#",
+        degree: "iii",
+        type: "min",
+        common_extensions: ["F#m", "F#m7", "F#m9", "F#m11", "F#sus2"]
+      },
+      {
+        name: "G",
+        degree: "IV",
+        type: "maj",
+        common_extensions: ["G", "Gmaj7", "Gadd9", "Gsus4", "Gmaj9"]
+      },
+      {
+        name: "A",
+        degree: "V",
+        type: "maj",
+        common_extensions: ["A", "A7", "Asus4", "A9", "A13"]
+      },
+      {
+        name: "B",
+        degree: "vi",
+        type: "min",
+        common_extensions: ["Bm", "Bm7", "Bm9", "Bm11", "Bsus4"]
+      },
+      {
+        name: "C#",
+        degree: "vii°",
+        type: "dim",
+        common_extensions: ["C#dim", "C#ø7", "C#dim7"]
+      }
+    ]
+  },
+ "E♭": {
+    scale: ["E♭", "F", "G", "A♭", "B♭", "C", "D"],
+    degrees: [
+      {
+        name: "E♭",
+        degree: "I",
+        type: "maj",
+        common_extensions: ["E♭", "E♭maj7", "E♭add9", "E♭maj7+9", "E♭sus4", "E♭sus2", "E♭6", "E♭maj9"]
+      },
+      {
+        name: "F",
+        degree: "ii",
+        type: "min",
+        common_extensions: ["Fm", "Fm7", "Fm9", "Fm11", "Fsus4", "Fmin6"]
+      },
+      {
+        name: "G",
+        degree: "iii",
+        type: "min",
+        common_extensions: ["Gm", "Gm7", "Gm9", "Gm11", "Gsus2"]
+      },
+      {
+        name: "A♭",
+        degree: "IV",
+        type: "maj",
+        common_extensions: ["A♭", "A♭maj7", "A♭add9", "A♭sus4", "A♭maj9"]
+      },
+      {
+        name: "B♭",
+        degree: "V",
+        type: "maj",
+        common_extensions: ["B♭", "B♭7", "B♭sus4", "B♭9", "B♭13"]
+      },
+      {
+        name: "C",
+        degree: "vi",
+        type: "min",
+        common_extensions: ["Cm", "Cm7", "Cm9", "Cm11", "Csus4"]
+      },
+      {
+        name: "D",
+        degree: "vii°",
+        type: "dim",
+        common_extensions: ["Ddim", "Dø7", "Ddim7"]
+      }
+    ]
+  },
+  E: {
+    scale: ["E", "F#", "G#", "A", "B", "C#", "D#"],
+    degrees: [
+      {
+        name: "E",
+        degree: "I",
+        type: "maj",
+        common_extensions: ["E", "Emaj7", "Eadd9", "Emaj7+9", "Esus4", "Esus2", "E6", "Emaj9"]
+      },
+      {
+        name: "F#",
+        degree: "ii",
+        type: "min",
+        common_extensions: ["F#m", "F#m7", "F#m9", "F#m11", "F#sus4", "F#min6"]
+      },
+      {
+        name: "G#",
+        degree: "iii",
+        type: "min",
+        common_extensions: ["G#m", "G#m7", "G#m9", "G#m11", "G#sus2"]
+      },
+      {
+        name: "A",
+        degree: "IV",
+        type: "maj",
+        common_extensions: ["A", "Amaj7", "Aadd9", "Asus4", "Amaj9"]
+      },
+      {
+        name: "B",
+        degree: "V",
+        type: "maj",
+        common_extensions: ["B", "B7", "Bsus4", "B9", "B13"]
+      },
+      {
+        name: "C#",
+        degree: "vi",
+        type: "min",
+        common_extensions: ["C#m", "C#m7", "C#m9", "C#m11", "C#sus4"]
+      },
+      {
+        name: "D#",
+        degree: "vii°",
+        type: "dim",
+        common_extensions: ["D#dim", "D#ø7", "D#dim7"]
+      }
+    ]
+  },
+  F: {
+    scale: ["F", "G", "A", "A#", "C", "D", "E"],
+    degrees: [
+      {
+        name: "F",
+        degree: "I",
+        type: "maj",
+        common_extensions: ["F", "Fmaj7", "Fadd9", "Fmaj7+9", "Fsus4", "Fsus2", "F6", "Fmaj9"]
+      },
+      {
+        name: "G",
+        degree: "ii",
+        type: "min",
+        common_extensions: ["Gm", "Gm7", "Gm9", "Gm11", "Gsus4", "Gmin6"]
+      },
+      {
+        name: "A",
+        degree: "iii",
+        type: "min",
+        common_extensions: ["Am", "Am7", "Am9", "Am11", "Asus2"]
+      },
+      {
+        name: "A#",
+        degree: "IV",
+        type: "maj",
+        common_extensions: ["A#", "A#maj7", "A#add9", "A#sus4", "A#maj9"]
+      },
+      {
+        name: "C",
+        degree: "V",
+        type: "maj",
+        common_extensions: ["C", "C7", "Csus4", "C9", "C13"]
+      },
+      {
+        name: "D",
+        degree: "vi",
+        type: "min",
+        common_extensions: ["Dm", "Dm7", "Dm9", "Dm11", "Dsus4"]
+      },
+      {
+        name: "E",
+        degree: "vii°",
+        type: "dim",
+        common_extensions: ["Edim", "Eø7", "Edim7"]
+      }
+    ]
+  },
+   "G♭": {
+    scale: ["G♭", "A♭", "B♭", "C♭", "D♭", "E♭", "F"],
+    degrees: [
+      {
+        name: "G♭",
+        degree: "I",
+        type: "maj",
+        common_extensions: ["G♭", "G♭maj7", "G♭add9", "G♭maj7+9", "G♭sus4", "G♭sus2", "G♭6", "G♭maj9"]
+      },
+      {
+        name: "A♭",
+        degree: "ii",
+        type: "min",
+        common_extensions: ["A♭m", "A♭m7", "A♭m9", "A♭m11", "A♭sus4", "A♭min6"]
+      },
+      {
+        name: "B♭",
+        degree: "iii",
+        type: "min",
+        common_extensions: ["B♭m", "B♭m7", "B♭m9", "B♭m11", "B♭sus2"]
+      },
+      {
+        name: "C♭",
+        degree: "IV",
+        type: "maj",
+        common_extensions: ["C♭", "C♭maj7", "C♭add9", "C♭sus4", "C♭maj9"]
+      },
+      {
+        name: "D♭",
+        degree: "V",
+        type: "maj",
+        common_extensions: ["D♭", "D♭7", "D♭sus4", "D♭9", "D♭13"]
+      },
+      {
+        name: "E♭",
+        degree: "vi",
+        type: "min",
+        common_extensions: ["E♭m", "E♭m7", "E♭m9", "E♭m11", "E♭sus4"]
+      },
+      {
+        name: "F",
+        degree: "vii°",
+        type: "dim",
+        common_extensions: ["Fdim", "Fø7", "Fdim7"]
+      }
+    ]
+  },
+  G: {
+    scale: ["G", "A", "B", "C", "D", "E", "F#"],
+    degrees: [
+      {
+        name: "G",
+        degree: "I",
+        type: "maj",
+        common_extensions: ["G", "Gmaj7", "Gadd9", "Gmaj7+9", "Gsus4", "Gsus2", "G6", "Gmaj9"]
+      },
+      {
+        name: "A",
+        degree: "ii",
+        type: "min",
+        common_extensions: ["Am", "Am7", "Am9", "Am11", "Asus4", "Amin6"]
+      },
+      {
+        name: "B",
+        degree: "iii",
+        type: "min",
+        common_extensions: ["Bm", "Bm7", "Bm9", "Bm11", "Bsus2"]
+      },
+      {
+        name: "C",
+        degree: "IV",
+        type: "maj",
+        common_extensions: ["C", "Cmaj7", "Cadd9", "Csus4", "Cmaj9"]
+      },
+      {
+        name: "D",
+        degree: "V",
+        type: "maj",
+        common_extensions: ["D", "D7", "Dsus4", "D9", "D13"]
+      },
+      {
+        name: "E",
+        degree: "vi",
+        type: "min",
+        common_extensions: ["Em", "Em7", "Em9", "Em11", "Esus4"]
+      },
+      {
+        name: "F#",
+        degree: "vii°",
+        type: "dim",
+        common_extensions: ["F#dim", "F#ø7", "F#dim7"]
+      }
+    ]
+  },
+  "A♭": {
+    scale: ["A♭", "B♭", "C", "D♭", "E♭", "F", "G"],
+    degrees: [
+      {
+        name: "A♭",
+        degree: "I",
+        type: "maj",
+        common_extensions: ["A♭", "A♭maj7", "A♭add9", "A♭maj7+9", "A♭sus4", "A♭sus2", "A♭6", "A♭maj9"]
+      },
+      {
+        name: "B♭",
+        degree: "ii",
+        type: "min",
+        common_extensions: ["B♭m", "B♭m7", "B♭m9", "B♭m11", "B♭sus4", "B♭min6"]
+      },
+      {
+        name: "C",
+        degree: "iii",
+        type: "min",
+        common_extensions: ["Cm", "Cm7", "Cm9", "Cm11", "Csus2"]
+      },
+      {
+        name: "D♭",
+        degree: "IV",
+        type: "maj",
+        common_extensions: ["D♭", "D♭maj7", "D♭add9", "D♭sus4", "D♭maj9"]
+      },
+      {
+        name: "E♭",
+        degree: "V",
+        type: "maj",
+        common_extensions: ["E♭", "E♭7", "E♭sus4", "E♭9", "E♭13"]
+      },
+      {
+        name: "F",
+        degree: "vi",
+        type: "min",
+        common_extensions: ["Fm", "Fm7", "Fm9", "Fm11", "Fsus4"]
+      },
+      {
+        name: "G",
+        degree: "vii°",
+        type: "dim",
+        common_extensions: ["Gdim", "Gø7", "Gdim7"]
+      }
+    ]
+  },
+  A: {
+    scale: ["A", "B", "C#", "D", "E", "F#", "G#"],
+    degrees: [
+      {
+        name: "A",
+        degree: "I",
+        type: "maj",
+        common_extensions: ["A", "Amaj7", "Aadd9", "Amaj7+9", "Asus4", "Asus2", "A6", "Amaj9"]
+      },
+      {
+        name: "B",
+        degree: "ii",
+        type: "min",
+        common_extensions: ["Bm", "Bm7", "Bm9", "Bm11", "Bsus4", "Bmin6"]
+      },
+      {
+        name: "C#",
+        degree: "iii",
+        type: "min",
+        common_extensions: ["C#m", "C#m7", "C#m9", "C#m11", "C#sus2"]
+      },
+      {
+        name: "D",
+        degree: "IV",
+        type: "maj",
+        common_extensions: ["D", "Dmaj7", "Dadd9", "Dsus4", "Dmaj9"]
+      },
+      {
+        name: "E",
+        degree: "V",
+        type: "maj",
+        common_extensions: ["E", "E7", "Esus4", "E9", "E13"]
+      },
+      {
+        name: "F#",
+        degree: "vi",
+        type: "min",
+        common_extensions: ["F#m", "F#m7", "F#m9", "F#m11", "F#sus4"]
+      },
+      {
+        name: "G#",
+        degree: "vii°",
+        type: "dim",
+        common_extensions: ["G#dim", "G#ø7", "G#dim7"]
+      }
+    ]
+  },
+  "A#": {
+    scale: ["A#", "C", "D", "D#", "F", "G", "A"],
+    degrees: [
+      {
+        name: "A#",
+        degree: "I",
+        type: "maj",
+        common_extensions: ["A#", "A#maj7", "A#add9", "A#maj7+9", "A#sus4", "A#sus2", "A#6", "A#maj9"]
+      },
+      {
+        name: "C",
+        degree: "ii",
+        type: "min",
+        common_extensions: ["Cm", "Cm7", "Cm9", "Cm11", "Csus4", "Cmin6"]
+      },
+      {
+        name: "D",
+        degree: "iii",
+        type: "min",
+        common_extensions: ["Dm", "Dm7", "Dm9", "Dm11", "Dsus2"]
+      },
+      {
+        name: "D#",
+        degree: "IV",
+        type: "maj",
+        common_extensions: ["D#", "D#maj7", "D#add9", "D#sus4", "D#maj9"]
+      },
+      {
+        name: "F",
+        degree: "V",
+        type: "maj",
+        common_extensions: ["F", "F7", "Fsus4", "F9", "F13"]
+      },
+      {
+        name: "G",
+        degree: "vi",
+        type: "min",
+        common_extensions: ["Gm", "Gm7", "Gm9", "Gm11", "Gsus4"]
+      },
+      {
+        name: "A",
+        degree: "vii°",
+        type: "dim",
+        common_extensions: ["Adim", "Aø7", "Adim7"]
+      }
+    ]
+  },
+  B: {
+    scale: ["B", "C#", "D#", "E", "F#", "G#", "A#"],
+    degrees: [
+      {
+        name: "B",
+        degree: "I",
+        type: "maj",
+        common_extensions: ["B", "Bmaj7", "Badd9", "Bmaj7+9", "Bsus4", "Bsus2", "B6", "Bmaj9"]
+      },
+      {
+        name: "C#",
+        degree: "ii",
+        type: "min",
+        common_extensions: ["C#m", "C#m7", "C#m9", "C#m11", "C#sus4", "C#min6"]
+      },
+      {
+        name: "D#",
+        degree: "iii",
+        type: "min",
+        common_extensions: ["D#m", "D#m7", "D#m9", "D#m11", "D#sus2"]
+      },
+      {
+        name: "E",
+        degree: "IV",
+        type: "maj",
+        common_extensions: ["E", "Emaj7", "Eadd9", "Esus4", "Emaj9"]
+      },
+      {
+        name: "F#",
+        degree: "V",
+        type: "maj",
+        common_extensions: ["F#", "F#7", "F#sus4", "F#9", "F#13"]
+      },
+      {
+        name: "G#",
+        degree: "vi",
+        type: "min",
+        common_extensions: ["G#m", "G#m7", "G#m9", "G#m11", "G#sus4"]
+      },
+      {
+        name: "A#",
+        degree: "vii°",
+        type: "dim",
+        common_extensions: ["A#dim", "A#ø7", "A#dim7"]
+      }
+    ]
+  }
+};
+
+export default circulos;
+</file>
+
+<file path="src/components/SongCreator.js">
+import React, { useState, useEffect } from "react";
+import circulos from "./circulos";
+import { API_URL } from './config';
+import { API_CONFIG } from './config';
+import { Link } from "react-router-dom";
+import { PDFDownloadLink, Document, Page, Text, View, StyleSheet, Font } from "@react-pdf/renderer";
+import SongPDF from "./SongPDF";
+import MusicKeyboard from "./MusicKeyboard";
+import toRoman from "./toRoman";
+
+
+
+// Registrar la fuente
+Font.register({
+  family: 'Protest Revolution',
+  src: '/fonts/ProtestRevolution-Regular.ttf',
+  fontWeight: 'normal',
+  fontStyle: 'normal'
+});
+
+
+export default function SongCreator() {
+  const [tono, setTono] = useState("C");
+  const [tempo, setTempo] = useState("120");
+  const [semitono, setSemitono] = useState(0);
+  const [modalData, setModalData] = useState(null);
+  const [savedSongs, setSavedSongs] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredSongs, setFilteredSongs] = useState([]);
+  const [showSongDropdown, setShowSongDropdown] = useState(false);
+  const [selectedSongId, setSelectedSongId] = useState(null);
+  
+  const [secciones, setSecciones] = useState([
+    {
+      id: Date.now(),
+      nombre: "Sección A",
+      compas: "4/4",
+      lineas: [
+        {
+          id: `${Date.now()}-linea-0`,
+          repetir: false,
+          compasses: Array.from({ length: 4 }, (_, cIdx) => ({
+            id: `${Date.now()}-compass-${cIdx}`,
+            divisiones: 1,
+            acordes: Array(1).fill("").map((_, i) => ({ 
+              id: `${Date.now()}-div-${cIdx}-${i}`, 
+              valor: "" 
+            }))
+          }))
+        }
+      ]
+    }
+  ]);
+
+  const [nuevaSeccionNombre, setNuevaSeccionNombre] = useState("");
+  const [editingSeccionId, setEditingSeccionId] = useState(null);
+  const [tituloCancion, setTituloCancion] = useState("");
+  const [artista, setArtista] = useState("");
+  const [showPDFOptions, setShowPDFOptions] = useState(false);
+
+  const generarId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+  const transposeChord = (chord, semitones, currentKey) => {
+  if (!chord || chord === "-" || chord.trim() === "") return "-";
+
+  const noteOrderSharps = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+  const noteOrderFlats = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"];
+  
+  // Definir qué tonalidades deben usar bemoles (♭)
+  const flatKeys = ["D♭", "E♭", "G♭", "A♭", "B♭"];
+  
+  // Determinar si debemos usar bemoles para la tonalidad actual
+  const useFlats = flatKeys.includes(currentKey);
+
+  const baseNoteMatch = chord.match(/^[A-Ga-g](#|♭)?/);
+  if (!baseNoteMatch) return chord;
+
+  const baseNote = baseNoteMatch[0];
+  const suffix = chord.slice(baseNote.length);
+
+  const noteOrder = useFlats ? noteOrderFlats : noteOrderSharps;
+  const originalIndex = noteOrderSharps.includes(baseNote) 
+    ? noteOrderSharps.indexOf(baseNote) 
+    : noteOrderFlats.indexOf(baseNote);
+
+  if (originalIndex === -1) return chord;
+
+  let newIndex = (originalIndex + semitones) % 12;
+  if (newIndex < 0) newIndex += 12;
+
+  // Siempre usar la notación correcta (bemoles para flatKeys)
+  let newBaseNote = useFlats ? noteOrderFlats[newIndex] : noteOrderSharps[newIndex];
+
+  if (chord.includes('/')) {
+    const [mainChord, bassNote] = chord.split('/');
+    const transposedMain = transposeChord(mainChord, semitones, currentKey);
+    const transposedBass = transposeChord(bassNote, semitones, currentKey);
+    return `${transposedMain}/${transposedBass}`;
+  }
+
+  return newBaseNote + suffix;
+};
+
+const cambiarTonalidad = (nuevoTono, semitonos = 0) => {
+  const notas = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"];
+  const indexActual = notas.indexOf(tono);
+  const indexNuevo = notas.indexOf(nuevoTono);
+  const diferenciaTotal = (indexNuevo - indexActual) + semitonos;
+  
+  setTono(nuevoTono);
+  setSemitono(semitonos);
+  
+  setSecciones(prev =>
+    prev.map(sec => ({
+      ...sec,
+      lineas: sec.lineas.map(linea => ({
+        ...linea,
+        compasses: linea.compasses.map(compass => ({
+          ...compass,
+          acordes: compass.acordes.map(acorde => ({
+            ...acorde,
+            valor: acorde.valor ? transposeChord(acorde.valor, diferenciaTotal, nuevoTono) : ""
+          }))
+        }))
+      }))
+    }))
+  );
+};
+  // Función para ajustar semitonos
+const ajustarSemitono = (delta) => {
+  const nuevoSemitono = semitono + delta;
+  setSemitono(nuevoSemitono);
+  
+  const notas = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+  const indexActual = notas.indexOf(tono);
+  const diferencialTotal = nuevoSemitono;
+  
+  setSecciones(prev =>
+    prev.map(sec => ({
+      ...sec,
+      lineas: sec.lineas.map(linea => ({
+        ...linea,
+        compasses: linea.compasses.map(compass => ({
+          ...compass,
+          acordes: compass.acordes.map(acorde => ({
+            ...acorde,
+            valor: transposeChord(acorde.valor, diferencialTotal, tono)
+          }))
+        }))
+      }))
+    }))
+  );
+};
+
+  const getAcordesDisponibles = () => {
+    const tonoActual = circulos[tono];
+    if (!tonoActual) return [];
+    return tonoActual.degrees.flatMap(degree => degree.common_extensions);
+  };
+
+  // Cargar canciones al montar el componente
+  useEffect(() => {
+    const fetchSongs = async () => {
+      try {
+        const response = await fetch(`${API_URL}/songs`);
+        const data = await response.json();
+        if (response.ok) {
+          setSavedSongs(data);
+          if (searchTerm) {
+            const filtered = data.filter(song =>
+              song.title.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            setFilteredSongs(filtered);
+            setShowSongDropdown(filtered.length > 0);
+          }
+        } else {
+          console.error('Error al cargar canciones:', data.error);
+        }
+      } catch (error) {
+        console.error('Error de conexión:', error);
+      }
+    };
+    fetchSongs();
+  }, []);
+
+
+
+
+  const handleSearch = async (term) => {
+    setSearchTerm(term);
+    
+    if (!term.trim()) {
+      setFilteredSongs([]);
+      setShowSongDropdown(false);
+      return;
+    }
+    
+    if (term.length < 5) {
+      const normalize = str =>
+        str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+      const words = normalize(term).split(/\s+/).filter(Boolean);
+      
+      const localResults = savedSongs.filter(song => {
+        const title = normalize(song.title);
+        return words.every(word => title.includes(word));
+      });
+      
+      setFilteredSongs(localResults);
+      setShowSongDropdown(localResults.length > 0);
+      return;
+    }
+    
+    try {
+      const response = await searchSongs(term);
+      setFilteredSongs(response);
+      setShowSongDropdown(response.length > 0);
+    } catch (error) {
+      console.error("Error en la búsqueda:", error);
+      setFilteredSongs([]);
+      setShowSongDropdown(false);
+    }
+  };
+
+  const handleAcordeChange = (seccionId, lineaIndex, compasIndex, divisionIndex, acorde) => {
+    setSecciones(prev =>
+      prev.map(sec => {
+        if (sec.id !== seccionId) return sec;
+        
+        const nuevaLinea = sec.lineas.map((linea, lIdx) => {
+          if (lIdx !== lineaIndex) return linea;
+          
+          const nuevosCompasses = linea.compasses.map((compas, cIdx) => {
+            if (cIdx !== compasIndex) return compas;
+            
+            const nuevosAcordes = compas.acordes.map((a, dIdx) =>
+              dIdx === divisionIndex ? { ...a, valor: acorde } : a
+            );
+            
+            return { ...compas, acordes: nuevosAcordes };
+          });
+          
+          return { ...linea, compasses: nuevosCompasses };
+        });
+        
+        return { ...sec, lineas: nuevaLinea };
+      })
+    );
+    setModalData(null);
+  };
+
+  const agregarSeccion = () => {
+    if (!nuevaSeccionNombre.trim()) return;
+    
+    const nuevaSeccion = {
+      id: generarId("seccion"),
+      nombre: nuevaSeccionNombre.trim(),
+      compas: "4/4",
+      lineas: [
+        {
+          id: generarId("linea"),
+          repetir: false,
+          compasses: Array.from({ length: 4 }, (_, cIdx) => ({
+            id: generarId("compass"),
+            divisiones: 1,
+            acordes: Array(1).fill("").map((_, i) => ({ 
+              id: generarId("division"), 
+              valor: "" 
+            }))
+          }))
+        }
+      ]
+    };
+    
+    setSecciones([...secciones, nuevaSeccion]);
+    setNuevaSeccionNombre("");
+  };
+
+  const agregarLinea = (seccionId) => {
+    setSecciones(prev =>
+      prev.map(sec => {
+        if (sec.id !== seccionId) return sec;
+        return {
+          ...sec,
+          lineas: [
+            ...sec.lineas,
+            {
+              id: generarId("linea"),
+              repetir: false,
+              compasses: Array.from({ length: 4 }, (_, cIdx) => ({
+                id: generarId("compass"),
+                divisiones: 1,
+                acordes: Array(1).fill("").map((_, i) => ({ 
+                  id: generarId("division"), 
+                  valor: "" 
+                }))
+              }))
+            }
+          ]
+        };
+      })
+    );
+  };
+
+  const cambiarDivisiones = (seccionId, lineaIndex, compasIndex, nuevasDivisiones) => {
+    setSecciones(prev =>
+      prev.map(sec => {
+        if (sec.id !== seccionId) return sec;
+        
+        const nuevaLinea = sec.lineas.map((linea, lIdx) => {
+          if (lIdx !== lineaIndex) return linea;
+          
+          const nuevosCompasses = linea.compasses.map((compas, cIdx) => {
+            if (cIdx !== compasIndex) return compas;
+            
+            const nuevosAcordes = Array(nuevasDivisiones)
+              .fill("")
+              .map((_, i) =>
+                i < compas.acordes.length
+                  ? compas.acordes[i]
+                  : { id: generarId("division"), valor: "" }
+              );
+            
+            return { ...compas, divisiones: nuevasDivisiones, acordes: nuevosAcordes };
+          });
+          
+          return { ...linea, compasses: nuevosCompasses };
+        });
+        
+        return { ...sec, lineas: nuevaLinea };
+      })
+    );
+  };
+
+  const toggleRepetirLinea = (seccionId, lineaIndex) => {
+    setSecciones(prev =>
+      prev.map(sec => {
+        if (sec.id !== seccionId) return sec;
+        
+        const nuevaLinea = sec.lineas.map((linea, lIdx) => {
+          if (lIdx !== lineaIndex) return linea;
+          return { ...linea, repetir: !linea.repetir };
+        });
+        
+        return { ...sec, lineas: nuevaLinea };
+      })
+    );
+  };
+
+  const saveSong = async () => {
+    if (!tituloCancion.trim()) {
+    alert("El título de la canción es obligatorio.");
+    return;
+  }
+    const songData = {
+      title: tituloCancion,
+      artist: artista,
+      key_signature: tono,
+      tempo: tempo,
+      song_data: {
+        sections: secciones
+      }
+    };
+    
+    try {
+      const response = await fetch(API_CONFIG.FULL_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(songData)
+      });
+      
+      const responseData = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(
+          responseData.message ||
+          `Error ${response.status}: ${response.statusText}`
+        );
+      }
+      
+      console.log('Canción guardada exitosamente:', responseData);
+      alert('Canción guardada exitosamente!');
+      return responseData;
+    } catch (error) {
+      console.error('Error al guardar la canción:', error);
+      throw new Error(
+        error.message ||
+        'Ocurrió un error al comunicarse con el servidor'
+      );
+    }
+  };
+
+  const updateSong = async (songId) => {
+    const songData = {
+      id: songId,
+      title: tituloCancion,
+      artist: artista,
+      key_signature: tono,
+      tempo: tempo,
+      song_data: {
+        sections: secciones
+      }
+    };
+    
+    try {
+      const response = await fetch(API_URL, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(songData)
+      });
+      
+      const result = await response.json();
+      console.log('Song updated:', result);
+      alert('Canción actualizada exitosamente!');
+    } catch (error) {
+      console.error('Error updating song:', error);
+      alert('Error al actualizar la canción');
+    }
+  };
+
+  const loadSong = async (songId) => {
+    try {
+      const response = await fetch(`${API_URL}?id=${songId}&_=${Date.now()}`);
+      const song = await response.json();
+      
+      if (song.error) {
+        alert(song.error);
+        return;
+      }
+      
+      setTituloCancion(song.title);
+      setArtista(song.artist);
+      setTono(song.key_signature);
+      setTempo(song.tempo);
+      setSemitono(0);
+      setSelectedSongId(songId);
+      
+      const loadedSections = song.song_data?.sections?.map(section => ({
+        ...section,
+        lineas: section.lineas?.map(line => ({
+          ...line,
+          repetir: line.repetir || false,
+          compasses: line.compasses?.map(measure => ({
+            ...measure,
+            acordes: measure.acordes?.map(chord => ({
+              ...chord,
+              valor: chord.valor || ""
+            })) || Array(1).fill("").map(() => ({ 
+              id: generarId("division"), 
+              valor: "" 
+            }))
+          })) || Array(4).fill("").map(() => ({
+            id: generarId("compass"),
+            divisiones: 1,
+            acordes: Array(1).fill("").map(() => ({ 
+              id: generarId("division"), 
+              valor: "" 
+            }))
+          }))
+        })) || [
+          {
+            id: generarId("linea"),
+            repetir: false,
+            compasses: Array(4).fill("").map(() => ({
+              id: generarId("compass"),
+              divisiones: 1,
+              acordes: Array(1).fill("").map(() => ({ 
+                id: generarId("division"), 
+                valor: "" 
+              }))
+            }))
+          }
+        ]
+      })) || [
+        {
+          id: generarId("seccion"),
+          nombre: "Sección A",
+          compas: "4/4",
+          lineas: [
+            {
+              id: generarId("linea"),
+              repetir: false,
+              compasses: Array(4).fill("").map(() => ({
+                id: generarId("compass"),
+                divisiones: 1,
+                acordes: Array(1).fill("").map(() => ({ 
+                  id: generarId("division"), 
+                  valor: "" 
+                }))
+              }))
+            }
+          ]
+        }
+      ];
+      
+      setSecciones(loadedSections);
+    } catch (error) {
+      console.error('Error al cargar la canción:', error);
+      alert('Error al cargar la canción');
+    }
+  };
+
+  const searchSongs = async (searchTerm) => {
+    try {
+      const response = await fetch(`${API_URL}/search?q=${encodeURIComponent(searchTerm)}`);
+      if (!response.ok) {
+        throw new Error('Error en la búsqueda');
+      }
+      
+      const data = await response.json();
+      console.log('Resultados de búsqueda:', data);
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error('Error buscando canciones:', error);
+      return [];
+    }
+  };
+
+  const eliminarSeccion = (seccionId) => {
+    setSecciones(prev => prev.filter(sec => sec.id !== seccionId));
+  };
+
+  const editarNombreSeccion = (seccionId, nuevoNombre) => {
+    setSecciones(prev =>
+      prev.map(sec =>
+        sec.id === seccionId ? { ...sec, nombre: nuevoNombre } : sec
+      )
+    );
+    setEditingSeccionId(null);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-4 pb-20">
+      {/* Header con título */}
+      <header className="sticky top-0 z-10 bg-white shadow-sm py-4 px-6 rounded-xl mb-6">
+        <input
+          type="text"
+          value={tituloCancion}
+          onChange={(e) => setTituloCancion(e.target.value)}
+          className="text-2xl font-bold w-full text-center bg-transparent focus:outline-none"
+          placeholder="Título de la canción"
+          style={{ fontFamily: 'Protest Revolution' }}
+        />   <input
+          type="text"
+          value={artista}
+          onChange={(e) => setArtista(e.target.value)}
+          className="text-2xl font-bold w-full text-center bg-transparent focus:outline-none"
+          placeholder="Autor o Artista"
+          style={{ fontFamily: 'Protest Revolution' }}
+        />
+      </header>
+
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* Controles principales */}
+        <div className="bg-white rounded-2xl shadow-sm p-6 space-y-4">
+          <h2 className="text-lg font-semibold text-gray-900">Configuración</h2>
+          
+          {/* Input de búsqueda de canciones */}
+          <div className="relative mt-3">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => handleSearch(e.target.value)}
+              placeholder="Titulo o Autor/Artista..."
+              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+            />
+            
+            {showSongDropdown && filteredSongs.length > 0 && (
+              <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                {filteredSongs.map(song => (
+                  <div
+                    key={song.id}
+                    className={`p-3 hover:bg-gray-100 cursor-pointer ${selectedSongId === song.id ? 'bg-blue-50' : ''}`}
+                    onClick={() => {
+                      loadSong(song.id);
+                      setSearchTerm(song.title);
+                      setSelectedSongId(song.id);
+                      setShowSongDropdown(false);
+                    }}
+                  >
+                    <div className="font-medium">{song.title}</div>
+                    <div className="text-sm text-gray-600">
+                      {song.key_signature} • {song.tempo} BPM
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-end gap-4">
+  {/* Tonalidad */}
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-1">Tonalidad</label>
+    <select
+      value={tono}
+      onChange={e => cambiarTonalidad(e.target.value, semitono)}
+      className="block w-32 rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 py-2 px-3"
+    >
+      {Object.keys(circulos).map(t => (
+        <option key={t} value={t}>{t}</option>
+      ))}
+    </select>
+  </div>
+
+  {/* Tempo */}
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-1">Tempo</label>
+    <input
+      type="number"
+      value={tempo}
+      onChange={(e) => setTempo(e.target.value)}
+      placeholder="Tempo"
+      min="0"
+      max="360"
+      step="1"
+      className="w-24 rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 py-2 px-3"
+    />
+  </div>
+
+  {/* Ajuste fino */}
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-1">Ajuste fino</label>
+    <div className="flex items-center space-x-2">
+      <button
+        onClick={() => ajustarSemitono(-1)}
+        className="p-2 rounded-lg border border-gray-300 bg-white shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        aria-label="Bajar medio tono"
+      >
+        ↓
+      </button>
+      <div className="text-center px-3 py-2 bg-gray-100 rounded-lg text-sm font-medium min-w-[80px]">
+        {semitono === 0 ? "Tono completo" : `${semitono > 0 ? '+' : ''}${semitono/2} tono${Math.abs(semitono) > 1 ? 's' : ''}`}
+      </div>
+      <button
+        onClick={() => ajustarSemitono(1)}
+        className="p-2 rounded-lg border border-gray-300 bg-white shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        aria-label="Subir medio tono"
+      >
+        ↑
+      </button>
+    </div>
+  </div>
+
+  {/* Botón Guardar / Actualizar */}
+  <div>
+    <button
+      onClick={() => selectedSongId ? updateSong(selectedSongId) : saveSong()}  disabled={!tituloCancion.trim()}
+      className="flex items-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z" />
+      </svg>
+      {selectedSongId ? 'Actualizar Canción' : 'Guardar Canción'}
+    </button>
+  </div>
+
+  {/* Botón Exportar PDF */}
+  <div>
+    <button
+      onClick={() => setShowPDFOptions(!showPDFOptions)} disabled={!tituloCancion.trim()}
+      className="flex items-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L10 11.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+      </svg>
+      Exportar a PDF
+    </button>
+  </div>
+</div>
+
+{/* Panel de opciones PDF */}
+{showPDFOptions && (
+  <div className="mt-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
+    <PDFDownloadLink
+      document={<SongPDF title={tituloCancion} artist={artista} sections={secciones} keySignature={tono} tempo={tempo} />}
+      fileName={`${tituloCancion.replace(/\s+/g, '_')}.pdf`}
+      className="block w-full text-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+    >
+      {({ loading }) => (loading ? 'Preparando PDF...' : 'Descargar PDF ahora')}
+    </PDFDownloadLink>
+  </div>
+)}
+
+          </div>
+        </div>
+        
+        
+        
+        {/* Secciones de la canción */}
+        {secciones.map((sec, secIdx) => (
+          <div key={sec.id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
+            {/* Header de sección */}
+            <div className="flex justify-between items-center p-4 border-b border-gray-100 bg-gray-50">
+              {editingSeccionId === sec.id ? (
+                <input
+                  type="text"
+                  defaultValue={sec.nombre}
+                  onBlur={(e) => editarNombreSeccion(sec.id, e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && editarNombreSeccion(sec.id, e.target.value)}
+                  className="text-lg font-semibold flex-1 bg-transparent focus:outline-none"
+                  autoFocus
+                />
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <h3 
+                    className="text-lg font-semibold"
+                    onClick={() => setEditingSeccionId(sec.id)}
+                  >
+                    {sec.nombre}
+                  </h3>
+                  <select
+                    value={sec.compas}
+                    onChange={(e) => setSecciones(prev => prev.map(s =>
+                      s.id === sec.id ? { ...s, compas: e.target.value } : s
+                    ))}
+                    className="text-sm border border-gray-300 rounded"
+                  >
+                    <option value="3/4">3/4</option>
+                    <option value="4/4">4/4</option>
+                    <option value="6/8">6/8</option>
+                  </select>
+                </div>
+              )}
+              
+              <button
+                onClick={() => eliminarSeccion(sec.id)}
+                className="text-red-500 p-1 rounded-full hover:bg-red-50"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd"/>
+                </svg>
+              </button>
+            </div>
+            
+            {/* Contenido de la sección */}
+            <div className="p-4 space-y-4">
+              {sec.lineas.map((linea, lIdx) => {
+                let measureCount = 0;
+                for (let i = 0; i < lIdx; i++) {
+                  measureCount += sec.lineas[i].compasses.length;
+                }
+                
+                return (
+  <div key={linea.id} className="space-y-3">
+    <div className="flex items-center">
+      <button
+        onClick={() => toggleRepetirLinea(sec.id, lIdx)}
+        className={`p-1 rounded mr-2 ${linea.repetir ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'}`}
+        title="Marcar para repetición"
+      >
+        {linea.repetir ? '||:' : '||'}
+      </button>
+
+      <div className="flex-1 flex flex-nowrap space-x-0 overflow-x-auto pb-2 -mx-2 px-2">
+        {linea.compasses.map((compas, cIdx) => {
+          measureCount++;
+          return (
+            <div
+              key={compas.id}
+              className="flex-shrink-0 flex-[0_0_25%] border border-gray-200 rounded-xl p-3 bg-gray-50"
+            >
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs font-medium text-gray-500">{toRoman(measureCount)}</span>
+                <select
+                  value={compas.divisiones}
+                  onChange={(e) =>
+                    cambiarDivisiones(sec.id, lIdx, cIdx, parseInt(e.target.value))
+                  }
+                  className="text-xs rounded border-gray-300 bg-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                >
+                  {[1, 2, 3, 4, 6, 8].map(num => (
+                    <option key={num} value={num}>{num}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-1.5">
+                {compas.acordes.map((acorde, dIdx) => (
+                  <button
+                    key={acorde.id}
+                    style={{ fontFamily: 'Protest Revolution' }}
+                    className={`transition-all duration-150 ease-in-out min-h-[40px] px-2 py-1 text-sm rounded-lg shadow-sm flex items-center justify-center ${
+                      acorde.valor
+                        ? "bg-gray-900 text-white hover:bg-gray-800"
+                        : "bg-blue-50 text-blue-800 hover:bg-blue-100 border border-blue-100"
+                    }`}
+                    onClick={() => {
+                      setModalData({
+                        seccionId: sec.id,
+                        lineaIndex: lIdx,
+                        compasIndex: cIdx,
+                        divisionIndex: dIdx
+                      });
+                    }}
+                  >
+                    {acorde.valor || ''}
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      
+    </div>
+    
+  </div>
+);
+
+              })}
+              
+              <button
+                onClick={() => agregarLinea(sec.id)}
+                className="w-full flex items-center justify-center px-4 py-2 border border-dashed border-gray-300 rounded-lg text-gray-500 hover:text-gray-700 hover:border-gray-400 hover:bg-gray-50"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
+                </svg>
+                Añadir línea (4 compases)
+              </button>
+            </div>
+          </div>
+        ))}
+        
+        {/* Añadir nueva sección */}
+        <div className="bg-white rounded-2xl shadow-sm p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-3">Añadir nueva sección</h2>
+          <div className="flex space-x-3">
+            <input
+              type="text"
+              value={nuevaSeccionNombre}
+              onChange={(e) => setNuevaSeccionNombre(e.target.value)}
+              placeholder="Nombre de la sección"
+              className="flex-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3"
+              onKeyPress={(e) => e.key === 'Enter' && agregarSeccion()}
+            />
+            <button
+              onClick={agregarSeccion}
+              disabled={!nuevaSeccionNombre.trim()}
+              className="px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Añadir
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      {/* Modal para seleccionar acorde */}
+      {modalData && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">Seleccionar acorde en {tono}</h3>
+            </div>
+            
+            <div className="overflow-y-auto p-6">
+              {/* Acordes predefinidos */}
+              <div className="mb-6">
+                <h4 className="text-sm font-medium text-gray-700 mb-3">Acordes comunes</h4>
+                <div className="grid grid-cols-3 gap-2">
+                  {getAcordesDisponibles().map((ac, idx) => (
+                    <button
+                      key={idx}
+                      className="px-3 py-2.5 rounded-lg bg-gray-100 hover:bg-gray-200 active:bg-gray-300 transition-colors duration-100 text-sm font-medium"
+                      style={{ fontFamily: 'Protest Revolution' }}
+                      onClick={() =>
+                        handleAcordeChange(
+                          modalData.seccionId,
+                          modalData.lineaIndex,
+                          modalData.compasIndex,
+                          modalData.divisionIndex,
+                          ac
+                        )
+                      }
+                    >
+                      {ac}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Entrada manual */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Acorde personalizado</label>
+                <div className="flex rounded-lg shadow-sm">
+                  <input
+                    type="text"
+                    id="customChordInput"
+                    className="flex-1 min-w-0 block w-full rounded-l-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 py-2 px-3"
+                    placeholder="Ej: C#m7, G7sus4, etc."
+                    style={{ fontFamily: 'Protest Revolution' }}
+                    onClick={(e) => {
+                      const keyboard = document.getElementById('musicKeyboard');
+                      if (keyboard) keyboard.classList.remove('hidden');
+                      e.stopPropagation();
+                    }}
+                  />
+                  <button
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-r-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onClick={() => {
+                      const input = document.getElementById('customChordInput');
+                      if (input.value.trim()) {
+                        handleAcordeChange(
+                          modalData.seccionId,
+                          modalData.lineaIndex,
+                          modalData.compasIndex,
+                          modalData.divisionIndex,
+                          input.value.trim()
+                        );
+                      }
+                    }}
+                  >
+                    Usar
+                  </button>
+                </div>
+              </div>
+              
+              {/* Teclado virtual */}
+              <div id="musicKeyboard" className="hidden">
+                <MusicKeyboard
+                  onKeyPress={(char) => {
+                    const input = document.getElementById('customChordInput');
+                    input.value = (input.value || '') + char;
+                    input.focus();
+                  }}
+                />
+              </div>
+            </div>
+            
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
+              <button
+                onClick={() => setModalData(null)}
+                className="px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+</file>
+
+<file path="src/components/SongReader.js">
+import React, { useState, useEffect } from "react";
+import { useLocation } from 'react-router-dom'; 
+import { Link } from "react-router-dom";
+import circulos from "./circulos";
+import { API_URL } from './config';
+import { PDFDownloadLink, Document, Page, Text, View, StyleSheet, Font } from "@react-pdf/renderer";
+import SongPDF from "./SongPDF";
+import toRoman from "./toRoman";
+
+
+
+const SongReader = () => {
+  const location = useLocation();
+  const [tono, setTono] = useState("C");
+  const [tempo, setTempo] = useState("120");
+  const [compass, setCompass] = useState("4/4");
+  const [compas, setCompas] = useState("4/4");
+  const [semitono, setSemitono] = useState(0);
+  const [savedSongs, setSavedSongs] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredSongs, setFilteredSongs] = useState([]);
+  const [showSongDropdown, setShowSongDropdown] = useState(false);
+  const [selectedSongId, setSelectedSongId] = useState(null);
+  const [secciones, setSecciones] = useState([]);
+  const [tituloCancion, setTituloCancion] = useState("");
+  const [artista, setArtista] = useState("");
+
+  // Registrar la fuente
+  Font.register({
+    family: 'Protest Revolution',
+    src: '/fonts/ProtestRevolution-Regular.ttf',
+    fontWeight: 'normal',
+    fontStyle: 'normal'
+  });
+
+
+  const transposeChord = (chord, semitones, currentKey) => {
+  if (!chord || chord === "-" || chord.trim() === "") return "-";
+
+  const noteOrderSharps = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+  const noteOrderFlats = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"];
+  
+  // Definir qué tonalidades deben usar bemoles (♭)
+  const flatKeys = ["D♭", "E♭", "G♭", "A♭", "B♭"];
+  
+  // Determinar si debemos usar bemoles para la tonalidad actual
+  const useFlats = flatKeys.includes(currentKey);
+
+  const baseNoteMatch = chord.match(/^[A-Ga-g](#|♭)?/);
+  if (!baseNoteMatch) return chord;
+
+  const baseNote = baseNoteMatch[0];
+  const suffix = chord.slice(baseNote.length);
+
+  const noteOrder = useFlats ? noteOrderFlats : noteOrderSharps;
+  const originalIndex = noteOrderSharps.includes(baseNote) 
+    ? noteOrderSharps.indexOf(baseNote) 
+    : noteOrderFlats.indexOf(baseNote);
+
+  if (originalIndex === -1) return chord;
+
+  let newIndex = (originalIndex + semitones) % 12;
+  if (newIndex < 0) newIndex += 12;
+
+  // Siempre usar la notación correcta (bemoles para flatKeys)
+  let newBaseNote = useFlats ? noteOrderFlats[newIndex] : noteOrderSharps[newIndex];
+
+  if (chord.includes('/')) {
+    const [mainChord, bassNote] = chord.split('/');
+    const transposedMain = transposeChord(mainChord, semitones, currentKey);
+    const transposedBass = transposeChord(bassNote, semitones, currentKey);
+    return `${transposedMain}/${transposedBass}`;
+  }
+
+  return newBaseNote + suffix;
+};
+
+const cambiarTonalidad = (nuevoTono, semitonos = 0) => {
+  const notas = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"];
+  const indexActual = notas.indexOf(tono);
+  const indexNuevo = notas.indexOf(nuevoTono);
+  const diferenciaTotal = (indexNuevo - indexActual) + semitonos;
+  
+  setTono(nuevoTono);
+  setSemitono(semitonos);
+  
+  setSecciones(prev =>
+    prev.map(sec => ({
+      ...sec,
+      lineas: sec.lineas.map(linea => ({
+        ...linea,
+        compasses: linea.compasses.map(compass => ({
+          ...compass,
+          acordes: compass.acordes.map(acorde => ({
+            ...acorde,
+            valor: acorde.valor ? transposeChord(acorde.valor, diferenciaTotal, nuevoTono) : ""
+          }))
+        }))
+      }))
+    }))
+  );
+};
+  // Función para ajustar semitonos
+const ajustarSemitono = (delta) => {
+  const nuevoSemitono = semitono + delta;
+  setSemitono(nuevoSemitono);
+  
+  const notas = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+  const indexActual = notas.indexOf(tono);
+  const diferencialTotal = nuevoSemitono;
+  
+  setSecciones(prev =>
+    prev.map(sec => ({
+      ...sec,
+      lineas: sec.lineas.map(linea => ({
+        ...linea,
+        compasses: linea.compasses.map(compass => ({
+          ...compass,
+          acordes: compass.acordes.map(acorde => ({
+            ...acorde,
+            valor: transposeChord(acorde.valor, diferencialTotal, tono)
+          }))
+        }))
+      }))
+    }))
+  );
+};
+
+
+  useEffect(() => {
+    const fetchSongs = async () => {
+      try {
+        const response = await fetch(`${API_URL}/songs`);
+        const data = await response.json();
+        if (response.ok) {
+          setSavedSongs(data);
+          if (searchTerm) {
+            const filtered = data.filter(song =>
+              song.title.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            setFilteredSongs(filtered);
+            setShowSongDropdown(filtered.length > 0);
+          }
+        }
+      } catch (error) {
+        console.error('Error al cargar canciones:', error);
+      }
+    };
+
+    fetchSongs();
+  }, []);
+
+  
+const generarId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+  const loadSong = async (songId) => {
+    try {
+      const response = await fetch(`${API_URL}?id=${songId}&_=${Date.now()}`);
+      const song = await response.json();
+      
+      if (song.error) {
+        alert(song.error);
+        return;
+      }
+      
+      // Resetear el estado con los datos exactos de la canción
+      setTituloCancion(song.title);
+      setArtista(song.artist);
+      setTono(song.key_signature);
+      setTempo(song.tempo);
+      //setCompas(song.time_signature);
+      setSemitono(0); // Resetear semitono a 0 al cargar
+      setSelectedSongId(songId);
+      
+  
+      // Cargar las secciones exactamente como están en la base de datos
+      const loadedSections = song.song_data?.sections?.map(section => ({
+        ...section,
+        lineas: section.lineas?.map(line => ({
+          ...line,
+          repetir: line.repetir || false,
+          compasses: line.compasses?.map(measure => ({
+            ...measure,
+            acordes: measure.acordes?.map(chord => ({
+              ...chord,
+              valor: chord.valor || "" // Cargar el valor exacto sin transponer
+            })) || Array(1).fill("").map(() => ({ id: generarId("division"), valor: "" }))
+          })) || Array(4).fill("").map(() => ({
+            id: generarId("compas"),
+            divisiones: 1,
+            acordes: Array(1).fill("").map(() => ({ id: generarId("division"), valor: "" }))
+          }))
+        })) || [
+          {
+            id: generarId("seccion"),
+            nombre: "Sección A",
+            lineas: [
+              {
+                id: generarId("linea"),
+                repetir: false,
+                compasses: Array(4).fill("").map(() => ({
+                  id: generarId("compas"),
+                  divisiones: 1,
+                  acordes: Array(1).fill("").map(() => ({ id: generarId("division"), valor: "" }))
+                }))
+              }
+            ]
+          }
+        ]
+      }));
+      
+      setSecciones(loadedSections || [
+        {
+          id: generarId("seccion"),
+          nombre: "Sección A",
+          lineas: [
+            {
+              id: generarId("linea"),
+              repetir: false,
+              compasses: Array(4).fill("").map(() => ({
+                id: generarId("compas"),
+                divisiones: 1,
+                acordes: Array(1).fill("").map(() => ({ id: generarId("division"), valor: "" }))
+              }))
+            }
+          ]
+        }
+      ]);
+      
+    } catch (error) {
+      console.error('Error al cargar la canción:', error);
+      alert('Error al cargar la canción');
+    }
+  };
+  const searchSongs = async (searchTerm) => {
+    try {
+      const response = await fetch(`${API_URL}/search?q=${encodeURIComponent(searchTerm)}`);
+      if (!response.ok) {
+        throw new Error('Error en la búsqueda');
+      }
+      const data = await response.json();
+      console.log('Resultados de búsqueda:', data); // Agrega este log
+      return Array.isArray(data) ? data : []; // Asegurar que siempre devuelva un array
+    } catch (error) {
+      console.error('Error buscando canciones:', error);
+      return [];
+    }
+  };
+  const handleSearch = async (term) => {
+    setSearchTerm(term);
+    
+    if (!term.trim()) {
+      setFilteredSongs([]);
+      setShowSongDropdown(false);
+      return;
+    }
+
+    if (term.length < 5) {
+      const normalize = str =>
+        str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+      const words = normalize(term).split(/\s+/).filter(Boolean);
+
+      const localResults = savedSongs.filter(song => {
+        const title = normalize(song.title);
+        return words.every(word => title.includes(word));
+      });
+      setFilteredSongs(localResults);
+      setShowSongDropdown(localResults.length > 0);
+      return;
+    }
+
+    try {
+      const response = await searchSongs(term);
+      setFilteredSongs(response);
+      setShowSongDropdown(response.length > 0);
+    } catch (error) {
+      console.error("Error en la búsqueda:", error);
+      setFilteredSongs([]);
+      setShowSongDropdown(false);
+    }
+  };
+
+useEffect(() => {
+  const fetchSongs = async () => {
+    try {
+      const response = await fetch(`${API_URL}/songs?_=${Date.now()}`);
+      const data = await response.json();
+      if (response.ok) {
+        setSavedSongs(data);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+    fetchSongs();
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-gray-100 p-4 pb-20">
+      {/* Header simplificado */}
+      <header className="sticky top-0 z-10 bg-white shadow-sm py-4 px-6 rounded-xl mb-6">
+        <div className="max-w-4xl mx-auto flex justify-between items-center">
+          <h1 className="text-2xl font-bold" style={{ fontFamily: 'Protest Revolution' }}>
+            {tituloCancion || "Lector de Charts"} - {artista || "Autor / Artista"}
+          </h1>
+          <Link 
+            to="/crear"
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Crear o Editar Canción
+          </Link>
+        </div>
+      </header>
+
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* Panel de controles */}
+        <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">
+          {/* Buscador */}
+          <div className="relative">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => handleSearch(e.target.value)}
+              placeholder="Buscar canción..."
+              className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {showSongDropdown && filteredSongs.length > 0 && (
+              <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                {filteredSongs.map(song => (
+                  <div 
+                    key={song.id}
+                    className={`p-3 hover:bg-gray-100 cursor-pointer ${selectedSongId === song.id ? 'bg-blue-50' : ''}`}
+                    onClick={() => {
+                      loadSong(song.id);
+                      setSearchTerm(song.title);
+                      setSelectedSongId(song.id);
+                      setShowSongDropdown(false);
+                    }}
+                  >
+                    <div className="font-medium">{song.title}</div>
+                    <div className="text-sm text-gray-600">
+                      {song.key_signature} • {song.tempo} BPM
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Controles de tonalidad */}
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Tonalidad</label>
+              <select
+                value={tono}
+                onChange={e => cambiarTonalidad(e.target.value, semitono)}
+                className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {Object.keys(circulos).map(t => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Compás</label>
+              <select
+                value={compas}
+                onChange={(e) => setCompas(e.target.value)}
+                className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="4/4">4/4</option>
+                <option value="3/4">3/4</option>
+                <option value="6/8">6/8</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Ajuste fino</label>
+              <div className="flex items-center space-x-2">
+                <button 
+                  onClick={() => ajustarSemitono(-1)} 
+                  className="p-2 border rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  -
+                </button>
+                <div className="flex-1 text-center">
+                  {semitono === 0 ? "Original" : `${semitono > 0 ? '+' : ''}${semitono/2}`}
+                </div>
+                <button 
+                  onClick={() => ajustarSemitono(1)} 
+                  className="p-2 border rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Botón Exportar */}
+          <PDFDownloadLink 
+            document={<SongPDF title={tituloCancion} artist={artista} sections={secciones} keySignature={tono} tempo={tempo} />}
+            fileName={`${tituloCancion  || 'chart'}${artista  || 'autor'}.pdf`}
+            className="block w-full text-center p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          >
+            Exportar a PDF
+          </PDFDownloadLink>
+        </div>
+
+        {/* Visualización estilo PDF */}
+<div className="bg-white rounded-xl shadow-sm p-8" style={{ 
+  fontFamily: 'Protest Revolution',
+  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
+}}>
+  {/* Encabezado del Chart*/}
+  <div className="text-center mb-8">
+    <h2 className="text-3xl font-bold mb-2">{tituloCancion || "Canción"} - {artista || "Autor"}</h2>
+    <p className="text-lg text-gray-600">
+      Tonalidad: {tono} • Compás: {compas} • Tempo: {tempo}
+    </p>
+  </div>
+
+  {/* Secciones de la canción */}
+  {secciones.map((sec, secIdx) => (
+    <div key={secIdx} className="mb-10">
+      <h3 className="text-xl font-bold border-b border-gray-300 pb-1 mb-6">
+        {sec.nombre} • {sec.compas}
+      </h3>
+      
+      {sec.lineas.map((linea, lIdx) => {
+        let measureCount = 0;
+        for (let i = 0; i < lIdx; i++) {
+          measureCount += sec.lineas[i].compasses.length;
+        }
+        
+        return (
+          <div key={lIdx} className="mb-8 flex items-center">
+            {/* Símbolo de repetición al inicio */}
+            {linea.repetir && <span className="text-2xl mx-2">||:</span>}
+            
+            {/* Línea de 4 compasses distribuidos equitativamente */}
+            <div className="flex justify-evenly gap-0 flex-1">
+              {linea.compasses.map((compass, cIdx) => {
+                measureCount++;
+                const divisiones = compass.acordes.length;
+
+                return (
+                  <div key={cIdx} className="relative w-1/4 border-l border-r border-black">
+
+
+                    {/* Número de compás */}
+                    <div className="absolute -top-5 left-0 right-0 text-center">
+                      <span className="text-xs text-gray-500">{toRoman(measureCount)}</span>
+                    </div>
+
+                    {/* Acordes distribuidos equitativamente en el compás */}
+                    <div
+                      className={`grid gap-2`}
+                      style={{
+                        gridTemplateColumns: `repeat(${divisiones}, minmax(0, 1fr))`,
+                        textAlign: 'center',
+                      }}
+                    >
+                      {compass.acordes.map((acorde, dIdx) => (
+                        <div key={dIdx} className="py-1 text-lg">
+                          {acorde.valor || "-"}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            
+            {/* Símbolo de cierre de repetición */}
+            {linea.repetir && <span className="text-2xl mx-2">:||</span>}
+          </div>
+        );
+      })}
+    </div>
+  ))}
+</div>
+      </div>
+    </div>
+  );
+};
+
+export default SongReader;
+</file>
+
+<file path="src/App.css">
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* App.css */
+/* src/App.css */
+/* Agrega esto a tu App.css */
+
+.chord-grid-container {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 30px;
+  padding-bottom: 20px;
+}
+
+.chord-grid {
+  display: flex;
+  gap: 15px;
+  min-width: fit-content;
+  padding: 10px 0;
+}
+
+.chord-box {
+  min-width: 200px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  background: #f9f9f9;
+  flex: 1;
+}
+
+.chord-box.hovered {
+  border-color: #64b5f6;
+  background: #e3f2fd;
+}
+
+.box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.box-header span {
+  font-weight: bold;
+  color: #333;
+}
+
+.divide-select {
+  padding: 5px 8px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  background: white;
+}
+
+.divisions-container {
+  display: flex;
+  gap: 8px;
+  min-height: 120px;
+}
+
+.division {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 4px;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-height: 100px;
+}
+
+/* Estilos específicos para cada número de divisiones */
+.divisions-1 .division {
+  width: 100%;
+}
+
+.divisions-2 .division {
+  width: calc(50% - 4px);
+}
+
+.divisions-3 .division {
+  width: calc(33.33% - 5.33px);
+}
+
+.divisions-4 .division {
+  width: calc(25% - 6px);
+}
+
+.divisions-6 .division {
+  width: calc(16.66% - 6.66px);
+}
+
+.divisions-8 .division {
+  width: calc(12.5% - 7px);
+}
+
+.chord-item {
+  padding: 8px 12px;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  position: relative;
+  text-align: center;
+  cursor: move;
+}
+
+.remove-chord {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #ff5252;
+  color: white;
+  border: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* Estilos para móvil */
+@media (max-width: 768px) {
+  .chord-grid {
+    gap: 10px;
+  }
+  
+  .chord-box {
+    min-width: 180px;
+  }
+  
+  .divisions-container {
+    flex-direction: column;
+  }
+  
+  .division {
+    width: 100% !important;
+    min-height: 40px;
+  }
+}
+/* Agrega estos estilos adicionales */
+.division {
+  position: relative;
+  min-height: 60px;
+  border: 1px dashed #ccc;
+  border-radius: 4px;
+  padding: 8px;
+  transition: all 0.2s;
+}
+
+.division.hovered {
+  background-color: #e3f2fd;
+  border-color: #64b5f6;
+}
+
+.chord-item {
+  margin: 4px 0;
+  padding: 6px 10px;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  cursor: move;
+  text-align: center;
+}
+
+.sections-container {
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background-color: #f8fafc;
+  min-height: 200px; /* Altura mínima para que sea visible incluso cuando está vacío */
+}
+
+.section {
+  margin-bottom: 15px;
+  padding: 12px;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.chord-box {
+  display: inline-block;
+  margin: 4px;
+  padding: 6px 10px;
+  background-color: #edf2f7;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+@font-face {
+  font-family: 'Protest Revolution';
+  src: url('/fonts/ProtestRevolution-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+</file>
+
+<file path="src/App.js">
+import { Routes, Route } from "react-router-dom";
+import SongReader from "./components/SongReader";
+import SongCreator from "./components/SongCreator";
+
+export default function App() {
+  return (
+    <Routes>
+      {/* Ruta por defecto: modo lectura */}
+      <Route path="/" element={<SongReader />} />
+
+      {/* Ruta para crear o editar canciones */}
+      <Route path="/crear" element={<SongCreator />} />
+    </Routes>
+  );
+}
+</file>
+
+<file path="src/index.css">
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Protest Revolution';
+  src: url('../public/fonts/ProtestRevolution-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+</file>
+
+<file path="src/index.js">
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import MainApp from "./App";
+import "./index.css"; // si estás usando Tailwind aquí
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(
+  <BrowserRouter>
+    <MainApp />
+  </BrowserRouter>
+);
+</file>
+
+<file path="package.json">
+{
+  "name": "easychart",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@react-pdf/renderer": "^4.3.0",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^13.5.0",
+    "react": "^19.1.0",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
+    "react-dnd-touch-backend": "^16.0.1",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.1",
+    "react-scripts": "5.0.1",
+    "uuid": "^11.1.0",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.7",
+    "@tailwindcss/postcss7-compat": "^2.2.17",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.3"
+  }
+}
+</file>
+
+</files>

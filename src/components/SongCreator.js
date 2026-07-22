@@ -33,7 +33,7 @@ export default function SongCreator() {
   const [secciones, setSecciones] = useState([
     {
       id: Date.now(),
-      nombre: "Sección A",
+      nombre: "Section A",
       compas: "4/4",
       lineas: [
         {
@@ -348,7 +348,7 @@ const ajustarSemitono = (delta) => {
 
   const saveSong = async () => {
     if (!tituloCancion.trim()) {
-    alert("El título de la canción es obligatorio.");
+    alert("Song title is required.");
     return;
   }
     const songData = {
@@ -380,8 +380,8 @@ const ajustarSemitono = (delta) => {
         );
       }
       
-      console.log('Canción guardada exitosamente:', responseData);
-      alert('Canción guardada exitosamente!');
+      console.log('Song saved successfully:', responseData);
+      alert('Song saved successfully!');
       return responseData;
     } catch (error) {
       console.error('Error al guardar la canción:', error);
@@ -415,7 +415,7 @@ const ajustarSemitono = (delta) => {
       
       const result = await response.json();
       console.log('Song updated:', result);
-      alert('Canción actualizada exitosamente!');
+      alert('Song updated successfully!');
     } catch (error) {
       console.error('Error updating song:', error);
       alert('Error al actualizar la canción');
@@ -478,7 +478,7 @@ const ajustarSemitono = (delta) => {
       })) || [
         {
           id: generarId("seccion"),
-          nombre: "Sección A",
+          nombre: "Section A",
           compas: "4/4",
           lineas: [
             {
@@ -499,8 +499,8 @@ const ajustarSemitono = (delta) => {
       
       setSecciones(loadedSections);
     } catch (error) {
-      console.error('Error al cargar la canción:', error);
-      alert('Error al cargar la canción');
+      console.error('Error loading song:', error);
+      alert('Error loading song');
     }
   };
 
@@ -542,14 +542,14 @@ const ajustarSemitono = (delta) => {
           value={tituloCancion}
           onChange={(e) => setTituloCancion(e.target.value)}
           className="text-2xl font-bold w-full text-center bg-transparent focus:outline-none"
-          placeholder="Título de la canción"
+          placeholder="Song title"
           style={{ fontFamily: 'Protest Revolution' }}
         />   <input
           type="text"
           value={artista}
           onChange={(e) => setArtista(e.target.value)}
           className="text-2xl font-bold w-full text-center bg-transparent focus:outline-none"
-          placeholder="Autor o Artista"
+          placeholder="Author or Artist"
           style={{ fontFamily: 'Protest Revolution' }}
         />
       </header>
@@ -557,7 +557,7 @@ const ajustarSemitono = (delta) => {
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Controles principales */}
         <div className="bg-white rounded-2xl shadow-sm p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-gray-900">Configuración</h2>
+          <h2 className="text-lg font-semibold text-gray-900">Settings</h2>
           
           {/* Input de búsqueda de canciones */}
           <div className="relative mt-3">
@@ -565,7 +565,7 @@ const ajustarSemitono = (delta) => {
               type="text"
               value={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
-              placeholder="Titulo o Autor/Artista..."
+              placeholder="Title or Author/Artist..."
               className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
             />
             
@@ -596,7 +596,7 @@ const ajustarSemitono = (delta) => {
             <div className="flex flex-wrap items-end gap-4">
   {/* Tonalidad */}
   <div>
-    <label className="block text-sm font-medium text-gray-700 mb-1">Tonalidad</label>
+    <label className="block text-sm font-medium text-gray-700 mb-1">Key</label>
     <select
       value={tono}
       onChange={e => cambiarTonalidad(e.target.value, semitono)}
@@ -625,7 +625,7 @@ const ajustarSemitono = (delta) => {
 
   {/* Ajuste fino */}
   <div>
-    <label className="block text-sm font-medium text-gray-700 mb-1">Ajuste fino</label>
+    <label className="block text-sm font-medium text-gray-700 mb-1">Fine tuning</label>
     <div className="flex items-center space-x-2">
       <button
         onClick={() => ajustarSemitono(-1)}
@@ -635,7 +635,7 @@ const ajustarSemitono = (delta) => {
         ↓
       </button>
       <div className="text-center px-3 py-2 bg-gray-100 rounded-lg text-sm font-medium min-w-[80px]">
-        {semitono === 0 ? "Tono completo" : `${semitono > 0 ? '+' : ''}${semitono/2} tono${Math.abs(semitono) > 1 ? 's' : ''}`}
+        {semitono === 0 ? "Whole tone" : `${semitono > 0 ? '+' : ''}${semitono/2} tone${Math.abs(semitono) > 1 ? 's' : ''}`}
       </div>
       <button
         onClick={() => ajustarSemitono(1)}
@@ -647,7 +647,7 @@ const ajustarSemitono = (delta) => {
     </div>
   </div>
 
-  {/* Botón Guardar / Actualizar */}
+  {/* Save / Update button */}
   <div>
     <button
       onClick={() => selectedSongId ? updateSong(selectedSongId) : saveSong()}  disabled={!tituloCancion.trim()}
@@ -656,11 +656,11 @@ const ajustarSemitono = (delta) => {
       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
         <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z" />
       </svg>
-      {selectedSongId ? 'Actualizar Canción' : 'Guardar Canción'}
+      {selectedSongId ? 'Update Song' : 'Save Song'}
     </button>
   </div>
 
-  {/* Botón Exportar PDF */}
+  {/* Export PDF button */}
   <div>
     <button
       onClick={() => setShowPDFOptions(!showPDFOptions)} disabled={!tituloCancion.trim()}
@@ -669,7 +669,7 @@ const ajustarSemitono = (delta) => {
       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
         <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L10 11.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
       </svg>
-      Exportar a PDF
+      Export to PDF
     </button>
   </div>
 </div>
@@ -682,7 +682,7 @@ const ajustarSemitono = (delta) => {
       fileName={`${tituloCancion.replace(/\s+/g, '_')}.pdf`}
       className="block w-full text-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
     >
-      {({ loading }) => (loading ? 'Preparando PDF...' : 'Descargar PDF ahora')}
+      {({ loading }) => (loading ? 'Preparing PDF...' : 'Download PDF now')}
     </PDFDownloadLink>
   </div>
 )}
@@ -692,7 +692,7 @@ const ajustarSemitono = (delta) => {
         
         
         
-        {/* Secciones de la canción */}
+        {/* Song sections */}
         {secciones.map((sec, secIdx) => (
           <div key={sec.id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
             {/* Header de sección */}
@@ -822,21 +822,21 @@ const ajustarSemitono = (delta) => {
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
                 </svg>
-                Añadir línea (4 compases)
+                Add line (4 measures)
               </button>
             </div>
           </div>
         ))}
         
-        {/* Añadir nueva sección */}
+        {/* Add new section */}
         <div className="bg-white rounded-2xl shadow-sm p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">Añadir nueva sección</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-3">Add new section</h2>
           <div className="flex space-x-3">
             <input
               type="text"
               value={nuevaSeccionNombre}
               onChange={(e) => setNuevaSeccionNombre(e.target.value)}
-              placeholder="Nombre de la sección"
+              placeholder="Section name"
               className="flex-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3"
               onKeyPress={(e) => e.key === 'Enter' && agregarSeccion()}
             />
@@ -845,24 +845,24 @@ const ajustarSemitono = (delta) => {
               disabled={!nuevaSeccionNombre.trim()}
               className="px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Añadir
+              Add
             </button>
           </div>
         </div>
       </div>
       
-      {/* Modal para seleccionar acorde */}
+      {/* Chord selection modal */}
       {modalData && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col">
             <div className="p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Seleccionar acorde en {tono}</h3>
+              <h3 className="text-lg font-semibold text-gray-900">Select chord in {tono}</h3>
             </div>
             
             <div className="overflow-y-auto p-6">
               {/* Acordes predefinidos */}
               <div className="mb-6">
-                <h4 className="text-sm font-medium text-gray-700 mb-3">Acordes comunes</h4>
+                <h4 className="text-sm font-medium text-gray-700 mb-3">Common chords</h4>
                 <div className="grid grid-cols-3 gap-2">
                   {getAcordesDisponibles().map((ac, idx) => (
                     <button
@@ -887,13 +887,13 @@ const ajustarSemitono = (delta) => {
               
               {/* Entrada manual */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Acorde personalizado</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Custom chord</label>
                 <div className="flex rounded-lg shadow-sm">
                   <input
                     type="text"
                     id="customChordInput"
                     className="flex-1 min-w-0 block w-full rounded-l-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 py-2 px-3"
-                    placeholder="Ej: C#m7, G7sus4, etc."
+                    placeholder="Example: C#m7, G7sus4, etc."
                     style={{ fontFamily: 'Protest Revolution' }}
                     onClick={(e) => {
                       const keyboard = document.getElementById('musicKeyboard');
@@ -916,7 +916,7 @@ const ajustarSemitono = (delta) => {
                       }
                     }}
                   >
-                    Usar
+                    Use
                   </button>
                 </div>
               </div>
@@ -938,7 +938,7 @@ const ajustarSemitono = (delta) => {
                 onClick={() => setModalData(null)}
                 className="px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                Cancelar
+                Cancel
               </button>
             </div>
           </div>

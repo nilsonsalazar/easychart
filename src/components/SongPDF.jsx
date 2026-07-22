@@ -88,8 +88,8 @@ const SongPDF = ({ title, sections, keySignature, tempo }) => {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        <Text style={styles.title}>{title || "Composición Musical"}</Text>
-        <Text style={styles.key}>Tonalidad: {keySignature} • Tempo: {tempo}</Text>
+        <Text style={styles.title}>{title || "Musical Composition"}</Text>
+        <Text style={styles.key}>Key: {keySignature} • Tempo: {tempo}</Text>
         
         {sections.map((sec, secIdx) => {
           let measureCount = 0;

@@ -192,7 +192,7 @@ const generarId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random(
         })) || [
           {
             id: generarId("seccion"),
-            nombre: "Sección A",
+            nombre: "Section A",
             lineas: [
               {
                 id: generarId("linea"),
@@ -211,7 +211,7 @@ const generarId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random(
       setSecciones(loadedSections || [
         {
           id: generarId("seccion"),
-          nombre: "Sección A",
+          nombre: "Section A",
           lineas: [
             {
               id: generarId("linea"),
@@ -301,13 +301,13 @@ useEffect(() => {
       <header className="sticky top-0 z-10 bg-white shadow-sm py-4 px-6 rounded-xl mb-6">
         <div className="max-w-4xl mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-bold" style={{ fontFamily: 'Protest Revolution' }}>
-            {tituloCancion || "Lector de Charts"} - {artista || "Autor / Artista"}
+            {tituloCancion || "Chart Reader"} - {artista || "Author / Artist"}
           </h1>
           <Link 
             to="/crear"
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
           >
-            Crear o Editar Canción
+            Create or Edit Song
           </Link>
         </div>
       </header>
@@ -321,7 +321,7 @@ useEffect(() => {
               type="text"
               value={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
-              placeholder="Buscar canción..."
+              placeholder="Search song..."
               className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {showSongDropdown && filteredSongs.length > 0 && (
@@ -350,7 +350,7 @@ useEffect(() => {
           {/* Controles de tonalidad */}
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Tonalidad</label>
+              <label className="block text-sm font-medium mb-1">Key</label>
               <select
                 value={tono}
                 onChange={e => cambiarTonalidad(e.target.value, semitono)}
@@ -363,7 +363,7 @@ useEffect(() => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Compás</label>
+              <label className="block text-sm font-medium mb-1">Time signature</label>
               <select
                 value={compas}
                 onChange={(e) => setCompas(e.target.value)}
@@ -376,7 +376,7 @@ useEffect(() => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Ajuste fino</label>
+              <label className="block text-sm font-medium mb-1">Fine tuning</label>
               <div className="flex items-center space-x-2">
                 <button 
                   onClick={() => ajustarSemitono(-1)} 
@@ -403,7 +403,7 @@ useEffect(() => {
             fileName={`${tituloCancion  || 'chart'}${artista  || 'autor'}.pdf`}
             className="block w-full text-center p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
           >
-            Exportar a PDF
+            Export to PDF
           </PDFDownloadLink>
         </div>
 
@@ -412,15 +412,15 @@ useEffect(() => {
   fontFamily: 'Protest Revolution',
   boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
 }}>
-  {/* Encabezado del Chart*/}
+  {/* Chart header */}
   <div className="text-center mb-8">
-    <h2 className="text-3xl font-bold mb-2">{tituloCancion || "Canción"} - {artista || "Autor"}</h2>
+    <h2 className="text-3xl font-bold mb-2">{tituloCancion || "Song"} - {artista || "Author"}</h2>
     <p className="text-lg text-gray-600">
-      Tonalidad: {tono} • Compás: {compas} • Tempo: {tempo}
+      Key: {tono} • Time signature: {compas} • Tempo: {tempo}
     </p>
   </div>
 
-  {/* Secciones de la canción */}
+  {/* Song sections */}
   {secciones.map((sec, secIdx) => (
     <div key={secIdx} className="mb-10">
       <h3 className="text-xl font-bold border-b border-gray-300 pb-1 mb-6">
