@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import circulos from "./circulos";
 import { API_CONFIG } from './config';
-import { Link } from "react-router-dom";
-import { PDFDownloadLink, Document, Page, Text, View, StyleSheet, Font } from "@react-pdf/renderer";
-import SongPDF from "./SongPDF";
+import { Font } from "@react-pdf/renderer";
 import MusicKeyboard from "./MusicKeyboard";
 import toRoman from "./toRoman";
 
@@ -55,7 +53,6 @@ export default function SongCreator() {
   const [editingSeccionId, setEditingSeccionId] = useState(null);
   const [tituloCancion, setTituloCancion] = useState("");
   const [artista, setArtista] = useState("");
-  const [showPDFOptions, setShowPDFOptions] = useState(false);
 
   const STORAGE_KEY = 'easychart_songs_v1';
 
@@ -76,6 +73,25 @@ export default function SongCreator() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(songs));
     } catch (error) {
       console.error('Error saving local songs:', error);
+    }
+  };
+
+  const syncSavedSongList = (song, mode = 'append') => {
+    const localSongs = readLocalSongs();
+    const updatedSongs = mode === 'append'
+      ? [...localSongs, song]
+      : localSongs.map(existingSong => existingSong.id === song.id ? song : existingSong);
+
+    writeLocalSongs(updatedSongs);
+    setSavedSongs(updatedSongs);
+
+    if (searchTerm.trim()) {
+      const normalizedSearch = searchTerm.toLowerCase();
+      const filtered = updatedSongs.filter(item =>
+        (item.title || '').toLowerCase().includes(normalizedSearch)
+      );
+      setFilteredSongs(filtered);
+      setShowSongDropdown(filtered.length > 0);
     }
   };
 
@@ -415,14 +431,15 @@ const ajustarSemitono = (delta) => {
       }
       
       console.log('Song saved successfully:', responseData);
+      setSelectedSongId(responseData.id);
+      syncSavedSongList(responseData, 'append');
       alert('Song saved successfully!');
       return responseData;
     } catch (error) {
       console.error('Error al guardar la canción:', error);
       const localSongs = readLocalSongs();
       const savedLocally = { ...songData, id: songData.id || generarId('local') };
-      writeLocalSongs([...localSongs, savedLocally]);
-      setSavedSongs(readLocalSongs());
+      syncSavedSongList(savedLocally, 'append');
       alert('Server is unavailable. The song was saved locally in this browser.');
       return savedLocally;
     }
@@ -451,6 +468,7 @@ const ajustarSemitono = (delta) => {
       
       const result = await response.json();
       console.log('Song updated:', result);
+      syncSavedSongList(result, 'update');
       alert('Song updated successfully!');
     } catch (error) {
       console.error('Error updating song:', error);
@@ -719,29 +737,21 @@ const ajustarSemitono = (delta) => {
   {/* Export PDF button */}
   <div>
     <button
-      onClick={() => setShowPDFOptions(!showPDFOptions)} disabled={!tituloCancion.trim()}
+      onClick={() => {
+        if (typeof window !== 'undefined' && tituloCancion.trim()) {
+          window.print();
+        }
+      }}
+      disabled={!tituloCancion.trim()}
       className="flex items-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
     >
       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
         <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L10 11.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
       </svg>
-      Export to PDF
+      Print / Save as PDF
     </button>
   </div>
 </div>
-
-{/* Panel de opciones PDF */}
-{showPDFOptions && (
-  <div className="mt-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
-    <PDFDownloadLink
-      document={<SongPDF title={tituloCancion} artist={artista} sections={secciones} keySignature={tono} tempo={tempo} />}
-      fileName={`${tituloCancion.replace(/\s+/g, '_')}.pdf`}
-      className="block w-full text-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-    >
-      {({ loading }) => (loading ? 'Preparing PDF...' : 'Download PDF now')}
-    </PDFDownloadLink>
-  </div>
-)}
 
           </div>
         </div>
