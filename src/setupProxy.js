@@ -4,11 +4,11 @@ module.exports = function(app) {
   app.use(
     '/api',
     createProxyMiddleware({
-      target: 'https://sig-ma.es',
+      target: process.env.REACT_APP_API_BASE_URL || 'https://easychart.vercel.app',
       changeOrigin: true,
       secure: false,
       pathRewrite: {
-        '^/api': ''
+        '^/api': '/api'
       }
     })
   );
