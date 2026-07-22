@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import circulos from "./circulos";
-import { API_URL } from './config';
 import { API_CONFIG } from './config';
 import { Link } from "react-router-dom";
 import { PDFDownloadLink, Document, Page, Text, View, StyleSheet, Font } from "@react-pdf/renderer";
@@ -58,7 +57,27 @@ export default function SongCreator() {
   const [artista, setArtista] = useState("");
   const [showPDFOptions, setShowPDFOptions] = useState(false);
 
+  const STORAGE_KEY = 'easychart_songs_v1';
+
   const generarId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+  const readLocalSongs = () => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch (error) {
+      console.error('Error reading local songs:', error);
+      return [];
+    }
+  };
+
+  const writeLocalSongs = (songs) => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(songs));
+    } catch (error) {
+      console.error('Error saving local songs:', error);
+    }
+  };
 
   const transposeChord = (chord, semitones, currentKey) => {
   if (!chord || chord === "-" || chord.trim() === "") return "-";
@@ -162,7 +181,7 @@ const ajustarSemitono = (delta) => {
   useEffect(() => {
     const fetchSongs = async () => {
       try {
-        const response = await fetch(`${API_URL}/songs`);
+        const response = await fetch(`${API_CONFIG.FULL_URL}?_=${Date.now()}`);
         const data = await response.json();
         if (response.ok) {
           setSavedSongs(data);
@@ -178,6 +197,15 @@ const ajustarSemitono = (delta) => {
         }
       } catch (error) {
         console.error('Error de conexión:', error);
+        const localSongs = readLocalSongs();
+        setSavedSongs(localSongs);
+        if (searchTerm) {
+          const filtered = localSongs.filter(song =>
+            song.title.toLowerCase().includes(searchTerm.toLowerCase())
+          );
+          setFilteredSongs(filtered);
+          setShowSongDropdown(filtered.length > 0);
+        }
       }
     };
     fetchSongs();
@@ -216,8 +244,12 @@ const ajustarSemitono = (delta) => {
       setShowSongDropdown(response.length > 0);
     } catch (error) {
       console.error("Error en la búsqueda:", error);
-      setFilteredSongs([]);
-      setShowSongDropdown(false);
+      const localSongs = readLocalSongs();
+      const fallbackResults = localSongs.filter(song =>
+        song.title.toLowerCase().includes(term.toLowerCase())
+      );
+      setFilteredSongs(fallbackResults);
+      setShowSongDropdown(fallbackResults.length > 0);
     }
   };
 
@@ -348,10 +380,12 @@ const ajustarSemitono = (delta) => {
 
   const saveSong = async () => {
     if (!tituloCancion.trim()) {
-    alert("Song title is required.");
-    return;
-  }
+      alert("Song title is required.");
+      return;
+    }
+
     const songData = {
+      id: `local-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       title: tituloCancion,
       artist: artista,
       key_signature: tono,
@@ -385,10 +419,12 @@ const ajustarSemitono = (delta) => {
       return responseData;
     } catch (error) {
       console.error('Error al guardar la canción:', error);
-      throw new Error(
-        error.message ||
-        'Ocurrió un error al comunicarse con el servidor'
-      );
+      const localSongs = readLocalSongs();
+      const savedLocally = { ...songData, id: songData.id || generarId('local') };
+      writeLocalSongs([...localSongs, savedLocally]);
+      setSavedSongs(readLocalSongs());
+      alert('Server is unavailable. The song was saved locally in this browser.');
+      return savedLocally;
     }
   };
 
@@ -405,7 +441,7 @@ const ajustarSemitono = (delta) => {
     };
     
     try {
-      const response = await fetch(API_URL, {
+      const response = await fetch(API_CONFIG.FULL_URL, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -418,13 +454,17 @@ const ajustarSemitono = (delta) => {
       alert('Song updated successfully!');
     } catch (error) {
       console.error('Error updating song:', error);
-      alert('Error al actualizar la canción');
+      const localSongs = readLocalSongs();
+      const updatedSongs = localSongs.map(song => song.id === songId ? songData : song);
+      writeLocalSongs(updatedSongs);
+      setSavedSongs(updatedSongs);
+      alert('Server is unavailable. The song was updated locally in this browser.');
     }
   };
 
   const loadSong = async (songId) => {
     try {
-      const response = await fetch(`${API_URL}?id=${songId}&_=${Date.now()}`);
+      const response = await fetch(`${API_CONFIG.FULL_URL}?id=${songId}&_=${Date.now()}`);
       const song = await response.json();
       
       if (song.error) {
@@ -500,13 +540,26 @@ const ajustarSemitono = (delta) => {
       setSecciones(loadedSections);
     } catch (error) {
       console.error('Error loading song:', error);
-      alert('Error loading song');
+      const localSongs = readLocalSongs();
+      const localSong = localSongs.find(song => song.id === songId);
+      if (localSong) {
+        setTituloCancion(localSong.title);
+        setArtista(localSong.artist);
+        setTono(localSong.key_signature);
+        setTempo(localSong.tempo);
+        setSemitono(0);
+        setSelectedSongId(songId);
+        setSecciones(localSong.song_data?.sections || []);
+        alert('Server is unavailable. The song was loaded from local storage.');
+      } else {
+        alert('Error loading song');
+      }
     }
   };
 
   const searchSongs = async (searchTerm) => {
     try {
-      const response = await fetch(`${API_URL}/search?q=${encodeURIComponent(searchTerm)}`);
+      const response = await fetch(`${API_CONFIG.FULL_URL}?search=${encodeURIComponent(searchTerm)}`);
       if (!response.ok) {
         throw new Error('Error en la búsqueda');
       }
@@ -516,7 +569,10 @@ const ajustarSemitono = (delta) => {
       return Array.isArray(data) ? data : [];
     } catch (error) {
       console.error('Error buscando canciones:', error);
-      return [];
+      const localSongs = readLocalSongs();
+      return localSongs.filter(song =>
+        song.title.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     }
   };
 

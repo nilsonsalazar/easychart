@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from 'react-router-dom'; 
 import { Link } from "react-router-dom";
 import circulos from "./circulos";
-import { API_URL } from './config';
+import { API_CONFIG } from './config';
 import { PDFDownloadLink, Document, Page, Text, View, StyleSheet, Font } from "@react-pdf/renderer";
 import SongPDF from "./SongPDF";
 import toRoman from "./toRoman";
@@ -24,6 +24,18 @@ const SongReader = () => {
   const [secciones, setSecciones] = useState([]);
   const [tituloCancion, setTituloCancion] = useState("");
   const [artista, setArtista] = useState("");
+
+  const STORAGE_KEY = 'easychart_songs_v1';
+
+  const readLocalSongs = () => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch (error) {
+      console.error('Error reading local songs:', error);
+      return [];
+    }
+  };
 
   // Registrar la fuente
   Font.register({
@@ -130,7 +142,7 @@ const ajustarSemitono = (delta) => {
   useEffect(() => {
     const fetchSongs = async () => {
       try {
-        const response = await fetch(`${API_URL}/songs`);
+        const response = await fetch(`${API_CONFIG.FULL_URL}?_=${Date.now()}`);
         const data = await response.json();
         if (response.ok) {
           setSavedSongs(data);
@@ -144,6 +156,15 @@ const ajustarSemitono = (delta) => {
         }
       } catch (error) {
         console.error('Error al cargar canciones:', error);
+        const localSongs = readLocalSongs();
+        setSavedSongs(localSongs);
+        if (searchTerm) {
+          const filtered = localSongs.filter(song =>
+            song.title.toLowerCase().includes(searchTerm.toLowerCase())
+          );
+          setFilteredSongs(filtered);
+          setShowSongDropdown(filtered.length > 0);
+        }
       }
     };
 
@@ -154,7 +175,7 @@ const ajustarSemitono = (delta) => {
 const generarId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
   const loadSong = async (songId) => {
     try {
-      const response = await fetch(`${API_URL}?id=${songId}&_=${Date.now()}`);
+      const response = await fetch(`${API_CONFIG.FULL_URL}?id=${songId}&_=${Date.now()}`);
       const song = await response.json();
       
       if (song.error) {
@@ -228,12 +249,25 @@ const generarId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random(
       
     } catch (error) {
       console.error('Error al cargar la canción:', error);
-      alert('Error al cargar la canción');
+      const localSongs = readLocalSongs();
+      const localSong = localSongs.find(song => song.id === songId);
+      if (localSong) {
+        setTituloCancion(localSong.title);
+        setArtista(localSong.artist);
+        setTono(localSong.key_signature);
+        setTempo(localSong.tempo);
+        setSemitono(0);
+        setSelectedSongId(songId);
+        setSecciones(localSong.song_data?.sections || []);
+        alert('Server is unavailable. The song was loaded from local storage.');
+      } else {
+        alert('Error al cargar la canción');
+      }
     }
   };
   const searchSongs = async (searchTerm) => {
     try {
-      const response = await fetch(`${API_URL}/search?q=${encodeURIComponent(searchTerm)}`);
+      const response = await fetch(`${API_CONFIG.FULL_URL}?search=${encodeURIComponent(searchTerm)}`);
       if (!response.ok) {
         throw new Error('Error en la búsqueda');
       }
@@ -242,7 +276,10 @@ const generarId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random(
       return Array.isArray(data) ? data : []; // Asegurar que siempre devuelva un array
     } catch (error) {
       console.error('Error buscando canciones:', error);
-      return [];
+      const localSongs = readLocalSongs();
+      return localSongs.filter(song =>
+        song.title.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     }
   };
   const handleSearch = async (term) => {
@@ -283,17 +320,17 @@ const generarId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random(
 useEffect(() => {
   const fetchSongs = async () => {
     try {
-      const response = await fetch(`${API_URL}/songs?_=${Date.now()}`);
+      const response = await fetch(`${API_CONFIG.FULL_URL}?_=${Date.now()}`);
       const data = await response.json();
       if (response.ok) {
         setSavedSongs(data);
-        }
-      } catch (error) {
-        console.error('Error:', error);
       }
-    };
-    fetchSongs();
-  }, []);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+  fetchSongs();
+}, []);
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 pb-20">
