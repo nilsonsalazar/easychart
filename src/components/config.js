@@ -1,4 +1,4 @@
-const DEFAULT_API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
+const DEFAULT_API_BASE_URL = process.env.REACT_APP_API_BASE_URL || (process.env.NODE_ENV === 'development' ? 'http://127.0.0.1:4000' : '');
 const DEFAULT_API_ENDPOINT = process.env.REACT_APP_API_ENDPOINT || '/api/songs';
 
 export const API_BASE_URL = DEFAULT_API_BASE_URL;
