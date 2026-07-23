@@ -1,23 +1,12 @@
 import { Document, Page, Text, View, StyleSheet, Font } from "@react-pdf/renderer";
 import toRoman from "./toRoman";
 
-
-
-const getFontUrl = () => {
-  if (typeof window !== 'undefined' && window.location && window.location.origin) {
-    return `${window.location.origin}/fonts/ArchitectsDaughter-Regular.ttf`;
-  }
-  return `${process.env.PUBLIC_URL || ''}/fonts/ArchitectsDaughter-Regular.ttf`;
-};
-
+// Registrar la fuente directamente desde el CDN de Google Fonts para evitar fallos de ruta local
 Font.register({
   family: 'Architects Daughter',
-  src: getFontUrl(),
-  fontWeight: 'normal',
-  fontStyle: 'normal'
+  src: 'https://cdn.jsdelivr.net/fontsource/fonts/architects-daughter@latest/latin-400-normal.ttf'
 });
-
-// Estilos PDF usando la fuente personalizada 'Architects Daughter'
+// Estilos PDF ajustados
 const styles = StyleSheet.create({
   sectionHeaderLeft: {
     marginRight: 8,
@@ -31,7 +20,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-    fontWeight: 'bold',
     marginBottom: 4,
     textAlign: 'center'
   },
@@ -58,7 +46,6 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 13,
-    fontWeight: 'bold',
     color: '#111827'
   },
   line: {
@@ -83,7 +70,8 @@ const styles = StyleSheet.create({
   },
   measureNumber: {
     fontSize: 8,
-    color: '#6B7280'
+    color: '#6B7280',
+    fontFamily: 'Helvetica' // Usamos Helvetica para asegurar nitidez en los números de compás
   },
   divisions: {
     flexDirection: 'row'
@@ -95,13 +83,11 @@ const styles = StyleSheet.create({
     minHeight: 24
   },
   chord: {
-    fontSize: 11,
-    fontWeight: 'bold',
+    fontSize: 12,
     color: '#1F2937'
   },
   repeatSymbol: {
     fontSize: 16,
-    fontWeight: 'bold',
     marginHorizontal: 4,
     alignSelf: 'center',
     color: '#111827'
