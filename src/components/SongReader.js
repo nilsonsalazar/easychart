@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { Link } from "react-router-dom";
 import circulos from "./circulos";
 import { API_URL } from './config';
-import { PDFDownloadLink, Document, Page, Text, View, StyleSheet, Font } from "@react-pdf/renderer";
+import { PDFDownloadLink } from "@react-pdf/renderer";
 import SongPDF from "./SongPDF";
 import toRoman from "./toRoman";
 
@@ -24,15 +24,6 @@ const SongReader = () => {
   const [secciones, setSecciones] = useState([]);
   const [tituloCancion, setTituloCancion] = useState("");
   const [artista, setArtista] = useState("");
-
-  // Registrar la fuente
-  Font.register({
-    family: 'Protest Revolution',
-    src: '/fonts/ProtestRevolution-Regular.ttf',
-    fontWeight: 'normal',
-    fontStyle: 'normal'
-  });
-
 
   const transposeChord = (chord, semitones, currentKey) => {
   if (!chord || chord === "-" || chord.trim() === "") return "-";
@@ -130,7 +121,7 @@ const ajustarSemitono = (delta) => {
   useEffect(() => {
     const fetchSongs = async () => {
       try {
-        const response = await fetch(`${API_URL}/songs`);
+        const response = await fetch(API_URL);
         const data = await response.json();
         if (response.ok) {
           setSavedSongs(data);
@@ -148,7 +139,7 @@ const ajustarSemitono = (delta) => {
     };
 
     fetchSongs();
-  }, []);
+  }, [searchTerm]);
 
   
 const generarId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -233,13 +224,13 @@ const generarId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random(
   };
   const searchSongs = async (searchTerm) => {
     try {
-      const response = await fetch(`${API_URL}/search?q=${encodeURIComponent(searchTerm)}`);
+      const response = await fetch(`${API_URL}?search=${encodeURIComponent(searchTerm)}`);
       if (!response.ok) {
         throw new Error('Error en la búsqueda');
       }
       const data = await response.json();
-      console.log('Resultados de búsqueda:', data); // Agrega este log
-      return Array.isArray(data) ? data : []; // Asegurar que siempre devuelva un array
+      console.log('Resultados de búsqueda:', data);
+      return Array.isArray(data) ? data : [];
     } catch (error) {
       console.error('Error buscando canciones:', error);
       return [];
@@ -283,7 +274,7 @@ const generarId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random(
 useEffect(() => {
   const fetchSongs = async () => {
     try {
-      const response = await fetch(`${API_URL}/songs?_=${Date.now()}`);
+      const response = await fetch(`${API_URL}?_=${Date.now()}`);
       const data = await response.json();
       if (response.ok) {
         setSavedSongs(data);

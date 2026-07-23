@@ -2,21 +2,10 @@ import React, { useState, useEffect } from "react";
 import circulos from "./circulos";
 import { API_URL } from './config';
 import { API_CONFIG } from './config';
-import { Link } from "react-router-dom";
-import { PDFDownloadLink, Document, Page, Text, View, StyleSheet, Font } from "@react-pdf/renderer";
+import { PDFDownloadLink } from "@react-pdf/renderer";
 import SongPDF from "./SongPDF";
 import MusicKeyboard from "./MusicKeyboard";
 import toRoman from "./toRoman";
-
-
-
-// Registrar la fuente
-Font.register({
-  family: 'Protest Revolution',
-  src: '/fonts/ProtestRevolution-Regular.ttf',
-  fontWeight: 'normal',
-  fontStyle: 'normal'
-});
 
 
 export default function SongCreator() {
@@ -162,7 +151,7 @@ const ajustarSemitono = (delta) => {
   useEffect(() => {
     const fetchSongs = async () => {
       try {
-        const response = await fetch(`${API_URL}/songs`);
+        const response = await fetch(API_URL);
         const data = await response.json();
         if (response.ok) {
           setSavedSongs(data);
@@ -181,7 +170,7 @@ const ajustarSemitono = (delta) => {
       }
     };
     fetchSongs();
-  }, []);
+  }, [searchTerm]);
 
 
 
@@ -356,6 +345,7 @@ const ajustarSemitono = (delta) => {
       artist: artista,
       key_signature: tono,
       tempo: tempo,
+      time_signature: secciones[0]?.compas || "4/4",
       song_data: {
         sections: secciones
       }
@@ -399,6 +389,7 @@ const ajustarSemitono = (delta) => {
       artist: artista,
       key_signature: tono,
       tempo: tempo,
+      time_signature: secciones[0]?.compas || "4/4",
       song_data: {
         sections: secciones
       }
@@ -506,7 +497,7 @@ const ajustarSemitono = (delta) => {
 
   const searchSongs = async (searchTerm) => {
     try {
-      const response = await fetch(`${API_URL}/search?q=${encodeURIComponent(searchTerm)}`);
+      const response = await fetch(`${API_URL}?search=${encodeURIComponent(searchTerm)}`);
       if (!response.ok) {
         throw new Error('Error en la búsqueda');
       }

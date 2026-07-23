@@ -3,10 +3,10 @@ import toRoman from "./toRoman";
 
 
 
-// Registrar la fuente
+// Registrar la fuente usando una ruta relativa al `PUBLIC_URL` para que funcione en local y en hosting con subruta.
 Font.register({
   family: 'Protest Revolution',
-  src: '/fonts/ProtestRevolution-Regular.ttf',
+  src: `${process.env.PUBLIC_URL || ''}/fonts/ProtestRevolution-Regular.ttf`,
   fontWeight: 'normal',
   fontStyle: 'normal'
 });
