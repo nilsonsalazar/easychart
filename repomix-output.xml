@@ -209,7 +209,7 @@ const ChordModal = ({
                 <button
                   key={idx}
                   className="px-3 py-2.5 rounded-lg bg-gray-100 hover:bg-gray-200 active:bg-gray-300 transition-colors duration-100 text-sm font-medium"
-                  style={{ fontFamily: 'Protest Revolution' }}
+                  style={{ fontFamily: 'Architects Daughter' }}
                   onClick={() => onChordSelect(ac)}
                 >
                   {ac}
@@ -227,7 +227,7 @@ const ChordModal = ({
                 id="customChordInput"
                 className="flex-1 min-w-0 block w-full rounded-l-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 py-2 px-3"
                 placeholder="Ej: C#m7, G7sus4, etc."
-                style={{ fontFamily: 'Protest Revolution' }}
+                style={{ fontFamily: 'Architects Daughter' }}
                 onClick={(e) => {
                   const keyboard = document.getElementById('musicKeyboard');
                   if (keyboard) keyboard.classList.remove('hidden');
@@ -615,7 +615,7 @@ const SongSection = ({
                         {compas.acordes.map((acorde, dIdx) => (
                           <button
                             key={acorde.id}
-                            style={{ fontFamily: 'Protest Revolution' }}
+                            style={{ fontFamily: 'Architects Daughter' }}
                             className={`transition-all duration-150 ease-in-out 
                               min-h-[40px] px-2 py-1 text-sm rounded-lg shadow-sm
                               flex items-center justify-center 
@@ -2448,7 +2448,7 @@ export const API_CONFIG = {
 }
 
 @font-face {
-  font-family: 'Protest Revolution';
+  font-family: 'Architects Daughter';
   src: url('/fonts/ProtestRevolution-Regular.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
@@ -2493,7 +2493,7 @@ export const API_CONFIG = {
 @tailwind utilities;
 
 @font-face {
-  font-family: 'Protest Revolution';
+  font-family: 'Architects Daughter';
   src: url('../public/fonts/ProtestRevolution-Regular.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
@@ -2617,13 +2617,13 @@ const getFontUrl = () => {
 };
 
 Font.register({
-  family: 'Protest Revolution',
+  family: 'Architects Daughter',
   src: getFontUrl(),
   fontWeight: 'normal',
   fontStyle: 'normal'
 });
 
-// Estilos PDF usando la fuente personalizada 'Protest Revolution'
+// Estilos PDF usando la fuente personalizada 'Architects Daughter'
 const styles = StyleSheet.create({
   sectionHeaderLeft: {
     marginRight: 8,
@@ -2633,7 +2633,7 @@ const styles = StyleSheet.create({
   },
   page: {
     padding: 30,
-    fontFamily: 'Protest Revolution'
+    fontFamily: 'Architects Daughter'
   },
   title: {
     fontSize: 22,
@@ -3320,7 +3320,7 @@ export default function SongCreator() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zm12 0c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zM9 10l12-3" />
               </svg>
             </div>
-            <span className="text-xl font-black text-gray-900 tracking-tight" style={{ fontFamily: 'Protest Revolution, sans-serif' }}>
+            <span className="text-xl font-black text-gray-900 tracking-tight" style={{ fontFamily: 'Caveat, sans-serif' }}>
               EasyChart
             </span>
           </div>
@@ -3340,7 +3340,7 @@ export default function SongCreator() {
             onChange={(e) => setTituloCancion(e.target.value)}
             className="text-2xl font-bold w-full text-center bg-transparent focus:outline-none placeholder-gray-400"
             placeholder="Título de la canción"
-            style={{ fontFamily: 'Protest Revolution' }}
+            style={{ fontFamily: 'Architects Daughter' }}
           />
           <input
             type="text"
@@ -3348,7 +3348,7 @@ export default function SongCreator() {
             onChange={(e) => setArtista(e.target.value)}
             className="text-lg font-semibold w-full text-center bg-transparent focus:outline-none text-gray-600 placeholder-gray-400"
             placeholder="Autor o Artista"
-            style={{ fontFamily: 'Protest Revolution' }}
+            style={{ fontFamily: 'Architects Daughter' }}
           />
         </div>
       </header>
@@ -3686,7 +3686,7 @@ export default function SongCreator() {
                                 {compas.acordes.map((acorde, dIdx) => (
                                   <button
                                     key={acorde.id}
-                                    style={{ fontFamily: 'Protest Revolution, sans-serif' }}
+                                    style={{ fontFamily: 'Caveat, sans-serif' }}
                                     className={`transition-all duration-150 ease-in-out min-h-[40px] px-2 py-1 text-sm rounded-lg shadow-sm flex items-center justify-center cursor-pointer ${acorde.valor
                                       ? "bg-gray-900 text-white hover:bg-gray-800"
                                       : "bg-blue-50 text-blue-800 hover:bg-blue-100 border border-blue-100"
@@ -3761,7 +3761,7 @@ export default function SongCreator() {
                   key={idx}
                   onClick={() => handleAcordeChange(modalData.seccionId, modalData.lineaIndex, modalData.compasIndex, modalData.divisionIndex, acorde)}
                   className="py-2.5 px-2 bg-gray-100 hover:bg-blue-600 hover:text-white rounded-xl text-xs font-bold transition-colors text-gray-800"
-                  style={{ fontFamily: 'Protest Revolution, sans-serif' }}
+                  style={{ fontFamily: 'Caveat, sans-serif' }}
                 >
                   {acorde}
                 </button>
@@ -4102,7 +4102,7 @@ const SongReader = () => {
               </svg>
             </div>
             <div>
-              <h1 className="text-2xl font-black text-gray-900 tracking-tight" style={{ fontFamily: 'Protest Revolution, sans-serif' }}>
+              <h1 className="text-2xl font-black text-gray-900 tracking-tight" style={{ fontFamily: 'Caveat, sans-serif' }}>
                 EasyChart
               </h1>
               <p className="text-xs text-gray-500 font-medium">Consulta y Lector de Charts Musicales</p>
@@ -4336,7 +4336,7 @@ const SongReader = () => {
 
         {/* Visualización estilo PDF */}
         <div className="bg-white rounded-xl shadow-sm p-8" style={{
-          fontFamily: 'Protest Revolution',
+          fontFamily: 'Architects Daughter',
           boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
         }}>
           {/* Encabezado del Chart*/}

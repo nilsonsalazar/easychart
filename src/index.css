@@ -2,13 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-  font-family: 'Protest Revolution';
-  src: url('../public/fonts/ProtestRevolution-Regular.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
+/* Cargamos Caveat directamente desde Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Architects+Daughter&display=swap');
 
 body {
   margin: 0;
@@ -23,5 +18,3 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
-
-

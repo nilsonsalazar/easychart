@@ -1,9 +1,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+  font-family: 'Architects Daughter';
+  src: url('/fonts/ArchitectsDaughter-Regular.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+}
+
 /* App.css */
-/* src/App.css */
-/* Agrega esto a tu App.css */
 
 .chord-grid-container {
   width: 100%;
@@ -20,12 +26,19 @@
 }
 
 .chord-box {
+  display: inline-block;
   min-width: 200px;
   border: 2px solid #ddd;
   border-radius: 8px;
-  padding: 15px;
-  background: #f9f9f9;
+  padding: 12px 16px;
+  background-color: #edf2f7;
   flex: 1;
+  /* FUENTE Y TAMAÑO AMPLIADO */
+  font-family: 'Architects Daughter', cursive;
+  font-size: 2rem;
+  /* ~32px para vista rápida */
+  font-weight: 600;
+  line-height: 1.1;
 }
 
 .chord-box.hovered {
@@ -45,6 +58,9 @@
 .box-header span {
   font-weight: bold;
   color: #333;
+  font-family: sans-serif;
+  /* Mantiene la cabecera en texto legible no manuscrito */
+  font-size: 0.9rem;
 }
 
 .divide-select {
@@ -62,16 +78,24 @@
 
 .division {
   flex: 1;
+  position: relative;
+  min-height: 60px;
   background: rgba(255, 255, 255, 0.7);
+  border: 1px dashed #ccc;
   border-radius: 4px;
-  padding: 5px;
+  padding: 8px;
   display: flex;
   flex-direction: column;
   gap: 5px;
-  min-height: 100px;
+  transition: all 0.2s;
 }
 
-/* Estilos específicos para cada número de divisiones */
+.division.hovered {
+  background-color: #e3f2fd;
+  border-color: #64b5f6;
+}
+
+/* Divisiones */
 .divisions-1 .division {
   width: 100%;
 }
@@ -96,14 +120,24 @@
   width: calc(12.5% - 7px);
 }
 
+/* ESTILOS DE LOS ACORDES */
 .chord-item {
-  padding: 8px 12px;
+  margin: 4px 0;
+  padding: 10px 14px;
   background: white;
-  border-radius: 4px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   position: relative;
   text-align: center;
   cursor: move;
+
+  /* FUENTE Y TAMAÑO AMPLIADO */
+  font-family: 'Architects Daughter', cursive;
+  font-size: 2.2rem;
+  /* ~35px ideal para el escenario */
+  font-weight: 600;
+  line-height: 1;
+  color: #1a1a1a;
 }
 
 .remove-chord {
@@ -113,59 +147,15 @@
   background: #ff5252;
   color: white;
   border: none;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  font-size: 10px;
+  font-size: 11px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
-}
-
-/* Estilos para móvil */
-@media (max-width: 768px) {
-  .chord-grid {
-    gap: 10px;
-  }
-  
-  .chord-box {
-    min-width: 180px;
-  }
-  
-  .divisions-container {
-    flex-direction: column;
-  }
-  
-  .division {
-    width: 100% !important;
-    min-height: 40px;
-  }
-}
-/* Agrega estos estilos adicionales */
-.division {
-  position: relative;
-  min-height: 60px;
-  border: 1px dashed #ccc;
-  border-radius: 4px;
-  padding: 8px;
-  transition: all 0.2s;
-}
-
-.division.hovered {
-  background-color: #e3f2fd;
-  border-color: #64b5f6;
-}
-
-.chord-item {
-  margin: 4px 0;
-  padding: 6px 10px;
-  background: white;
-  border-radius: 4px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-  cursor: move;
-  text-align: center;
 }
 
 .sections-container {
@@ -174,7 +164,7 @@
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   background-color: #f8fafc;
-  min-height: 200px; /* Altura mínima para que sea visible incluso cuando está vacío */
+  min-height: 200px;
 }
 
 .section {
@@ -185,18 +175,26 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.chord-box {
-  display: inline-block;
-  margin: 4px;
-  padding: 6px 10px;
-  background-color: #edf2f7;
-  border-radius: 4px;
-  border: 1px solid #e2e8f0;
-}
+@media (max-width: 768px) {
+  .chord-grid {
+    gap: 10px;
+  }
 
-@font-face {
-  font-family: 'Protest Revolution';
-  src: url('/fonts/ProtestRevolution-Regular.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
+  .chord-box {
+    min-width: 180px;
+  }
+
+  .divisions-container {
+    flex-direction: column;
+  }
+
+  .division {
+    width: 100% !important;
+    min-height: 40px;
+  }
+
+  .chord-item {
+    font-size: 1.8rem;
+    /* Tamaño optimizado para pantallas de móvil */
+  }
 }

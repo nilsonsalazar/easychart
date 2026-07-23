@@ -5,19 +5,19 @@ import toRoman from "./toRoman";
 
 const getFontUrl = () => {
   if (typeof window !== 'undefined' && window.location && window.location.origin) {
-    return `${window.location.origin}/fonts/ProtestRevolution-Regular.ttf`;
+    return `${window.location.origin}/fonts/ArchitectsDaughter-Regular.ttf`;
   }
-  return `${process.env.PUBLIC_URL || ''}/fonts/ProtestRevolution-Regular.ttf`;
+  return `${process.env.PUBLIC_URL || ''}/fonts/ArchitectsDaughter-Regular.ttf`;
 };
 
 Font.register({
-  family: 'Protest Revolution',
+  family: 'Architects Daughter',
   src: getFontUrl(),
   fontWeight: 'normal',
   fontStyle: 'normal'
 });
 
-// Estilos PDF usando la fuente personalizada 'Protest Revolution'
+// Estilos PDF usando la fuente personalizada 'Architects Daughter'
 const styles = StyleSheet.create({
   sectionHeaderLeft: {
     marginRight: 8,
@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
   },
   page: {
     padding: 30,
-    fontFamily: 'Protest Revolution'
+    fontFamily: 'Architects Daughter'
   },
   title: {
     fontSize: 22,
@@ -116,7 +116,7 @@ const SongPDF = ({ title, artist, sections = [], keySignature = "C", tempo = "12
         <Text style={styles.title}>{title || "Composición Musical"}</Text>
         {artist && <Text style={styles.artist}>{artist}</Text>}
         <Text style={styles.key}>Tonalidad: {keySignature} • Tempo: {tempo}</Text>
-        
+
         {safeSections.map((sec, secIdx) => {
           let measureCount = 0;
           const lineas = Array.isArray(sec?.lineas) ? sec.lineas : [];

@@ -622,7 +622,7 @@ export default function SongCreator() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zm12 0c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zM9 10l12-3" />
               </svg>
             </div>
-            <span className="text-xl font-black text-gray-900 tracking-tight" style={{ fontFamily: 'Protest Revolution, sans-serif' }}>
+            <span className="text-xl font-black text-gray-900 tracking-tight" style={{ fontFamily: 'Caveat, sans-serif' }}>
               EasyChart
             </span>
           </div>
@@ -654,7 +654,7 @@ export default function SongCreator() {
             onChange={(e) => setTituloCancion(e.target.value)}
             className="text-2xl font-bold w-full text-center bg-transparent focus:outline-none placeholder-gray-400"
             placeholder="Título de la canción"
-            style={{ fontFamily: 'Protest Revolution' }}
+            style={{ fontFamily: 'Architects Daughter' }}
           />
           <input
             type="text"
@@ -662,7 +662,7 @@ export default function SongCreator() {
             onChange={(e) => setArtista(e.target.value)}
             className="text-lg font-semibold w-full text-center bg-transparent focus:outline-none text-gray-600 placeholder-gray-400"
             placeholder="Autor o Artista"
-            style={{ fontFamily: 'Protest Revolution' }}
+            style={{ fontFamily: 'Architects Daughter' }}
           />
         </div>
       </header>
@@ -869,9 +869,9 @@ export default function SongCreator() {
           </div>
         </div>
 
-        {/* Secciones de la canción */}
+        {/* Song sections */}
         {secciones.map((sec, secIdx) => (
-          <div key={sec.id} className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
+          <div key={sec.id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
             {/* Header de sección */}
             <div className="flex justify-between items-center p-4 border-b border-gray-100 bg-gray-50">
               {editingSeccionId === sec.id ? (
@@ -879,14 +879,14 @@ export default function SongCreator() {
                   type="text"
                   defaultValue={sec.nombre}
                   onBlur={(e) => editarNombreSeccion(sec.id, e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && editarNombreSeccion(sec.id, e.target.value)}
-                  className="text-lg font-semibold flex-1 bg-transparent focus:outline-none border-b border-blue-500"
+                  onKeyPress={(e) => e.key === 'Enter' && editarNombreSeccion(sec.id, e.target.value)}
+                  className="text-lg font-semibold flex-1 bg-transparent focus:outline-none"
                   autoFocus
                 />
               ) : (
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2">
                   <h3
-                    className="text-lg font-semibold text-gray-800 cursor-pointer hover:text-blue-600"
+                    className="text-lg font-semibold"
                     onClick={() => setEditingSeccionId(sec.id)}
                   >
                     {sec.nombre}
@@ -896,7 +896,7 @@ export default function SongCreator() {
                     onChange={(e) => setSecciones(prev => prev.map(s =>
                       s.id === sec.id ? { ...s, compas: e.target.value } : s
                     ))}
-                    className="text-xs font-medium border border-gray-200 rounded-lg py-1 px-2 bg-white"
+                    className="text-sm border border-gray-300 rounded"
                   >
                     <option value="3/4">3/4</option>
                     <option value="4/4">4/4</option>
@@ -907,8 +907,7 @@ export default function SongCreator() {
 
               <button
                 onClick={() => eliminarSeccion(sec.id)}
-                className="text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-colors"
-                title="Eliminar sección"
+                className="text-red-500 p-1 rounded-full hover:bg-red-50"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
@@ -929,48 +928,54 @@ export default function SongCreator() {
                     <div className="flex items-center">
                       <button
                         onClick={() => toggleRepetirLinea(sec.id, lIdx)}
-                        className={`p-1.5 rounded-lg mr-2 font-mono text-xs font-bold transition-colors ${linea.repetir ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                          }`}
-                        title="Repetir línea"
+                        className={`p-1 rounded mr-2 ${linea.repetir ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'}`}
+                        title="Marcar para repetición"
                       >
-                        :||
+                        {linea.repetir ? '||:' : '||'}
                       </button>
 
-                      <div className="grid grid-cols-4 gap-2 flex-1">
+                      <div className="flex-1 flex flex-nowrap space-x-0 overflow-x-auto pb-2 -mx-2 px-2">
                         {linea.compasses.map((compas, cIdx) => {
                           measureCount++;
                           return (
-                            <div key={compas.id} className="border border-gray-200 rounded-xl p-2 bg-gray-50/50 space-y-2">
-                              <div className="flex justify-between items-center text-xs text-gray-400">
-                                <span className="font-semibold">{toRoman(measureCount)}</span>
-                                <div className="flex items-center space-x-1">
-                                  {[1, 2, 4].map(num => (
-                                    <button
-                                      key={num}
-                                      onClick={() => cambiarDivisiones(sec.id, lIdx, cIdx, num)}
-                                      className={`w-4 h-4 rounded text-[10px] font-bold flex items-center justify-center transition-colors ${compas.divisiones === num ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                                        }`}
-                                    >
-                                      {num}
-                                    </button>
+                            <div
+                              key={compas.id}
+                              className="flex-shrink-0 flex-[0_0_25%] border border-gray-200 rounded-xl p-3 bg-gray-50"
+                            >
+                              <div className="flex justify-between items-center mb-2">
+                                <span className="text-xs font-medium text-gray-500">{toRoman(measureCount)}</span>
+                                <select
+                                  value={compas.divisiones}
+                                  onChange={(e) =>
+                                    cambiarDivisiones(sec.id, lIdx, cIdx, parseInt(e.target.value))
+                                  }
+                                  className="text-xs rounded border-gray-300 bg-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                >
+                                  {[1, 2, 3, 4, 6, 8].map(num => (
+                                    <option key={num} value={num}>{num}</option>
                                   ))}
-                                </div>
+                                </select>
                               </div>
 
-                              <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${compas.divisiones}, minmax(0, 1fr))` }}>
+                              <div className="grid grid-cols-2 gap-1.5">
                                 {compas.acordes.map((acorde, dIdx) => (
                                   <button
                                     key={acorde.id}
-                                    onClick={() => setModalData({
-                                      seccionId: sec.id,
-                                      lineaIndex: lIdx,
-                                      compasIndex: cIdx,
-                                      divisionIndex: dIdx,
-                                      valorActual: acorde.valor
-                                    })}
-                                    className="w-full py-1.5 px-1 bg-white border border-gray-200 rounded-lg text-sm font-bold text-center hover:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors min-h-[32px] flex items-center justify-center"
+                                    style={{ fontFamily: 'Architects Daughter' }}
+                                    className={`transition-all duration-150 ease-in-out min-h-[40px] px-2 py-1 text-sm rounded-lg shadow-sm flex items-center justify-center ${acorde.valor
+                                      ? "bg-gray-900 text-white hover:bg-gray-800"
+                                      : "bg-blue-50 text-blue-800 hover:bg-blue-100 border border-blue-100"
+                                      }`}
+                                    onClick={() => {
+                                      setModalData({
+                                        seccionId: sec.id,
+                                        lineaIndex: lIdx,
+                                        compasIndex: cIdx,
+                                        divisionIndex: dIdx
+                                      });
+                                    }}
                                   >
-                                    {acorde.valor || <span className="text-gray-300">-</span>}
+                                    {acorde.valor || ''}
                                   </button>
                                 ))}
                               </div>
@@ -978,67 +983,140 @@ export default function SongCreator() {
                           );
                         })}
                       </div>
+
                     </div>
+
                   </div>
                 );
+
               })}
 
               <button
                 onClick={() => agregarLinea(sec.id)}
-                className="w-full py-2 border-2 border-dashed border-gray-200 hover:border-blue-400 rounded-xl text-xs font-semibold text-gray-500 hover:text-blue-600 transition-colors"
+                className="w-full flex items-center justify-center px-4 py-2 border border-dashed border-gray-300 rounded-lg text-gray-500 hover:text-gray-700 hover:border-gray-400 hover:bg-gray-50"
               >
-                + Agregar Línea
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                </svg>
+                Add line (4 measures)
               </button>
             </div>
           </div>
         ))}
 
-        {/* Input para nueva sección */}
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={nuevaSeccionNombre}
-            onChange={(e) => setNuevaSeccionNombre(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && agregarSeccion()}
-            placeholder="Nombre de nueva sección (ej: Coro, Estrofa...)"
-            className="flex-1 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
-          />
-          <button
-            onClick={agregarSeccion}
-            className="px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition-colors shadow-sm"
-          >
-            Agregar Sección
-          </button>
+        {/* Add new section */}
+        <div className="bg-white rounded-2xl shadow-sm p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-3">Add new section</h2>
+          <div className="flex space-x-3">
+            <input
+              type="text"
+              value={nuevaSeccionNombre}
+              onChange={(e) => setNuevaSeccionNombre(e.target.value)}
+              placeholder="Section name"
+              className="flex-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3"
+              onKeyPress={(e) => e.key === 'Enter' && agregarSeccion()}
+            />
+            <button
+              onClick={agregarSeccion}
+              disabled={!nuevaSeccionNombre.trim()}
+              className="px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Add
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Modal / Pop-up Teclado Musical */}
+      {/* Chord selection modal */}
       {modalData && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-5 max-w-lg w-full shadow-2xl space-y-4">
-            <div className="flex justify-between items-center border-b border-gray-100 pb-3">
-              <h3 className="font-bold text-gray-800">Seleccionar Acorde</h3>
-              <button
-                onClick={() => setModalData(null)}
-                className="text-gray-400 hover:text-gray-600 text-lg font-bold"
-              >
-                ✕
-              </button>
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">Select chord in {tono}</h3>
             </div>
 
-            <MusicKeyboard
-              currentChord={modalData.valorActual}
-              availableChords={getAcordesDisponibles()}
-              onSelectChord={(nuevoAcorde) => {
-                handleAcordeChange(
-                  modalData.seccionId,
-                  modalData.lineaIndex,
-                  modalData.compasIndex,
-                  modalData.divisionIndex,
-                  nuevoAcorde
-                );
-              }}
-            />
+            <div className="overflow-y-auto p-6">
+              {/* Acordes predefinidos */}
+              <div className="mb-6">
+                <h4 className="text-sm font-medium text-gray-700 mb-3">Common chords</h4>
+                <div className="grid grid-cols-3 gap-2">
+                  {getAcordesDisponibles().map((ac, idx) => (
+                    <button
+                      key={idx}
+                      className="px-3 py-2.5 rounded-lg bg-gray-100 hover:bg-gray-200 active:bg-gray-300 transition-colors duration-100 text-sm font-medium"
+                      style={{ fontFamily: 'Architects Daughter' }}
+                      onClick={() =>
+                        handleAcordeChange(
+                          modalData.seccionId,
+                          modalData.lineaIndex,
+                          modalData.compasIndex,
+                          modalData.divisionIndex,
+                          ac
+                        )
+                      }
+                    >
+                      {ac}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Entrada manual */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Custom chord</label>
+                <div className="flex rounded-lg shadow-sm">
+                  <input
+                    type="text"
+                    id="customChordInput"
+                    className="flex-1 min-w-0 block w-full rounded-l-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 py-2 px-3"
+                    placeholder="Example: C#m7, G7sus4, etc."
+                    style={{ fontFamily: 'Architects Daughter' }}
+                    onClick={(e) => {
+                      const keyboard = document.getElementById('musicKeyboard');
+                      if (keyboard) keyboard.classList.remove('hidden');
+                      e.stopPropagation();
+                    }}
+                  />
+                  <button
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-r-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onClick={() => {
+                      const input = document.getElementById('customChordInput');
+                      if (input.value.trim()) {
+                        handleAcordeChange(
+                          modalData.seccionId,
+                          modalData.lineaIndex,
+                          modalData.compasIndex,
+                          modalData.divisionIndex,
+                          input.value.trim()
+                        );
+                      }
+                    }}
+                  >
+                    Use
+                  </button>
+                </div>
+              </div>
+
+              {/* Teclado virtual */}
+              <div id="musicKeyboard" className="hidden">
+                <MusicKeyboard
+                  onKeyPress={(char) => {
+                    const input = document.getElementById('customChordInput');
+                    input.value = (input.value || '') + char;
+                    input.focus();
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
+              <button
+                onClick={() => setModalData(null)}
+                className="px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}

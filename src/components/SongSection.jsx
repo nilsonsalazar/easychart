@@ -3,7 +3,7 @@ import { useState } from 'react';
 // Función utilitaria para números romanos simples
 function toRoman(num) {
   if (typeof num !== "number") return "";
-  const romans = ["","I","II","III","IV","V","VI","VII","VIII","IX","X"];
+  const romans = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
   return romans[num] || num;
 }
 
@@ -41,7 +41,7 @@ const SongSection = ({
             autoFocus
           />
         ) : (
-          <h2 
+          <h2
             className="text-lg font-semibold text-gray-900 flex-1"
             onClick={() => setEditingId(section.id)}
           >
@@ -57,7 +57,7 @@ const SongSection = ({
           </svg>
         </button>
       </div>
-      
+
       {/* Contenido de la sección */}
       <div className="p-4 space-y-4">
         {section.lineas.map((linea, lIdx) => {
@@ -65,7 +65,7 @@ const SongSection = ({
           for (let i = 0; i < lIdx; i++) {
             measureCount += section.lineas[i].compases.length;
           }
-          
+
           return (
             <div key={linea.id} className="space-y-3">
               <div className="flex space-x-1 overflow-x-auto pb-2 -mx-2 px-2">
@@ -77,7 +77,7 @@ const SongSection = ({
                         <span className="text-xs font-medium text-gray-500">{toRoman(measureCount)}</span>
                         <select
                           value={compas.divisiones}
-                          onChange={(e) => 
+                          onChange={(e) =>
                             onChangeDivisions(section.id, lIdx, cIdx, parseInt(e.target.value))
                           }
                           className="text-xs rounded border-gray-300 bg-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -87,26 +87,25 @@ const SongSection = ({
                           ))}
                         </select>
                       </div>
-                      
+
                       <div className="grid grid-cols-2 gap-1.5">
                         {compas.acordes.map((acorde, dIdx) => (
                           <button
                             key={acorde.id}
-                            style={{ fontFamily: 'Protest Revolution' }}
+                            style={{ fontFamily: 'Architects Daughter' }}
                             className={`transition-all duration-150 ease-in-out 
                               min-h-[40px] px-2 py-1 text-sm rounded-lg shadow-sm
                               flex items-center justify-center 
-                              ${
-                                acorde.valor
-                                  ? "bg-gray-900 text-white hover:bg-gray-800"
-                                  : "bg-blue-50 text-blue-800 hover:bg-blue-100 border border-blue-100"
+                              ${acorde.valor
+                                ? "bg-gray-900 text-white hover:bg-gray-800"
+                                : "bg-blue-50 text-blue-800 hover:bg-blue-100 border border-blue-100"
                               }`}
                             onClick={() => {
-                              onOpenChordModal({ 
-                                seccionId: section.id, 
-                                lineaIndex: lIdx, 
-                                compasIndex: cIdx, 
-                                divisionIndex: dIdx 
+                              onOpenChordModal({
+                                seccionId: section.id,
+                                lineaIndex: lIdx,
+                                compasIndex: cIdx,
+                                divisionIndex: dIdx
                               });
                             }}
                           >
@@ -121,7 +120,7 @@ const SongSection = ({
             </div>
           );
         })}
-        
+
         <button
           onClick={() => onAddLine(section.id)}
           className="w-full flex items-center justify-center px-4 py-2 border border-dashed border-gray-300 rounded-lg text-gray-500 hover:text-gray-700 hover:border-gray-400 hover:bg-gray-50"

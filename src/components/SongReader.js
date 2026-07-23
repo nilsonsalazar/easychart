@@ -335,7 +335,7 @@ const SongReader = () => {
               </svg>
             </div>
             <div>
-              <h1 className="text-2xl font-black text-gray-900 tracking-tight" style={{ fontFamily: 'Protest Revolution, sans-serif' }}>
+              <h1 className="text-2xl font-black text-gray-900 tracking-tight" style={{ fontFamily: 'Caveat, sans-serif' }}>
                 EasyChart
               </h1>
               <p className="text-xs text-gray-500 font-medium">Consulta y Lector de Charts Musicales</p>
@@ -532,7 +532,7 @@ const SongReader = () => {
         {/* VISTA DEL CHART (SI HAY CANCIÓN CARGADA) O MENSAJE VACÍO */}
         {selectedSongId ? (
           <div className="bg-white rounded-xl shadow-sm p-8" style={{
-            fontFamily: 'Protest Revolution',
+            fontFamily: 'Architects Daughter',
             boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
           }}>
             <div className="text-center mb-8">
@@ -577,7 +577,7 @@ const SongReader = () => {
                                 }}
                               >
                                 {compass.acordes.map((acorde, dIdx) => (
-                                  <div key={dIdx} className="py-1 text-lg">
+                                  <div key={dIdx} className="py-1 text-2xl font-extrabold">
                                     {acorde.valor || "-"}
                                   </div>
                                 ))}

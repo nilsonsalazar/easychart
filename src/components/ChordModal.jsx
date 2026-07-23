@@ -1,11 +1,11 @@
 import MusicKeyboard from './MusicKeyboard';
 
-const ChordModal = ({ 
-  isOpen, 
-  onClose, 
-  onChordSelect, 
+const ChordModal = ({
+  isOpen,
+  onClose,
+  onChordSelect,
   tono,
-  acordesDisponibles 
+  acordesDisponibles
 }) => {
   if (!isOpen) return null;
 
@@ -23,7 +23,7 @@ const ChordModal = ({
         <div className="p-6 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">Seleccionar acorde en {tono}</h3>
         </div>
-        
+
         <div className="overflow-y-auto p-6">
           {/* Acordes predefinidos */}
           <div className="mb-6">
@@ -33,7 +33,7 @@ const ChordModal = ({
                 <button
                   key={idx}
                   className="px-3 py-2.5 rounded-lg bg-gray-100 hover:bg-gray-200 active:bg-gray-300 transition-colors duration-100 text-sm font-medium"
-                  style={{ fontFamily: 'Protest Revolution' }}
+                  style={{ fontFamily: 'Architects Daughter' }}
                   onClick={() => onChordSelect(ac)}
                 >
                   {ac}
@@ -41,7 +41,7 @@ const ChordModal = ({
               ))}
             </div>
           </div>
-          
+
           {/* Entrada manual */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">Acorde personalizado</label>
@@ -51,7 +51,7 @@ const ChordModal = ({
                 id="customChordInput"
                 className="flex-1 min-w-0 block w-full rounded-l-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 py-2 px-3"
                 placeholder="Ej: C#m7, G7sus4, etc."
-                style={{ fontFamily: 'Protest Revolution' }}
+                style={{ fontFamily: 'Architects Daughter' }}
                 onClick={(e) => {
                   const keyboard = document.getElementById('musicKeyboard');
                   if (keyboard) keyboard.classList.remove('hidden');
@@ -66,10 +66,10 @@ const ChordModal = ({
               </button>
             </div>
           </div>
-          
+
           {/* Teclado virtual */}
           <div id="musicKeyboard" className="hidden">
-            <MusicKeyboard 
+            <MusicKeyboard
               onKeyPress={(char) => {
                 const input = document.getElementById('customChordInput');
                 input.value = (input.value || '') + char;
@@ -78,7 +78,7 @@ const ChordModal = ({
             />
           </div>
         </div>
-        
+
         <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
           <button
             onClick={onClose}
