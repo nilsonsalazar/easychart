@@ -4,6 +4,7 @@ import SongReader from "./components/SongReader";
 import SongCreator from "./components/SongCreator";
 
 // Componente para manejar el inicio de sesión
+// Componente Login - Estética Vintage/Live Stage (Hendrix / Floyd / Live Gospel)
 function Login({ onLoginSuccess }) {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -18,9 +19,7 @@ function Login({ onLoginSuccess }) {
     try {
       const response = await fetch('https://visual777.pt/easychart/login.php', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone, password }),
       });
 
@@ -30,13 +29,8 @@ function Login({ onLoginSuccess }) {
         throw new Error(resData.message || 'Error de autenticación');
       }
 
-      // Extraemos el token desde resData.data
       const token = resData.data.token;
-
-      // Guardar en localStorage
       localStorage.setItem('easychart_token', token);
-
-      // Actualizar el estado para mostrar las rutas de la app
       onLoginSuccess(token);
     } catch (err) {
       setError(err.message);
@@ -46,45 +40,92 @@ function Login({ onLoginSuccess }) {
   };
 
   return (
-    <div style={{ maxWidth: '360px', margin: '80px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '8px', fontFamily: 'sans-serif' }}>
-      <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>EasyChart - Login</h2>
-      {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
+    <div className="relative min-h-screen bg-[#0A0A0B] text-amber-50 flex items-center justify-center p-4 overflow-hidden font-sans">
 
-      <form onSubmit={handleLogin}>
-        <div style={{ marginBottom: '12px' }}>
-          <label style={{ display: 'block', marginBottom: '4px' }}>Teléfono:</label>
-          <input
-            type="text"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            required
-            style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
-          />
+      {/* Fondo con imagen de escenario/estudio + Degradado a negro */}
+      <div
+        className="absolute inset-0 bg-cover bg-center opacity-70 scale-105 filter blur-[2px]"
+        style={{
+          backgroundImage: `url('https://images.unsplash.com/photo-1564186763535-ebb21ef5277f?q=80&w=1920&auto=format&fit=crop')`
+        }}
+      />
+
+      {/* Viñeta oscura para enfocar el centro */}
+      <div className="absolute inset-0 bg-radial-vignette bg-gradient-to-t from-[#0A0A0B] via-[#0A0A0B]/80 to-[#0A0A0B]/60" />
+
+      {/* Contenedor Login estilo 'Rack' / Analógico */}
+      <div className="relative w-full max-w-sm bg-white/90 border border-stone-800/80 rounded-xl p-7 shadow-2xl backdrop-blur-md">
+
+        {/* Cabecera */}
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-stone-900/90 border border-amber-900/40 mb-3">
+            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+            <span className="text-[10px] font-mono tracking-[0.2em] uppercase text-amber-200/80">
+              EASYCHART
+            </span>
+          </div>
+          <h2 className="text-xl font-bold tracking-tight text-stone-100 font-serif">
+            Charts & Setlists
+          </h2>
+          <p className="text-xs text-stone-400 mt-1">
+            Estructuras y cifrados para el ensayo y el directo.
+          </p>
         </div>
 
-        <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', marginBottom: '4px' }}>Contraseña:</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
-          />
+        {error && (
+          <div className="mb-4 p-2.5 rounded bg-red-950/40 border border-red-800/50 text-red-300 text-xs text-center font-mono">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <label className="block text-[10px] font-mono uppercase tracking-widest text-stone-400 mb-1.5">
+              Teléfono / Usuario
+            </label>
+            <input
+              type="text"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+351 912 345 678"
+              required
+              className="w-full px-3.5 py-2.5 rounded-lg bg-[#080809] border border-stone-800 text-sm font-mono text-amber-100 placeholder-stone-600 outline-none focus:border-amber-700/80 transition-all"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-mono uppercase tracking-widest text-stone-400 mb-1.5">
+              Contraseña
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+              className="w-full px-3.5 py-2.5 rounded-lg bg-[#080809] border border-stone-800 text-sm font-mono text-amber-100 placeholder-stone-600 outline-none focus:border-amber-700/80 transition-all"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 mt-2 rounded-lg bg-stone-200 hover:bg-amber-100 text-stone-950 font-semibold text-xs tracking-wider uppercase transition-all shadow-md active:scale-[0.99] disabled:opacity-50"
+          >
+            {loading ? 'CARGANDO REPERTORIO...' : 'ENTRAR AL REPERTORIO'}
+          </button>
+        </form>
+
+        <div className="mt-6 pt-4 border-t border-stone-800/60 text-center">
+          <span className="text-[10px] font-mono text-stone-500 tracking-wider">
+            LIVE BAND SYSTEM • V 1.0
+          </span>
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          style={{ width: '100%', padding: '10px', backgroundColor: '#007bff', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-        >
-          {loading ? 'Entrando...' : 'Iniciar Sesión'}
-        </button>
-      </form>
+      </div>
     </div>
   );
 }
-
 export default function App() {
   const [token, setToken] = useState(localStorage.getItem('easychart_token'));
 

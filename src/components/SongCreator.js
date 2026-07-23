@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import ReactDOM from "react-dom";
 import { Link } from "react-router-dom";
 import circulos from "./circulos";
 import { API_URL, API_CONFIG } from './config';
@@ -17,27 +18,24 @@ export default function SongCreator() {
   const [filteredSongs, setFilteredSongs] = useState([]);
   const [showSongDropdown, setShowSongDropdown] = useState(false);
   const [showToneMenu, setShowToneMenu] = useState(false);
-  const handleLogout = () => {
-    // 1. Eliminamos el token de autenticación
-    localStorage.removeItem('easychart_token');
 
-    // 2. Redirigimos a la raíz o refrescamos para que el App.js evalúe la sesión
+  // Posiciones para portales flotantes (igual que SongReader)
+  const [toneMenuCoords, setToneMenuCoords] = useState({ top: 0, left: 0, width: 0 });
+  const [searchCoords, setSearchCoords] = useState({ top: 0, left: 0, width: 0 });
+
+  const searchInputRef = useRef(null);
+  const toneBtnRef = useRef(null);
+  const toneMenuRef = useRef(null);
+  const searchDropdownRef = useRef(null);
+
+  const handleLogout = () => {
+    localStorage.removeItem('easychart_token');
     window.location.href = '/';
   };
 
   const tonos = [
-    "C",
-    "D♭",
-    "D",
-    "E♭",
-    "E",
-    "F",
-    "G♭",
-    "G",
-    "A♭",
-    "A",
-    "B♭",
-    "B",
+    "C", "D♭", "D", "E♭", "E", "F",
+    "G♭", "G", "A♭", "A", "B♭", "B"
   ];
   const [selectedSongId, setSelectedSongId] = useState(null);
 
@@ -68,6 +66,65 @@ export default function SongCreator() {
   const [tituloCancion, setTituloCancion] = useState("");
   const [artista, setArtista] = useState("");
   const [showPDFOptions, setShowPDFOptions] = useState(false);
+
+  // Calcular posiciones absolutas en pantalla al abrir desplegables o hacer scroll
+  const updateToneCoords = () => {
+    if (toneBtnRef.current) {
+      const rect = toneBtnRef.current.getBoundingClientRect();
+      setToneMenuCoords({
+        top: rect.bottom + window.scrollY + 8,
+        left: rect.left + window.scrollX,
+        width: Math.max(rect.width, 320)
+      });
+    }
+  };
+
+  const updateSearchCoords = () => {
+    if (searchInputRef.current) {
+      const rect = searchInputRef.current.getBoundingClientRect();
+      setSearchCoords({
+        top: rect.bottom + window.scrollY + 8,
+        left: rect.left + window.scrollX,
+        width: rect.width
+      });
+    }
+  };
+
+  const toggleToneMenu = () => {
+    if (!showToneMenu) {
+      updateToneCoords();
+    }
+    setShowToneMenu(!showToneMenu);
+  };
+
+  // Escuchar clics fuera de los menús para cerrarlos con seguridad
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        toneBtnRef.current && !toneBtnRef.current.contains(event.target) &&
+        toneMenuRef.current && !toneMenuRef.current.contains(event.target)
+      ) {
+        setShowToneMenu(false);
+      }
+
+      if (
+        searchInputRef.current && !searchInputRef.current.contains(event.target) &&
+        searchDropdownRef.current && !searchDropdownRef.current.contains(event.target)
+      ) {
+        setShowSongDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    window.addEventListener("resize", updateToneCoords);
+    window.addEventListener("scroll", updateToneCoords, true);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("resize", updateToneCoords);
+      window.removeEventListener("scroll", updateToneCoords, true);
+    };
+  }, []);
 
   const generarId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
@@ -162,7 +219,6 @@ export default function SongCreator() {
     return tonoActual.degrees.flatMap(degree => degree.common_extensions);
   };
 
-  // useEffect con autenticación
   useEffect(() => {
     const fetchSongs = async () => {
       const token = localStorage.getItem('easychart_token');
@@ -192,6 +248,7 @@ export default function SongCreator() {
             );
             setFilteredSongs(filtered);
             setShowSongDropdown(filtered.length > 0);
+            updateSearchCoords();
           }
         } else {
           console.error('Error al cargar canciones:', data.error);
@@ -205,6 +262,7 @@ export default function SongCreator() {
 
   const handleSearch = async (term) => {
     setSearchTerm(term);
+    updateSearchCoords();
 
     if (!term.trim()) {
       setFilteredSongs([]);
@@ -363,7 +421,6 @@ export default function SongCreator() {
     );
   };
 
-  // Petición POST con token JWT
   const saveSong = async () => {
     if (!tituloCancion.trim()) {
       alert("Por favor, ingresa el título de la canción antes de guardar.");
@@ -420,7 +477,6 @@ export default function SongCreator() {
     }
   };
 
-  // Petición PUT con token JWT
   const updateSong = async (songId) => {
     if (!tituloCancion.trim()) {
       alert("Por favor, ingresa el título de la canción antes de actualizar.");
@@ -469,7 +525,6 @@ export default function SongCreator() {
     }
   };
 
-  // Petición GET individual con token JWT
   const loadSong = async (songId) => {
     const token = localStorage.getItem('easychart_token');
     try {
@@ -567,7 +622,6 @@ export default function SongCreator() {
     }
   };
 
-  // Búsqueda remota con token JWT
   const searchSongs = async (searchTerm) => {
     const token = localStorage.getItem('easychart_token');
     try {
@@ -612,125 +666,116 @@ export default function SongCreator() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 pb-20">
-      {/* Header con marca EasyChart y títulos */}
-      <header className="sticky top-0 z-10 bg-white/95 backdrop-blur shadow-sm py-4 px-6 rounded-2xl mb-6 border border-gray-100">
-        <div className="max-w-4xl mx-auto flex justify-between items-center flex-wrap gap-4 mb-3 pb-3 border-b border-gray-100">
+    <div className="min-h-screen bg-[#0A0A0B]/90 text-stone-200 p-4 pb-20">
+      {/* HEADER TIPO RACK (Estilo unificado con SongReader) */}
+      <header className="sticky top-0 z-10 bg-[#121214]/80 backdrop-blur-md shadow-2xl py-4 px-6 rounded-2xl mb-6 border border-stone-800/80">
+        <div className="max-w-4xl mx-auto flex justify-between items-center flex-wrap gap-4 mb-3 pb-3 border-b border-stone-800/80">
           <div className="flex items-center space-x-3">
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-2 rounded-xl shadow-md">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zm12 0c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zM9 10l12-3" />
+            <div className="bg-gradient-to-r from-amber-600 to-amber-500 text-stone-950 p-2.5 rounded-xl shadow-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
             </div>
-            <span className="text-xl font-black text-gray-900 tracking-tight" style={{ fontFamily: 'Caveat, sans-serif' }}>
-              EasyChart
-            </span>
+            <div>
+              <h1 className="text-2xl font-black text-amber-500 tracking-tight" style={{ fontFamily: 'Caveat, sans-serif' }}>
+                EasyChart Creator
+              </h1>
+              <p className="text-xs text-stone-400 font-medium">Editor y Creador de Charts Musicales</p>
+            </div>
           </div>
 
-          <Link
-            to="/"
-            className="flex items-center px-3.5 py-1.5 bg-gray-100 text-gray-700 font-medium text-xs rounded-xl hover:bg-gray-200 transition-all"
-          >
-            ← Volver a Consulta
-          </Link>
-          {/* BOTÓN DE LOGOUT */}
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="flex items-center px-3.5 py-2.5 bg-gray-100 text-gray-700 hover:bg-red-50 hover:text-red-600 font-medium text-sm rounded-xl transition-all border border-gray-200 cursor-pointer"
-            title="Cerrar Sesión"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            <span className="hidden sm:inline">Salir</span>
-          </button>
+          <div className="flex items-center gap-3">
+            <Link
+              to="/"
+              className="flex items-center px-4 py-2.5 bg-stone-900/80 text-stone-300 font-medium text-sm rounded-xl hover:bg-stone-800 transition-all border border-stone-800"
+            >
+              ← Volver a Consulta
+            </Link>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="flex items-center px-3.5 py-2.5 bg-stone-900/80 text-stone-400 hover:bg-red-950/40 hover:text-red-400 font-medium text-sm rounded-xl transition-all border border-stone-800 cursor-pointer"
+              title="Cerrar Sesión"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              <span className="hidden sm:inline">Salir</span>
+            </button>
+          </div>
         </div>
 
-        <div className="space-y-1">
+        <div className="space-y-2 max-w-4xl mx-auto">
           <input
             type="text"
             value={tituloCancion}
             onChange={(e) => setTituloCancion(e.target.value)}
-            className="text-2xl font-bold w-full text-center bg-transparent focus:outline-none placeholder-gray-400"
+            className="text-2xl sm:text-3xl font-black w-full text-center bg-transparent focus:outline-none text-stone-100 placeholder-stone-600 tracking-tight"
             placeholder="Título de la canción"
-            style={{ fontFamily: 'Architects Daughter' }}
           />
           <input
             type="text"
             value={artista}
             onChange={(e) => setArtista(e.target.value)}
-            className="text-lg font-semibold w-full text-center bg-transparent focus:outline-none text-gray-600 placeholder-gray-400"
+            className="text-lg sm:text-xl font-semibold w-full text-center bg-transparent focus:outline-none text-stone-400 placeholder-stone-600"
             placeholder="Autor o Artista"
-            style={{ fontFamily: 'Architects Daughter' }}
           />
         </div>
       </header>
 
       <div className="max-w-4xl mx-auto space-y-6">
-        {/* Controles principales */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-gray-900">Configuración</h2>
-
-          {/* Input de búsqueda de canciones */}
-          <div className="relative mt-3">
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => handleSearch(e.target.value)}
-              placeholder="Titulo o Autor/Artista..."
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-            />
-
-            {showSongDropdown && filteredSongs.length > 0 && (
-              <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                {filteredSongs.map(song => (
-                  <div
-                    key={song.id}
-                    className={`p-3 hover:bg-gray-100 cursor-pointer ${selectedSongId === song.id ? 'bg-blue-50' : ''}`}
-                    onClick={() => {
-                      loadSong(song.id);
-                      setSearchTerm(song.title);
-                      setSelectedSongId(song.id);
-                      setShowSongDropdown(false);
-                    }}
-                  >
-                    <div className="font-medium">{song.title}</div>
-                    <div className="text-sm text-gray-600">
-                      {song.key_signature} • {song.tempo} BPM
-                    </div>
-                  </div>
-                ))}
+        {/* CONTENEDOR BUSCADOR Y CONFIGURACIÓN */}
+        <div className="bg-[#121214]/70 backdrop-blur-md rounded-2xl shadow-xl border border-stone-800/80 p-6 space-y-5">
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-amber-500/90 mb-2">
+              Buscar título o artista
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-500">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
               </div>
-            )}
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchTerm}
+                onChange={(e) => handleSearch(e.target.value)}
+                onFocus={() => {
+                  updateSearchCoords();
+                  if (filteredSongs.length > 0) setShowSongDropdown(true);
+                }}
+                placeholder="Buscar título o artista..."
+                className="w-full pl-10 pr-4 py-3 bg-stone-950/80 border border-stone-800 rounded-xl focus:outline-none focus:border-amber-500/80 focus:ring-1 focus:ring-amber-500/50 transition-all text-stone-100 placeholder-stone-500 font-medium"
+              />
+            </div>
           </div>
 
-          <div className="space-y-4 pt-2">
-            {/* Fila de Botones para cambiar Tonalidad */}
+          <div className="space-y-4 pt-4 border-t border-stone-800/80">
             <div>
               <div className="flex justify-between items-center mb-2">
-                <label className="text-xs font-extrabold uppercase tracking-wider text-gray-600 flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <label className="text-xs font-extrabold uppercase tracking-wider text-stone-400 flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zm12 0c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zM9 10l12-3" />
                   </svg>
                   Tonalidad Directa
                 </label>
-                <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">
+                <span className="text-xs font-bold text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
                   Tono Actual: {tono} {semitono !== 0 ? `(${semitono > 0 ? '+' : ''}${semitono} st)` : ''}
                 </span>
               </div>
 
-              {/* Grid de Botones de Tono */}
-              <div className="relative">
+              <div>
                 <button
+                  ref={toneBtnRef}
                   type="button"
-                  onClick={() => setShowToneMenu(!showToneMenu)}
-                  className="flex items-center justify-between w-full sm:w-64 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow hover:shadow-lg transition"
+                  onClick={toggleToneMenu}
+                  className="flex items-center justify-between w-full sm:w-64 px-4 py-3 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 text-stone-950 font-bold shadow-lg hover:shadow-amber-500/20 transition cursor-pointer"
                 >
                   <span>
                     🎵 Tono: <strong>{tono}</strong>
                   </span>
-
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className={`w-5 h-5 transition-transform ${showToneMenu ? "rotate-180" : ""}`}
@@ -738,51 +783,15 @@ export default function SongCreator() {
                     viewBox="0 0 24 24"
                     stroke="currentColor"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
-
-                {showToneMenu && (
-                  <div className="absolute z-50 mt-2 w-full sm:w-72 rounded-2xl border bg-white shadow-2xl p-3">
-                    <p className="text-xs text-gray-500 mb-3">
-                      Selecciona una tonalidad
-                    </p>
-
-                    <div className="grid grid-cols-4 gap-2">
-                      {tonos.map((t) => {
-                        const activo = tono === t;
-                        return (
-                          <button
-                            key={t}
-                            type="button"
-                            onClick={() => {
-                              cambiarTonalidad(t);
-                              setShowToneMenu(false);
-                            }}
-                            className={`py-2 rounded-xl font-bold transition ${activo
-                              ? "bg-blue-600 text-white"
-                              : "bg-gray-100 hover:bg-blue-100"
-                              }`}
-                          >
-                            {t}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
-              {/* Tempo */}
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">Tempo (BPM)</label>
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-1">
+              <div className="w-full md:w-auto">
+                <label className="block text-xs font-bold uppercase tracking-wider text-stone-400 mb-1.5">Tempo (BPM)</label>
                 <input
                   type="number"
                   value={tempo}
@@ -791,45 +800,38 @@ export default function SongCreator() {
                   min="0"
                   max="360"
                   step="1"
-                  className="w-28 rounded-xl border-gray-200 bg-gray-50 py-2 px-3 text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:bg-white"
+                  className="w-full md:w-32 rounded-xl border border-stone-800 bg-stone-950/80 py-2.5 px-3 text-sm font-bold text-stone-100 focus:outline-none focus:border-amber-500/80"
                 />
               </div>
 
-              {/* Botones de Subir / Bajar Tono */}
-              <div className="flex items-center space-x-2">
+              <div className="w-full md:w-auto flex-1 flex items-center justify-center gap-2">
                 <button
                   type="button"
                   onClick={() => ajustarSemitono(-1)}
-                  className="flex items-center space-x-1.5 py-2 px-3 bg-white border border-gray-200 hover:border-blue-400 hover:bg-blue-50/50 text-gray-800 rounded-xl font-bold text-xs shadow-sm transition-all active:scale-95 cursor-pointer group"
-                  title="Bajar medio tono (-1 semitono)"
+                  className="flex-1 flex items-center justify-center space-x-1.5 py-2.5 px-3 bg-stone-900 border border-stone-800 hover:border-amber-500/50 hover:bg-stone-800/80 text-stone-200 rounded-xl font-bold text-xs shadow-sm transition-all active:scale-95 cursor-pointer group"
                 >
-                  <span className="w-5 h-5 rounded-md bg-blue-100 group-hover:bg-blue-200 text-blue-700 flex items-center justify-center text-xs font-black">
-                    ♭
-                  </span>
-                  <span>Bajar Tono (-1 st)</span>
+                  <span className="w-5 h-5 rounded bg-stone-800 group-hover:bg-amber-500/20 text-amber-500 flex items-center justify-center font-black">♭</span>
+                  <span>-1 st</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => ajustarSemitono(1)}
-                  className="flex items-center space-x-1.5 py-2 px-3 bg-white border border-gray-200 hover:border-indigo-400 hover:bg-indigo-50/50 text-gray-800 rounded-xl font-bold text-xs shadow-sm transition-all active:scale-95 cursor-pointer group"
-                  title="Subir medio tono (+1 semitono)"
+                  className="flex-1 flex items-center justify-center space-x-1.5 py-2.5 px-3 bg-stone-900 border border-stone-800 hover:border-amber-500/50 hover:bg-stone-800/80 text-stone-200 rounded-xl font-bold text-xs shadow-sm transition-all active:scale-95 cursor-pointer group"
                 >
-                  <span>Subir Tono (+1 st)</span>
-                  <span className="w-5 h-5 rounded-md bg-indigo-100 group-hover:bg-indigo-200 text-indigo-700 flex items-center justify-center text-xs font-black">
-                    ♯
-                  </span>
+                  <span>+1 st</span>
+                  <span className="w-5 h-5 rounded bg-stone-800 group-hover:bg-amber-500/20 text-amber-500 flex items-center justify-center font-black">♯</span>
                 </button>
               </div>
             </div>
 
-            {/* Acciones principales: Guardar y PDF */}
-            <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-gray-100">
+            {/* Acciones de Guardado y Exportación */}
+            <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-stone-800/80">
               <button
                 onClick={() => selectedSongId ? updateSong(selectedSongId) : saveSong()}
-                className="flex items-center px-4 py-2.5 border border-transparent rounded-xl shadow-sm text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer"
+                className="flex items-center px-5 py-2.5 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-stone-950 font-bold text-sm rounded-xl transition-all shadow-md cursor-pointer"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
                   <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z" />
                 </svg>
                 {selectedSongId ? 'Actualizar Canción' : 'Guardar Canción'}
@@ -843,22 +845,21 @@ export default function SongCreator() {
                   }
                   setShowPDFOptions(!showPDFOptions);
                 }}
-                className="flex items-center px-4 py-2.5 border border-transparent rounded-xl shadow-sm text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                className="flex items-center px-5 py-2.5 bg-stone-900 border border-stone-800 text-stone-200 hover:bg-stone-800 font-bold text-sm rounded-xl transition-all shadow-sm cursor-pointer"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-amber-500" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L10 11.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
                 </svg>
                 {showPDFOptions ? 'Ocultar PDF' : 'Exportar a PDF'}
               </button>
             </div>
 
-            {/* Panel de opciones PDF */}
             {showPDFOptions && (
-              <div className="mt-4 p-4 border border-gray-200 rounded-xl bg-gray-50">
+              <div className="mt-3 p-4 border border-stone-800 rounded-xl bg-stone-950/60">
                 <PDFDownloadLink
                   document={<SongPDF title={tituloCancion} artist={artista} sections={secciones} keySignature={tono} tempo={tempo} />}
                   fileName={`${(tituloCancion || 'cancion').replace(/\s+/g, '_')}.pdf`}
-                  className="block w-full text-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-sm font-semibold focus:outline-none cursor-pointer"
+                  className="block w-full text-center px-4 py-2.5 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-stone-950 font-bold text-sm rounded-xl transition-all shadow-md cursor-pointer"
                 >
                   {({ loading, error }) => (
                     loading ? 'Preparando PDF...' : error ? 'Error al generar PDF' : 'Descargar PDF ahora'
@@ -869,256 +870,209 @@ export default function SongCreator() {
           </div>
         </div>
 
-        {/* Song sections */}
+        {/* AGREGAR NUEVA SECCIÓN */}
+        <div className="bg-[#121214]/70 backdrop-blur-md rounded-2xl shadow-xl border border-stone-800/80 p-6 flex flex-col md:flex-row items-center gap-3">
+          <input
+            type="text"
+            value={nuevaSeccionNombre}
+            onChange={(e) => setNuevaSeccionNombre(e.target.value)}
+            placeholder="Nombre de nueva sección (ej. Coro, Intro...)"
+            className="flex-1 w-full px-4 py-3 bg-stone-950/80 border border-stone-800 rounded-xl focus:outline-none focus:border-amber-500/80 text-stone-100 font-medium"
+          />
+          <button
+            type="button"
+            onClick={agregarSeccion}
+            className="w-full md:w-auto px-5 py-3 bg-stone-900 border border-stone-800 hover:border-amber-500/50 hover:bg-stone-800 text-amber-500 font-bold text-sm rounded-xl transition cursor-pointer"
+          >
+            + Agregar Sección
+          </button>
+        </div>
+
+        {/* SONG SECTIONS CON ESTILO RACK */}
         {secciones.map((sec, secIdx) => (
-          <div key={sec.id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
+          <div key={sec.id} className="bg-[#121214]/80 backdrop-blur-md rounded-2xl shadow-2xl overflow-hidden border border-stone-800/80 text-stone-200">
             {/* Header de sección */}
-            <div className="flex justify-between items-center p-4 border-b border-gray-100 bg-gray-50">
+            <div className="flex justify-between items-center p-4 border-b border-stone-800 bg-stone-900/50">
               {editingSeccionId === sec.id ? (
                 <input
                   type="text"
                   defaultValue={sec.nombre}
                   onBlur={(e) => editarNombreSeccion(sec.id, e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && editarNombreSeccion(sec.id, e.target.value)}
-                  className="text-lg font-semibold flex-1 bg-transparent focus:outline-none"
                   autoFocus
+                  className="px-3 py-1.5 bg-stone-950 border border-amber-500/60 rounded-xl text-stone-100 font-bold text-base focus:outline-none"
                 />
               ) : (
-                <div className="flex items-center space-x-2">
-                  <h3
-                    className="text-lg font-semibold"
-                    onClick={() => setEditingSeccionId(sec.id)}
-                  >
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold text-amber-400 text-lg uppercase tracking-wider">
                     {sec.nombre}
                   </h3>
-                  <select
-                    value={sec.compas}
-                    onChange={(e) => setSecciones(prev => prev.map(s =>
-                      s.id === sec.id ? { ...s, compas: e.target.value } : s
-                    ))}
-                    className="text-sm border border-gray-300 rounded"
+                  <button
+                    onClick={() => setEditingSeccionId(sec.id)}
+                    className="text-stone-500 hover:text-amber-400 transition text-sm cursor-pointer"
+                    title="Editar nombre"
                   >
-                    <option value="3/4">3/4</option>
-                    <option value="4/4">4/4</option>
-                    <option value="6/8">6/8</option>
-                  </select>
+                    ✏️
+                  </button>
                 </div>
               )}
 
               <button
                 onClick={() => eliminarSeccion(sec.id)}
-                className="text-red-500 p-1 rounded-full hover:bg-red-50"
+                className="text-xs font-bold uppercase tracking-wider text-red-400 hover:text-red-300 px-3.5 py-1.5 bg-red-950/40 rounded-xl border border-red-900/50 transition cursor-pointer"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
+                Eliminar Sección
               </button>
             </div>
 
-            {/* Contenido de la sección */}
-            <div className="p-4 space-y-4">
-              {sec.lineas.map((linea, lIdx) => {
-                let measureCount = 0;
-                for (let i = 0; i < lIdx; i++) {
-                  measureCount += sec.lineas[i].compasses.length;
-                }
+            {/* Contenido de líneas de la sección */}
+            <div className="p-6 space-y-6" style={{ fontFamily: 'Architects Daughter, cursive' }}>
+              {sec.lineas.map((linea, lIdx) => (
+                <div key={linea.id} className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => toggleRepetirLinea(sec.id, lIdx)}
+                    className={`px-3 py-1 rounded-lg border font-mono text-sm font-bold transition cursor-pointer ${linea.repetir ? "bg-amber-500/20 border-amber-500 text-amber-400" : "bg-stone-900 border-stone-800 text-stone-500 hover:text-stone-300"
+                      }`}
+                    title="Alternar barra de repetición (% / :||)"
+                  >
+                    {linea.repetir ? "% :||" : "Repetir"}
+                  </button>
 
-                return (
-                  <div key={linea.id} className="space-y-3">
-                    <div className="flex items-center">
-                      <button
-                        onClick={() => toggleRepetirLinea(sec.id, lIdx)}
-                        className={`p-1 rounded mr-2 ${linea.repetir ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'}`}
-                        title="Marcar para repetición"
-                      >
-                        {linea.repetir ? '||:' : '||'}
-                      </button>
+                  <div className="flex justify-evenly gap-0 flex-1">
+                    {linea.compasses.map((compass, cIdx) => {
+                      const divisiones = compass.acordes.length;
 
-                      <div className="flex-1 flex flex-nowrap space-x-0 overflow-x-auto pb-2 -mx-2 px-2">
-                        {linea.compasses.map((compas, cIdx) => {
-                          measureCount++;
-                          return (
-                            <div
-                              key={compas.id}
-                              className="flex-shrink-0 flex-[0_0_25%] border border-gray-200 rounded-xl p-3 bg-gray-50"
-                            >
-                              <div className="flex justify-between items-center mb-2">
-                                <span className="text-xs font-medium text-gray-500">{toRoman(measureCount)}</span>
-                                <select
-                                  value={compas.divisiones}
-                                  onChange={(e) =>
-                                    cambiarDivisiones(sec.id, lIdx, cIdx, parseInt(e.target.value))
-                                  }
-                                  className="text-xs rounded border-gray-300 bg-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      return (
+                        <div key={compass.id} className="relative w-1/4 border-l border-r border-stone-700/60 px-2 py-1 bg-stone-950/50 my-1 rounded-sm">
+                          <div className="absolute -top-5 left-0 right-0 flex justify-between px-1">
+                            <span className="text-[10px] text-stone-500 font-sans">{toRoman(cIdx + 1)}</span>
+                            <div className="flex gap-1">
+                              {[1, 2, 4].map(divOpt => (
+                                <button
+                                  key={divOpt}
+                                  type="button"
+                                  onClick={() => cambiarDivisiones(sec.id, lIdx, cIdx, divOpt)}
+                                  className={`text-[10px] px-1 rounded font-sans cursor-pointer ${divisiones === divOpt ? 'bg-amber-500 text-stone-950 font-bold' : 'bg-stone-900 text-stone-400 hover:text-stone-200'}`}
                                 >
-                                  {[1, 2, 3, 4, 6, 8].map(num => (
-                                    <option key={num} value={num}>{num}</option>
-                                  ))}
-                                </select>
-                              </div>
-
-                              <div className="grid grid-cols-2 gap-1.5">
-                                {compas.acordes.map((acorde, dIdx) => (
-                                  <button
-                                    key={acorde.id}
-                                    style={{ fontFamily: 'Architects Daughter' }}
-                                    className={`transition-all duration-150 ease-in-out min-h-[40px] px-2 py-1 text-sm rounded-lg shadow-sm flex items-center justify-center ${acorde.valor
-                                      ? "bg-gray-900 text-white hover:bg-gray-800"
-                                      : "bg-blue-50 text-blue-800 hover:bg-blue-100 border border-blue-100"
-                                      }`}
-                                    onClick={() => {
-                                      setModalData({
-                                        seccionId: sec.id,
-                                        lineaIndex: lIdx,
-                                        compasIndex: cIdx,
-                                        divisionIndex: dIdx
-                                      });
-                                    }}
-                                  >
-                                    {acorde.valor || ''}
-                                  </button>
-                                ))}
-                              </div>
+                                  {divOpt}
+                                </button>
+                              ))}
                             </div>
-                          );
-                        })}
-                      </div>
+                          </div>
 
-                    </div>
-
+                          <div
+                            className="grid gap-1 mt-1"
+                            style={{
+                              gridTemplateColumns: `repeat(${divisiones}, minmax(0, 1fr))`,
+                              textAlign: 'center',
+                            }}
+                          >
+                            {compass.acordes.map((acorde, dIdx) => (
+                              <input
+                                key={acorde.id}
+                                type="text"
+                                value={acorde.valor}
+                                onChange={(e) => handleAcordeChange(sec.id, lIdx, cIdx, dIdx, e.target.value)}
+                                placeholder="-"
+                                className="w-full bg-stone-900/90 border border-stone-800 rounded text-center text-xl font-bold text-[#FEF3C7] focus:outline-none focus:border-amber-500/80 py-1"
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                );
+                </div>
+              ))}
 
-              })}
-
-              <button
-                onClick={() => agregarLinea(sec.id)}
-                className="w-full flex items-center justify-center px-4 py-2 border border-dashed border-gray-300 rounded-lg text-gray-500 hover:text-gray-700 hover:border-gray-400 hover:bg-gray-50"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-                </svg>
-                Add line (4 measures)
-              </button>
+              <div className="pt-2 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => agregarLinea(sec.id)}
+                  className="px-4 py-2 bg-stone-900 border border-stone-800 hover:border-amber-500/50 text-amber-400 text-xs font-bold uppercase tracking-wider rounded-xl transition cursor-pointer"
+                >
+                  + Agregar Línea
+                </button>
+              </div>
             </div>
           </div>
         ))}
-
-        {/* Add new section */}
-        <div className="bg-white rounded-2xl shadow-sm p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">Add new section</h2>
-          <div className="flex space-x-3">
-            <input
-              type="text"
-              value={nuevaSeccionNombre}
-              onChange={(e) => setNuevaSeccionNombre(e.target.value)}
-              placeholder="Section name"
-              className="flex-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3"
-              onKeyPress={(e) => e.key === 'Enter' && agregarSeccion()}
-            />
-            <button
-              onClick={agregarSeccion}
-              disabled={!nuevaSeccionNombre.trim()}
-              className="px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Add
-            </button>
-          </div>
-        </div>
       </div>
 
-      {/* Chord selection modal */}
-      {modalData && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Select chord in {tono}</h3>
+      {/* PORTAL CERO-SUPERPOSICIÓN: DESPLEGABLE BUSCADOR */}
+      {showSongDropdown && filteredSongs.length > 0 && ReactDOM.createPortal(
+        <div
+          ref={searchDropdownRef}
+          style={{
+            position: 'absolute',
+            top: `${searchCoords.top}px`,
+            left: `${searchCoords.left}px`,
+            width: `${searchCoords.width}px`,
+            zIndex: 99999
+          }}
+          className="bg-[#18181B] border border-stone-700/80 rounded-xl shadow-2xl max-h-64 overflow-y-auto divide-y divide-stone-800"
+        >
+          {filteredSongs.map(song => (
+            <div
+              key={song.id}
+              className={`p-3.5 hover:bg-amber-500/15 transition-colors cursor-pointer flex justify-between items-center ${selectedSongId === song.id ? 'bg-amber-500/25' : ''}`}
+              onClick={() => {
+                loadSong(song.id);
+                setSearchTerm(song.title);
+                setSelectedSongId(song.id);
+                setShowSongDropdown(false);
+              }}
+            >
+              <div>
+                <div className="font-semibold text-stone-100">{song.title}</div>
+                <div className="text-xs text-stone-400 mt-0.5">
+                  {song.artist ? `Artista: ${song.artist} • ` : ''}Tonalidad: {song.key_signature}
+                </div>
+              </div>
+              <span className="text-xs font-semibold px-2.5 py-1 bg-stone-900 text-amber-500 border border-stone-800 rounded-lg">
+                {song.tempo} BPM
+              </span>
             </div>
+          ))}
+        </div>,
+        document.body
+      )}
 
-            <div className="overflow-y-auto p-6">
-              {/* Acordes predefinidos */}
-              <div className="mb-6">
-                <h4 className="text-sm font-medium text-gray-700 mb-3">Common chords</h4>
-                <div className="grid grid-cols-3 gap-2">
-                  {getAcordesDisponibles().map((ac, idx) => (
-                    <button
-                      key={idx}
-                      className="px-3 py-2.5 rounded-lg bg-gray-100 hover:bg-gray-200 active:bg-gray-300 transition-colors duration-100 text-sm font-medium"
-                      style={{ fontFamily: 'Architects Daughter' }}
-                      onClick={() =>
-                        handleAcordeChange(
-                          modalData.seccionId,
-                          modalData.lineaIndex,
-                          modalData.compasIndex,
-                          modalData.divisionIndex,
-                          ac
-                        )
-                      }
-                    >
-                      {ac}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Entrada manual */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Custom chord</label>
-                <div className="flex rounded-lg shadow-sm">
-                  <input
-                    type="text"
-                    id="customChordInput"
-                    className="flex-1 min-w-0 block w-full rounded-l-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 py-2 px-3"
-                    placeholder="Example: C#m7, G7sus4, etc."
-                    style={{ fontFamily: 'Architects Daughter' }}
-                    onClick={(e) => {
-                      const keyboard = document.getElementById('musicKeyboard');
-                      if (keyboard) keyboard.classList.remove('hidden');
-                      e.stopPropagation();
-                    }}
-                  />
-                  <button
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-r-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    onClick={() => {
-                      const input = document.getElementById('customChordInput');
-                      if (input.value.trim()) {
-                        handleAcordeChange(
-                          modalData.seccionId,
-                          modalData.lineaIndex,
-                          modalData.compasIndex,
-                          modalData.divisionIndex,
-                          input.value.trim()
-                        );
-                      }
-                    }}
-                  >
-                    Use
-                  </button>
-                </div>
-              </div>
-
-              {/* Teclado virtual */}
-              <div id="musicKeyboard" className="hidden">
-                <MusicKeyboard
-                  onKeyPress={(char) => {
-                    const input = document.getElementById('customChordInput');
-                    input.value = (input.value || '') + char;
-                    input.focus();
+      {/* PORTAL CERO-SUPERPOSICIÓN: DESPLEGABLE TONALIDAD */}
+      {showToneMenu && ReactDOM.createPortal(
+        <div
+          ref={toneMenuRef}
+          style={{
+            position: 'absolute',
+            top: `${toneMenuCoords.top}px`,
+            left: `${toneMenuCoords.left}px`,
+            width: `${toneMenuCoords.width}px`,
+            zIndex: 99999
+          }}
+          className="rounded-2xl border border-stone-700 bg-[#18181B] shadow-2xl p-3"
+        >
+          <p className="text-xs text-stone-400 mb-3 font-medium">Selecciona una tonalidad</p>
+          <div className="grid grid-cols-4 gap-2">
+            {tonos.map((t) => {
+              const activo = tono === t;
+              return (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => {
+                    cambiarTonalidad(t);
+                    setShowToneMenu(false);
                   }}
-                />
-              </div>
-            </div>
-
-            <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
-              <button
-                onClick={() => setModalData(null)}
-                className="px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                Cancel
-              </button>
-            </div>
+                  className={`py-2 rounded-xl font-bold transition cursor-pointer ${activo ? "bg-amber-500 text-stone-950" : "bg-stone-900 text-stone-300 hover:bg-amber-500/20 hover:text-amber-400"
+                    }`}
+                >
+                  {t}
+                </button>
+              );
+            })}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

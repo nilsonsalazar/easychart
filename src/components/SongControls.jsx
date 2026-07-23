@@ -1,13 +1,13 @@
 import { useState } from 'react';
 
-const SongControls = ({ 
-  tono, 
-  setTono, 
-  compas, 
-  setCompas, 
-  tempo, 
-  setTempo, 
-  semitono, 
+const SongControls = ({
+  tono,
+  setTono,
+  compas,
+  setCompas,
+  tempo,
+  setTempo,
+  semitono,
   ajustarSemitono,
   cambiarTonalidad,
   onSave,
@@ -20,7 +20,7 @@ const SongControls = ({
       {/* Controles principales */}
       <div className="bg-white rounded-2xl shadow-sm p-6 space-y-4">
         <h2 className="text-lg font-semibold text-gray-900">Configuración</h2>
-        
+
         <div className="space-y-3">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Tonalidad</label>
@@ -34,7 +34,7 @@ const SongControls = ({
                   <option key={t} value={t}>{t}</option>
                 ))}
               </select>
-              
+
               <select
                 value={compas}
                 onChange={(e) => setCompas(e.target.value)}
@@ -45,7 +45,7 @@ const SongControls = ({
                 <option value="6/8">6/8</option>
                 <option value="7/8">7/8</option>
               </select>
-              
+
               <input
                 type="number"
                 value={tempo}
@@ -58,7 +58,7 @@ const SongControls = ({
               />
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Ajuste fino</label>
             <div className="flex items-center space-x-2">
@@ -71,11 +71,11 @@ const SongControls = ({
                   <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
                 </svg>
               </button>
-              
+
               <div className="flex-1 text-center px-3 py-2 bg-gray-100 rounded-lg text-sm font-medium">
-                {semitono === 0 ? "Tono completo" : `${semitono > 0 ? '+' : ''}${semitono/2} tono${Math.abs(semitono) > 1 ? 's' : ''}`}
+                {semitono === 0 ? "Tono completo" : `${semitono > 0 ? '+' : ''}${semitono / 2} tono${Math.abs(semitono) > 1 ? 's' : ''}`}
               </div>
-              
+
               <button
                 onClick={() => ajustarSemitono(1)}
                 className="p-2 rounded-lg border border-gray-300 bg-white shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -110,10 +110,10 @@ const SongControls = ({
           </svg>
           Exportar a PDF
         </button>
-        
+
         {showPDFOptions && (
           <div className="mt-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
-            <PDFDownloadLink 
+            <PDFDownloadLink
               document={<SongPDF title={tituloCancion} sections={secciones} keySignature={tono} tempo={tempo} compas={compas} />}
               fileName={`${tituloCancion.replace(/\s+/g, '_')}.pdf`}
               className="block w-full text-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
