@@ -3,67 +3,87 @@ import toRoman from "./toRoman";
 
 
 
-// Registrar la fuente usando una ruta relativa al `PUBLIC_URL` para que funcione en local y en hosting con subruta.
+const getFontUrl = () => {
+  if (typeof window !== 'undefined' && window.location && window.location.origin) {
+    return `${window.location.origin}/fonts/ProtestRevolution-Regular.ttf`;
+  }
+  return `${process.env.PUBLIC_URL || ''}/fonts/ProtestRevolution-Regular.ttf`;
+};
+
 Font.register({
   family: 'Protest Revolution',
-  src: `${process.env.PUBLIC_URL || ''}/fonts/ProtestRevolution-Regular.ttf`,
+  src: getFontUrl(),
   fontWeight: 'normal',
   fontStyle: 'normal'
 });
 
-// Estilos PDF
+// Estilos PDF usando la fuente personalizada 'Protest Revolution'
 const styles = StyleSheet.create({
-    sectionHeaderLeft: {
-  marginRight: 8,
-  justifyContent: 'center',
-  alignItems: 'flex-end',
-  width: 60, // o ajusta al ancho deseado
-},
+  sectionHeaderLeft: {
+    marginRight: 8,
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    width: 60,
+  },
   page: {
     padding: 30,
     fontFamily: 'Protest Revolution'
   },
   title: {
-    fontSize: 24,
-    marginBottom: 10,
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 4,
+    textAlign: 'center'
+  },
+  artist: {
+    fontSize: 14,
+    color: '#4B5563',
+    marginBottom: 8,
     textAlign: 'center'
   },
   key: {
-    fontSize: 16,
+    fontSize: 12,
+    color: '#374151',
     marginBottom: 20,
     textAlign: 'center'
   },
   section: {
-    marginBottom: 20
+    marginBottom: 16
   },
   sectionHeader: {
-    marginBottom: 5,
-    borderBottomWidth: 1,
-    borderBottomColor: '#000'
+    marginBottom: 6,
+    borderBottomWidth: 1.5,
+    borderBottomColor: '#1F2937',
+    paddingBottom: 2
   },
   sectionTitle: {
-    fontSize: 14,
-    fontWeight: 'bold'
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: '#111827'
   },
   line: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 15
+    justifyContent: 'flex-start',
+    flexWrap: 'wrap',
+    marginBottom: 10
   },
   measure: {
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    padding: 2,
+    borderWidth: 1,
+    borderColor: '#9CA3AF',
+    padding: 4,
     marginRight: -1,
-    minWidth: 100
+    marginBottom: -1,
+    minWidth: 80,
+    flex: 1
   },
   measureHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 5
+    marginBottom: 4
   },
   measureNumber: {
-    fontSize: 10
+    fontSize: 8,
+    color: '#6B7280'
   },
   divisions: {
     flexDirection: 'row'
@@ -72,62 +92,68 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 30
+    minHeight: 24
   },
   chord: {
-    fontSize: 12
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: '#1F2937'
   },
   repeatSymbol: {
-    fontSize: 20,
-    marginHorizontal: 5,
-    alignSelf: "center"
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginHorizontal: 4,
+    alignSelf: 'center',
+    color: '#111827'
   }
 });
 
-const SongPDF = ({ title, sections, keySignature, tempo }) => {
+const SongPDF = ({ title, artist, sections = [], keySignature = "C", tempo = "120" }) => {
+  const safeSections = Array.isArray(sections) ? sections : [];
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         <Text style={styles.title}>{title || "Composición Musical"}</Text>
+        {artist && <Text style={styles.artist}>{artist}</Text>}
         <Text style={styles.key}>Tonalidad: {keySignature} • Tempo: {tempo}</Text>
         
-        {sections.map((sec, secIdx) => {
+        {safeSections.map((sec, secIdx) => {
           let measureCount = 0;
+          const lineas = Array.isArray(sec?.lineas) ? sec.lineas : [];
           return (
             <View key={secIdx} style={styles.section} wrap={false}>
-              {/* Header de sección */}
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>
-                  {sec.nombre} • {sec.compas}
+                  {sec?.nombre || `Sección ${secIdx + 1}`} {sec?.compas ? `• ${sec.compas}` : ''}
                 </Text>
               </View>
-              {/* Líneas */}
-              {sec.lineas.map((linea, lIdx) => (
-                <View key={lIdx} style={styles.line}>
-                  {/* Símbolo de repetición al inicio */}
-                  {linea.repetir && <Text style={styles.repeatSymbol}>||:</Text>}
-                  {/* Compases */}
-                  {linea.compasses.map((compass, cIdx) => {
-                    measureCount++;
-                    return (
-                      <View key={cIdx} style={styles.measure}>
-                        <View style={styles.measureHeader}>
-                          <Text style={styles.measureNumber}>{toRoman(measureCount)}</Text>
+              {lineas.map((linea, lIdx) => {
+                const compasses = Array.isArray(linea?.compasses) ? linea.compasses : [];
+                return (
+                  <View key={lIdx} style={styles.line}>
+                    {linea?.repetir && <Text style={styles.repeatSymbol}>||:</Text>}
+                    {compasses.map((compass, cIdx) => {
+                      measureCount++;
+                      const acordes = Array.isArray(compass?.acordes) ? compass.acordes : [];
+                      return (
+                        <View key={cIdx} style={styles.measure}>
+                          <View style={styles.measureHeader}>
+                            <Text style={styles.measureNumber}>{toRoman(measureCount)}</Text>
+                          </View>
+                          <View style={styles.divisions}>
+                            {acordes.map((acorde, dIdx) => (
+                              <View key={dIdx} style={styles.division}>
+                                <Text style={styles.chord}>{acorde?.valor || "-"}</Text>
+                              </View>
+                            ))}
+                          </View>
                         </View>
-                        <View style={styles.divisions}>
-                          {compass.acordes.map((acorde, dIdx) => (
-                            <View key={dIdx} style={styles.division}>
-                              <Text style={styles.chord}>{acorde.valor || "-"}</Text>
-                            </View>
-                          ))}
-                        </View>
-                      </View>
-                    );
-                  })}
-                  {/* Símbolo de cierre de repetición */}
-                  {linea.repetir && <Text style={styles.repeatSymbol}>:||</Text>}
-                </View>
-              ))}
+                      );
+                    })}
+                    {linea?.repetir && <Text style={styles.repeatSymbol}>:||</Text>}
+                  </View>
+                );
+              })}
             </View>
           );
         })}

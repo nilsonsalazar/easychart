@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from 'react-router-dom'; 
+import { useLocation } from 'react-router-dom';
 import { Link } from "react-router-dom";
 import circulos from "./circulos";
 import { API_URL } from './config';
@@ -20,102 +20,106 @@ const SongReader = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredSongs, setFilteredSongs] = useState([]);
   const [showSongDropdown, setShowSongDropdown] = useState(false);
+  const [showToneMenu, setShowToneMenu] = useState(false);
+
+  const tonos = [
+    "C", "D♭", "D", "E♭", "E", "F",
+    "G♭", "G", "A♭", "A", "B♭", "B"
+  ];
   const [selectedSongId, setSelectedSongId] = useState(null);
   const [secciones, setSecciones] = useState([]);
   const [tituloCancion, setTituloCancion] = useState("");
   const [artista, setArtista] = useState("");
 
   const transposeChord = (chord, semitones, currentKey) => {
-  if (!chord || chord === "-" || chord.trim() === "") return "-";
+    if (!chord || chord === "-" || chord.trim() === "") return "-";
 
-  const noteOrderSharps = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-  const noteOrderFlats = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"];
-  
-  // Definir qué tonalidades deben usar bemoles (♭)
-  const flatKeys = ["D♭", "E♭", "G♭", "A♭", "B♭"];
-  
-  // Determinar si debemos usar bemoles para la tonalidad actual
-  const useFlats = flatKeys.includes(currentKey);
+    const noteOrderSharps = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+    const noteOrderFlats = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"];
 
-  const baseNoteMatch = chord.match(/^[A-Ga-g](#|♭)?/);
-  if (!baseNoteMatch) return chord;
+    // Definir qué tonalidades deben usar bemoles (♭)
+    const flatKeys = ["D♭", "E♭", "G♭", "A♭", "B♭"];
 
-  const baseNote = baseNoteMatch[0];
-  const suffix = chord.slice(baseNote.length);
+    // Determinar si debemos usar bemoles para la tonalidad actual
+    const useFlats = flatKeys.includes(currentKey);
 
-  const noteOrder = useFlats ? noteOrderFlats : noteOrderSharps;
-  const originalIndex = noteOrderSharps.includes(baseNote) 
-    ? noteOrderSharps.indexOf(baseNote) 
-    : noteOrderFlats.indexOf(baseNote);
+    const baseNoteMatch = chord.match(/^[A-Ga-g](#|♭)?/);
+    if (!baseNoteMatch) return chord;
 
-  if (originalIndex === -1) return chord;
+    const baseNote = baseNoteMatch[0];
+    const suffix = chord.slice(baseNote.length);
 
-  let newIndex = (originalIndex + semitones) % 12;
-  if (newIndex < 0) newIndex += 12;
+    const noteOrder = useFlats ? noteOrderFlats : noteOrderSharps;
+    const originalIndex = noteOrderSharps.includes(baseNote)
+      ? noteOrderSharps.indexOf(baseNote)
+      : noteOrderFlats.indexOf(baseNote);
 
-  // Siempre usar la notación correcta (bemoles para flatKeys)
-  let newBaseNote = useFlats ? noteOrderFlats[newIndex] : noteOrderSharps[newIndex];
+    if (originalIndex === -1) return chord;
 
-  if (chord.includes('/')) {
-    const [mainChord, bassNote] = chord.split('/');
-    const transposedMain = transposeChord(mainChord, semitones, currentKey);
-    const transposedBass = transposeChord(bassNote, semitones, currentKey);
-    return `${transposedMain}/${transposedBass}`;
-  }
+    let newIndex = (originalIndex + semitones) % 12;
+    if (newIndex < 0) newIndex += 12;
 
-  return newBaseNote + suffix;
-};
+    // Siempre usar la notación correcta (bemoles para flatKeys)
+    let newBaseNote = useFlats ? noteOrderFlats[newIndex] : noteOrderSharps[newIndex];
 
-const cambiarTonalidad = (nuevoTono, semitonos = 0) => {
-  const notas = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"];
-  const indexActual = notas.indexOf(tono);
-  const indexNuevo = notas.indexOf(nuevoTono);
-  const diferenciaTotal = (indexNuevo - indexActual) + semitonos;
-  
-  setTono(nuevoTono);
-  setSemitono(semitonos);
-  
-  setSecciones(prev =>
-    prev.map(sec => ({
-      ...sec,
-      lineas: sec.lineas.map(linea => ({
-        ...linea,
-        compasses: linea.compasses.map(compass => ({
-          ...compass,
-          acordes: compass.acordes.map(acorde => ({
-            ...acorde,
-            valor: acorde.valor ? transposeChord(acorde.valor, diferenciaTotal, nuevoTono) : ""
+    if (chord.includes('/')) {
+      const [mainChord, bassNote] = chord.split('/');
+      const transposedMain = transposeChord(mainChord, semitones, currentKey);
+      const transposedBass = transposeChord(bassNote, semitones, currentKey);
+      return `${transposedMain}/${transposedBass}`;
+    }
+
+    return newBaseNote + suffix;
+  };
+
+  const cambiarTonalidad = (nuevoTono) => {
+    const notas = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"];
+    const indexActual = notas.indexOf(tono) !== -1 ? notas.indexOf(tono) : 0;
+    const indexNuevo = notas.indexOf(nuevoTono) !== -1 ? notas.indexOf(nuevoTono) : 0;
+    const semitones = indexNuevo - indexActual;
+
+    setTono(nuevoTono);
+    setSemitono(0);
+
+    if (semitones !== 0) {
+      setSecciones(prev =>
+        prev.map(sec => ({
+          ...sec,
+          lineas: (sec.lineas || []).map(linea => ({
+            ...linea,
+            compasses: (linea.compasses || []).map(compass => ({
+              ...compass,
+              acordes: (compass.acordes || []).map(acorde => ({
+                ...acorde,
+                valor: acorde.valor ? transposeChord(acorde.valor, semitones, nuevoTono) : ""
+              }))
+            }))
+          }))
+        }))
+      );
+    }
+  };
+
+  const ajustarSemitono = (delta) => {
+    const nuevoSemitono = semitono + delta;
+    setSemitono(nuevoSemitono);
+
+    setSecciones(prev =>
+      prev.map(sec => ({
+        ...sec,
+        lineas: (sec.lineas || []).map(linea => ({
+          ...linea,
+          compasses: (linea.compasses || []).map(compass => ({
+            ...compass,
+            acordes: (compass.acordes || []).map(acorde => ({
+              ...acorde,
+              valor: acorde.valor ? transposeChord(acorde.valor, delta, tono) : ""
+            }))
           }))
         }))
       }))
-    }))
-  );
-};
-  // Función para ajustar semitonos
-const ajustarSemitono = (delta) => {
-  const nuevoSemitono = semitono + delta;
-  setSemitono(nuevoSemitono);
-  
-  const notas = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-  const indexActual = notas.indexOf(tono);
-  const diferencialTotal = nuevoSemitono;
-  
-  setSecciones(prev =>
-    prev.map(sec => ({
-      ...sec,
-      lineas: sec.lineas.map(linea => ({
-        ...linea,
-        compasses: linea.compasses.map(compass => ({
-          ...compass,
-          acordes: compass.acordes.map(acorde => ({
-            ...acorde,
-            valor: transposeChord(acorde.valor, diferencialTotal, tono)
-          }))
-        }))
-      }))
-    }))
-  );
-};
+    );
+  };
 
 
   useEffect(() => {
@@ -141,18 +145,18 @@ const ajustarSemitono = (delta) => {
     fetchSongs();
   }, [searchTerm]);
 
-  
-const generarId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+  const generarId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
   const loadSong = async (songId) => {
     try {
       const response = await fetch(`${API_URL}?id=${songId}&_=${Date.now()}`);
       const song = await response.json();
-      
+
       if (song.error) {
         alert(song.error);
         return;
       }
-      
+
       // Resetear el estado con los datos exactos de la canción
       setTituloCancion(song.title);
       setArtista(song.artist);
@@ -161,8 +165,8 @@ const generarId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random(
       //setCompas(song.time_signature);
       setSemitono(0); // Resetear semitono a 0 al cargar
       setSelectedSongId(songId);
-      
-  
+
+
       // Cargar las secciones exactamente como están en la base de datos
       const loadedSections = song.song_data?.sections?.map(section => ({
         ...section,
@@ -181,24 +185,24 @@ const generarId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random(
             acordes: Array(1).fill("").map(() => ({ id: generarId("division"), valor: "" }))
           }))
         })) || [
-          {
-            id: generarId("seccion"),
-            nombre: "Sección A",
-            lineas: [
-              {
-                id: generarId("linea"),
-                repetir: false,
-                compasses: Array(4).fill("").map(() => ({
-                  id: generarId("compas"),
-                  divisiones: 1,
-                  acordes: Array(1).fill("").map(() => ({ id: generarId("division"), valor: "" }))
-                }))
-              }
-            ]
-          }
-        ]
+            {
+              id: generarId("seccion"),
+              nombre: "Sección A",
+              lineas: [
+                {
+                  id: generarId("linea"),
+                  repetir: false,
+                  compasses: Array(4).fill("").map(() => ({
+                    id: generarId("compas"),
+                    divisiones: 1,
+                    acordes: Array(1).fill("").map(() => ({ id: generarId("division"), valor: "" }))
+                  }))
+                }
+              ]
+            }
+          ]
       }));
-      
+
       setSecciones(loadedSections || [
         {
           id: generarId("seccion"),
@@ -216,7 +220,7 @@ const generarId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random(
           ]
         }
       ]);
-      
+
     } catch (error) {
       console.error('Error al cargar la canción:', error);
       alert('Error al cargar la canción');
@@ -238,7 +242,7 @@ const generarId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random(
   };
   const handleSearch = async (term) => {
     setSearchTerm(term);
-    
+
     if (!term.trim()) {
       setFilteredSongs([]);
       setShowSongDropdown(false);
@@ -252,8 +256,10 @@ const generarId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random(
       const words = normalize(term).split(/\s+/).filter(Boolean);
 
       const localResults = savedSongs.filter(song => {
-        const title = normalize(song.title);
-        return words.every(word => title.includes(word));
+        const title = normalize(song.title || "");
+        const artist = normalize(song.artist || song.song_data?.artist || "");
+        const target = `${title} ${artist}`;
+        return words.every(word => target.includes(word));
       });
       setFilteredSongs(localResults);
       setShowSongDropdown(localResults.length > 0);
@@ -271,13 +277,13 @@ const generarId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random(
     }
   };
 
-useEffect(() => {
-  const fetchSongs = async () => {
-    try {
-      const response = await fetch(`${API_URL}?_=${Date.now()}`);
-      const data = await response.json();
-      if (response.ok) {
-        setSavedSongs(data);
+  useEffect(() => {
+    const fetchSongs = async () => {
+      try {
+        const response = await fetch(`${API_URL}?_=${Date.now()}`);
+        const data = await response.json();
+        if (response.ok) {
+          setSavedSongs(data);
         }
       } catch (error) {
         console.error('Error:', error);
@@ -287,190 +293,322 @@ useEffect(() => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 pb-20">
-      {/* Header simplificado */}
-      <header className="sticky top-0 z-10 bg-white shadow-sm py-4 px-6 rounded-xl mb-6">
-        <div className="max-w-4xl mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold" style={{ fontFamily: 'Protest Revolution' }}>
-            {tituloCancion || "Lector de Charts"} - {artista || "Autor / Artista"}
-          </h1>
-          <Link 
+    <div className="min-h-screen bg-gray-50 p-4 pb-20">
+      {/* Header con marca EasyChart */}
+      <header className="sticky top-0 z-10 bg-white/95 backdrop-blur shadow-sm py-4 px-6 rounded-2xl mb-6 border border-gray-100">
+        <div className="max-w-4xl mx-auto flex justify-between items-center flex-wrap gap-4">
+          <div className="flex items-center space-x-3">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-2.5 rounded-xl shadow-md">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zm12 0c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zM9 10l12-3" />
+              </svg>
+            </div>
+            <div>
+              <h1 className="text-2xl font-black text-gray-900 tracking-tight" style={{ fontFamily: 'Protest Revolution, sans-serif' }}>
+                EasyChart
+              </h1>
+              <p className="text-xs text-gray-500 font-medium">Consulta y Lector de Charts Musicales</p>
+            </div>
+          </div>
+
+          <Link
             to="/crear"
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            className="flex items-center px-4 py-2.5 bg-blue-600 text-white font-medium text-sm rounded-xl hover:bg-blue-700 transition-all shadow-sm hover:shadow"
           >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
             Crear o Editar Canción
           </Link>
         </div>
       </header>
 
       <div className="max-w-4xl mx-auto space-y-6">
-        {/* Panel de controles */}
-        <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">
-          {/* Buscador */}
-          <div className="relative">
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => handleSearch(e.target.value)}
-              placeholder="Buscar canción..."
-              className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {showSongDropdown && filteredSongs.length > 0 && (
-              <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                {filteredSongs.map(song => (
-                  <div 
-                    key={song.id}
-                    className={`p-3 hover:bg-gray-100 cursor-pointer ${selectedSongId === song.id ? 'bg-blue-50' : ''}`}
-                    onClick={() => {
-                      loadSong(song.id);
-                      setSearchTerm(song.title);
-                      setSelectedSongId(song.id);
-                      setShowSongDropdown(false);
-                    }}
-                  >
-                    <div className="font-medium">{song.title}</div>
-                    <div className="text-sm text-gray-600">
-                      {song.key_signature} • {song.tempo} BPM
+        {/* Panel de Consulta y Búsqueda */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              ingresa artista o canción
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => handleSearch(e.target.value)}
+                placeholder="ingresa artista o canción..."
+                className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-gray-800 placeholder-gray-400 font-medium"
+              />
+              {showSongDropdown && filteredSongs.length > 0 && (
+                <div className="absolute z-30 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl max-h-64 overflow-y-auto divide-y divide-gray-100">
+                  {filteredSongs.map(song => (
+                    <div
+                      key={song.id}
+                      className={`p-3.5 hover:bg-blue-50/70 transition-colors cursor-pointer flex justify-between items-center ${selectedSongId === song.id ? 'bg-blue-50' : ''}`}
+                      onClick={() => {
+                        loadSong(song.id);
+                        setSearchTerm(song.title);
+                        setSelectedSongId(song.id);
+                        setShowSongDropdown(false);
+                      }}
+                    >
+                      <div>
+                        <div className="font-semibold text-gray-900">{song.title}</div>
+                        <div className="text-xs text-gray-500 mt-0.5">
+                          {song.artist || song.song_data?.artist ? `Artista: ${song.artist || song.song_data?.artist} • ` : ''}Tonalidad: {song.key_signature}
+                        </div>
+                      </div>
+                      <span className="text-xs font-semibold px-2.5 py-1 bg-gray-100 text-gray-600 rounded-lg">
+                        {song.tempo} BPM
+                      </span>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Controles de tonalidad */}
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Tonalidad</label>
-              <select
-                value={tono}
-                onChange={e => cambiarTonalidad(e.target.value, semitono)}
-                className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {Object.keys(circulos).map(t => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">Compás</label>
-              <select
-                value={compas}
-                onChange={(e) => setCompas(e.target.value)}
-                className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="4/4">4/4</option>
-                <option value="3/4">3/4</option>
-                <option value="6/8">6/8</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">Ajuste fino</label>
-              <div className="flex items-center space-x-2">
-                <button 
-                  onClick={() => ajustarSemitono(-1)} 
-                  className="p-2 border rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  -
-                </button>
-                <div className="flex-1 text-center">
-                  {semitono === 0 ? "Original" : `${semitono > 0 ? '+' : ''}${semitono/2}`}
+                  ))}
                 </div>
-                <button 
-                  onClick={() => ajustarSemitono(1)} 
-                  className="p-2 border rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  +
-                </button>
-              </div>
+              )}
             </div>
           </div>
 
-          {/* Botón Exportar */}
-          <PDFDownloadLink 
-            document={<SongPDF title={tituloCancion} artist={artista} sections={secciones} keySignature={tono} tempo={tempo} />}
-            fileName={`${tituloCancion  || 'chart'}${artista  || 'autor'}.pdf`}
-            className="block w-full text-center p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-          >
-            Exportar a PDF
-          </PDFDownloadLink>
+          {/* Panel de Controles de Transposición Interactivos (súper friendly, sólo en memoria) */}
+          <div className="pt-4 border-t border-gray-100 space-y-4">
+            {/* Fila de Botones para cambiar Tonalidad */}
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <label className="text-xs font-extrabold uppercase tracking-wider text-gray-600 flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zm12 0c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zM9 10l12-3" />
+                  </svg>
+                  Tonalidad Directa
+                </label>
+                <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">
+                  Tono Actual: {tono} {semitono !== 0 ? `(${semitono > 0 ? '+' : ''}${semitono} st)` : ''}
+                </span>
+              </div>
+
+              {/* Grid / Fila de Botones de Tono */}
+              <div className="relative">
+
+                <button
+                  type="button"
+                  onClick={() => setShowToneMenu(!showToneMenu)}
+                  className="flex items-center justify-between w-full sm:w-64
+        px-4 py-3 rounded-xl
+        bg-gradient-to-r from-blue-600 to-indigo-600
+        text-white font-semibold shadow hover:shadow-lg transition"
+                >
+
+                  <span>
+                    🎵 Tono: <strong>{tono}</strong>
+                  </span>
+
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`w-5 h-5 transition-transform ${showToneMenu ? "rotate-180" : ""
+                      }`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+
+                </button>
+
+                {showToneMenu && (
+
+                  <div
+                    className="
+            absolute
+            z-50
+            mt-2
+            w-full
+            sm:w-72
+            rounded-2xl
+            border
+            bg-white
+            shadow-2xl
+            p-3"
+                  >
+
+                    <p className="text-xs text-gray-500 mb-3">
+                      Selecciona una tonalidad
+                    </p>
+
+                    <div className="grid grid-cols-4 gap-2">
+
+                      {tonos.map((t) => {
+
+                        const activo = tono === t;
+
+                        return (
+
+                          <button
+                            key={t}
+                            type="button"
+                            onClick={() => {
+                              cambiarTonalidad(t);
+                              setShowToneMenu(false);
+                            }}
+                            className={`
+                                py-2
+                                rounded-xl
+                                font-bold
+                                transition
+
+                                ${activo
+                                ? "bg-blue-600 text-white"
+                                : "bg-gray-100 hover:bg-blue-100"
+                              }
+                            `}
+                          >
+                            {t}
+                          </button>
+
+                        );
+
+                      })}
+
+                    </div>
+
+                  </div>
+
+                )}
+
+              </div>
+            </div>
+
+            {/* Controles de Subir / Bajar Tono y Exportación a PDF */}
+            <div className="flex flex-col md:flex-row items-center justify-between gap-3 pt-1">
+              {/* Botón Bajar Tono */}
+              <button
+                type="button"
+                onClick={() => ajustarSemitono(-1)}
+                className="w-full md:w-auto flex-1 flex items-center justify-center space-x-2 py-2.5 px-4 bg-white border border-gray-200 hover:border-blue-400 hover:bg-blue-50/50 text-gray-800 rounded-xl font-bold text-sm shadow-sm transition-all active:scale-95 cursor-pointer group"
+                title="Bajar medio tono (-1 semitono)"
+              >
+                <span className="w-6 h-6 rounded-lg bg-blue-100 group-hover:bg-blue-200 text-blue-700 flex items-center justify-center text-sm font-black transition-colors">
+                  ♭
+                </span>
+                <span>Bajar Tono (-1 st)</span>
+              </button>
+
+              {/* Botón Subir Tono */}
+              <button
+                type="button"
+                onClick={() => ajustarSemitono(1)}
+                className="w-full md:w-auto flex-1 flex items-center justify-center space-x-2 py-2.5 px-4 bg-white border border-gray-200 hover:border-indigo-400 hover:bg-indigo-50/50 text-gray-800 rounded-xl font-bold text-sm shadow-sm transition-all active:scale-95 cursor-pointer group"
+                title="Subir medio tono (+1 semitono)"
+              >
+                <span>Subir Tono (+1 st)</span>
+                <span className="w-6 h-6 rounded-lg bg-indigo-100 group-hover:bg-indigo-200 text-indigo-700 flex items-center justify-center text-sm font-black transition-colors">
+                  ♯
+                </span>
+              </button>
+
+              {/* Botón Exportar PDF */}
+              <div className="w-full md:w-auto flex-1">
+                <PDFDownloadLink
+                  document={<SongPDF title={tituloCancion} artist={artista} sections={secciones} keySignature={tono} tempo={tempo} />}
+                  fileName={`${(tituloCancion || 'chart').replace(/\s+/g, '_')}_${tono}.pdf`}
+                  className="flex items-center justify-center space-x-2 w-full py-2.5 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium text-sm rounded-xl transition-all shadow-sm hover:shadow cursor-pointer"
+                >
+                  {({ loading, error }) => (
+                    loading ? 'Preparando PDF...' : error ? 'Error al generar PDF' : (
+                      <>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span>Exportar a PDF</span>
+                      </>
+                    )
+                  )}
+                </PDFDownloadLink>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Visualización estilo PDF */}
-<div className="bg-white rounded-xl shadow-sm p-8" style={{ 
-  fontFamily: 'Protest Revolution',
-  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
-}}>
-  {/* Encabezado del Chart*/}
-  <div className="text-center mb-8">
-    <h2 className="text-3xl font-bold mb-2">{tituloCancion || "Canción"} - {artista || "Autor"}</h2>
-    <p className="text-lg text-gray-600">
-      Tonalidad: {tono} • Compás: {compas} • Tempo: {tempo}
-    </p>
-  </div>
+        <div className="bg-white rounded-xl shadow-sm p-8" style={{
+          fontFamily: 'Protest Revolution',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
+        }}>
+          {/* Encabezado del Chart*/}
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold mb-2">{tituloCancion || "Canción"} - {artista || "Autor"}</h2>
+            <p className="text-lg text-gray-600">
+              Tonalidad: {tono} • Compás: {compas} • Tempo: {tempo}
+            </p>
+          </div>
 
-  {/* Secciones de la canción */}
-  {secciones.map((sec, secIdx) => (
-    <div key={secIdx} className="mb-10">
-      <h3 className="text-xl font-bold border-b border-gray-300 pb-1 mb-6">
-        {sec.nombre} • {sec.compas}
-      </h3>
-      
-      {sec.lineas.map((linea, lIdx) => {
-        let measureCount = 0;
-        for (let i = 0; i < lIdx; i++) {
-          measureCount += sec.lineas[i].compasses.length;
-        }
-        
-        return (
-          <div key={lIdx} className="mb-8 flex items-center">
-            {/* Símbolo de repetición al inicio */}
-            {linea.repetir && <span className="text-2xl mx-2">||:</span>}
-            
-            {/* Línea de 4 compasses distribuidos equitativamente */}
-            <div className="flex justify-evenly gap-0 flex-1">
-              {linea.compasses.map((compass, cIdx) => {
-                measureCount++;
-                const divisiones = compass.acordes.length;
+          {/* Secciones de la canción */}
+          {secciones.map((sec, secIdx) => (
+            <div key={secIdx} className="mb-10">
+              <h3 className="text-xl font-bold border-b border-gray-300 pb-1 mb-6">
+                {sec.nombre} • {sec.compas}
+              </h3>
+
+              {sec.lineas.map((linea, lIdx) => {
+                let measureCount = 0;
+                for (let i = 0; i < lIdx; i++) {
+                  measureCount += sec.lineas[i].compasses.length;
+                }
 
                 return (
-                  <div key={cIdx} className="relative w-1/4 border-l border-r border-black">
+                  <div key={lIdx} className="mb-8 flex items-center">
+                    {/* Símbolo de repetición al inicio */}
+                    {linea.repetir && <span className="text-2xl mx-2">||:</span>}
+
+                    {/* Línea de 4 compasses distribuidos equitativamente */}
+                    <div className="flex justify-evenly gap-0 flex-1">
+                      {linea.compasses.map((compass, cIdx) => {
+                        measureCount++;
+                        const divisiones = compass.acordes.length;
+
+                        return (
+                          <div key={cIdx} className="relative w-1/4 border-l border-r border-black">
 
 
-                    {/* Número de compás */}
-                    <div className="absolute -top-5 left-0 right-0 text-center">
-                      <span className="text-xs text-gray-500">{toRoman(measureCount)}</span>
+                            {/* Número de compás */}
+                            <div className="absolute -top-5 left-0 right-0 text-center">
+                              <span className="text-xs text-gray-500">{toRoman(measureCount)}</span>
+                            </div>
+
+                            {/* Acordes distribuidos equitativamente en el compás */}
+                            <div
+                              className={`grid gap-2`}
+                              style={{
+                                gridTemplateColumns: `repeat(${divisiones}, minmax(0, 1fr))`,
+                                textAlign: 'center',
+                              }}
+                            >
+                              {compass.acordes.map((acorde, dIdx) => (
+                                <div key={dIdx} className="py-1 text-lg">
+                                  {acorde.valor || "-"}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
 
-                    {/* Acordes distribuidos equitativamente en el compás */}
-                    <div
-                      className={`grid gap-2`}
-                      style={{
-                        gridTemplateColumns: `repeat(${divisiones}, minmax(0, 1fr))`,
-                        textAlign: 'center',
-                      }}
-                    >
-                      {compass.acordes.map((acorde, dIdx) => (
-                        <div key={dIdx} className="py-1 text-lg">
-                          {acorde.valor || "-"}
-                        </div>
-                      ))}
-                    </div>
+                    {/* Símbolo de cierre de repetición */}
+                    {linea.repetir && <span className="text-2xl mx-2">:||</span>}
                   </div>
                 );
               })}
             </div>
-            
-            {/* Símbolo de cierre de repetición */}
-            {linea.repetir && <span className="text-2xl mx-2">:||</span>}
-          </div>
-        );
-      })}
-    </div>
-  ))}
-</div>
+          ))}
+        </div>
       </div>
     </div>
   );
