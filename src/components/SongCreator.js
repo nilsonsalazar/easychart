@@ -17,6 +17,13 @@ export default function SongCreator() {
   const [filteredSongs, setFilteredSongs] = useState([]);
   const [showSongDropdown, setShowSongDropdown] = useState(false);
   const [showToneMenu, setShowToneMenu] = useState(false);
+  const handleLogout = () => {
+    // 1. Eliminamos el token de autenticación
+    localStorage.removeItem('easychart_token');
+
+    // 2. Redirigimos a la raíz o refrescamos para que el App.js evalúe la sesión
+    window.location.href = '/';
+  };
 
   const tonos = [
     "C",
@@ -155,15 +162,32 @@ export default function SongCreator() {
     return tonoActual.degrees.flatMap(degree => degree.common_extensions);
   };
 
+  // useEffect con autenticación
   useEffect(() => {
     const fetchSongs = async () => {
+      const token = localStorage.getItem('easychart_token');
       try {
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.status === 401) {
+          localStorage.removeItem('easychart_token');
+          window.location.reload();
+          return;
+        }
+
         const data = await response.json();
+        const songList = Array.isArray(data) ? data : (data.data || []);
+
         if (response.ok) {
-          setSavedSongs(data);
+          setSavedSongs(songList);
           if (searchTerm) {
-            const filtered = data.filter(song =>
+            const filtered = songList.filter(song =>
               song.title.toLowerCase().includes(searchTerm.toLowerCase())
             );
             setFilteredSongs(filtered);
@@ -194,7 +218,7 @@ export default function SongCreator() {
       const words = normalize(term).split(/\s+/).filter(Boolean);
 
       const localResults = savedSongs.filter(song => {
-        const title = normalize(song.title);
+        const title = normalize(song.title || "");
         return words.every(word => title.includes(word));
       });
 
@@ -339,6 +363,7 @@ export default function SongCreator() {
     );
   };
 
+  // Petición POST con token JWT
   const saveSong = async () => {
     if (!tituloCancion.trim()) {
       alert("Por favor, ingresa el título de la canción antes de guardar.");
@@ -356,15 +381,24 @@ export default function SongCreator() {
       }
     };
 
+    const token = localStorage.getItem('easychart_token');
+
     try {
       const response = await fetch(API_CONFIG.FULL_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(songData)
       });
+
+      if (response.status === 401) {
+        localStorage.removeItem('easychart_token');
+        window.location.reload();
+        return;
+      }
 
       const responseData = await response.json();
 
@@ -386,6 +420,7 @@ export default function SongCreator() {
     }
   };
 
+  // Petición PUT con token JWT
   const updateSong = async (songId) => {
     if (!tituloCancion.trim()) {
       alert("Por favor, ingresa el título de la canción antes de actualizar.");
@@ -404,15 +439,24 @@ export default function SongCreator() {
       }
     };
 
+    const token = localStorage.getItem('easychart_token');
+
     try {
       const response = await fetch(API_URL, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(songData)
       });
+
+      if (response.status === 401) {
+        localStorage.removeItem('easychart_token');
+        window.location.reload();
+        return;
+      }
 
       const result = await response.json();
       if (!response.ok) {
@@ -425,10 +469,26 @@ export default function SongCreator() {
     }
   };
 
+  // Petición GET individual con token JWT
   const loadSong = async (songId) => {
+    const token = localStorage.getItem('easychart_token');
     try {
-      const response = await fetch(`${API_URL}?id=${songId}&_=${Date.now()}`);
-      const song = await response.json();
+      const response = await fetch(`${API_URL}?id=${songId}&_=${Date.now()}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.status === 401) {
+        localStorage.removeItem('easychart_token');
+        window.location.reload();
+        return;
+      }
+
+      const responseData = await response.json();
+      const song = responseData.data || responseData;
 
       if (song.error) {
         alert(song.error);
@@ -507,14 +567,30 @@ export default function SongCreator() {
     }
   };
 
+  // Búsqueda remota con token JWT
   const searchSongs = async (searchTerm) => {
+    const token = localStorage.getItem('easychart_token');
     try {
-      const response = await fetch(`${API_URL}?search=${encodeURIComponent(searchTerm)}`);
+      const response = await fetch(`${API_URL}?search=${encodeURIComponent(searchTerm)}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.status === 401) {
+        localStorage.removeItem('easychart_token');
+        window.location.reload();
+        return [];
+      }
+
       if (!response.ok) {
         throw new Error('Error en la búsqueda');
       }
 
-      const data = await response.json();
+      const resData = await response.json();
+      const data = resData.data || resData;
       return Array.isArray(data) ? data : [];
     } catch (error) {
       console.error('Error buscando canciones:', error);
@@ -557,6 +633,18 @@ export default function SongCreator() {
           >
             ← Volver a Consulta
           </Link>
+          {/* BOTÓN DE LOGOUT */}
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex items-center px-3.5 py-2.5 bg-gray-100 text-gray-700 hover:bg-red-50 hover:text-red-600 font-medium text-sm rounded-xl transition-all border border-gray-200 cursor-pointer"
+            title="Cerrar Sesión"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span className="hidden sm:inline">Salir</span>
+          </button>
         </div>
 
         <div className="space-y-1">
@@ -634,24 +722,18 @@ export default function SongCreator() {
 
               {/* Grid de Botones de Tono */}
               <div className="relative">
-
                 <button
                   type="button"
                   onClick={() => setShowToneMenu(!showToneMenu)}
-                  className="flex items-center justify-between w-full sm:w-64
-        px-4 py-3 rounded-xl
-        bg-gradient-to-r from-blue-600 to-indigo-600
-        text-white font-semibold shadow hover:shadow-lg transition"
+                  className="flex items-center justify-between w-full sm:w-64 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow hover:shadow-lg transition"
                 >
-
                   <span>
                     🎵 Tono: <strong>{tono}</strong>
                   </span>
 
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className={`w-5 h-5 transition-transform ${showToneMenu ? "rotate-180" : ""
-                      }`}
+                    className={`w-5 h-5 transition-transform ${showToneMenu ? "rotate-180" : ""}`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -663,37 +745,18 @@ export default function SongCreator() {
                       d="M19 9l-7 7-7-7"
                     />
                   </svg>
-
                 </button>
 
                 {showToneMenu && (
-
-                  <div
-                    className="
-            absolute
-            z-50
-            mt-2
-            w-full
-            sm:w-72
-            rounded-2xl
-            border
-            bg-white
-            shadow-2xl
-            p-3"
-                  >
-
+                  <div className="absolute z-50 mt-2 w-full sm:w-72 rounded-2xl border bg-white shadow-2xl p-3">
                     <p className="text-xs text-gray-500 mb-3">
                       Selecciona una tonalidad
                     </p>
 
                     <div className="grid grid-cols-4 gap-2">
-
                       {tonos.map((t) => {
-
                         const activo = tono === t;
-
                         return (
-
                           <button
                             key={t}
                             type="button"
@@ -701,31 +764,18 @@ export default function SongCreator() {
                               cambiarTonalidad(t);
                               setShowToneMenu(false);
                             }}
-                            className={`
-                                py-2
-                                rounded-xl
-                                font-bold
-                                transition
-
-                                ${activo
-                                ? "bg-blue-600 text-white"
-                                : "bg-gray-100 hover:bg-blue-100"
-                              }
-                            `}
+                            className={`py-2 rounded-xl font-bold transition ${activo
+                              ? "bg-blue-600 text-white"
+                              : "bg-gray-100 hover:bg-blue-100"
+                              }`}
                           >
                             {t}
                           </button>
-
                         );
-
                       })}
-
                     </div>
-
                   </div>
-
                 )}
-
               </div>
             </div>
 
@@ -879,47 +929,48 @@ export default function SongCreator() {
                     <div className="flex items-center">
                       <button
                         onClick={() => toggleRepetirLinea(sec.id, lIdx)}
-                        className={`p-1.5 rounded-lg mr-2 font-mono text-xs font-bold transition-colors ${linea.repetir ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
-                        title="Marcar para repetición"
+                        className={`p-1.5 rounded-lg mr-2 font-mono text-xs font-bold transition-colors ${linea.repetir ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                        title="Repetir línea"
                       >
-                        {linea.repetir ? '||:' : '||'}
+                        :||
                       </button>
 
-                      <div className="flex-1 flex flex-nowrap space-x-2 overflow-x-auto pb-2 -mx-2 px-2">
+                      <div className="grid grid-cols-4 gap-2 flex-1">
                         {linea.compasses.map((compas, cIdx) => {
                           measureCount++;
                           return (
-                            <div
-                              key={compas.id}
-                              className="flex-shrink-0 flex-[0_0_25%] min-w-[140px] border border-gray-200 rounded-xl p-3 bg-gray-50/50"
-                            >
-                              <div className="flex justify-between items-center mb-2">
-                                <span className="text-xs font-semibold text-gray-400">{toRoman(measureCount)}</span>
-                                <select
-                                  value={compas.divisiones}
-                                  onChange={(e) =>
-                                    cambiarDivisiones(sec.id, lIdx, cIdx, parseInt(e.target.value))
-                                  }
-                                  className="text-xs rounded-md border-gray-200 bg-white shadow-sm focus:border-blue-500 focus:ring-blue-500 py-0.5 px-1"
-                                >
-                                  {[1, 2, 3, 4, 6, 8].map(num => (
-                                    <option key={num} value={num}>{num}</option>
+                            <div key={compas.id} className="border border-gray-200 rounded-xl p-2 bg-gray-50/50 space-y-2">
+                              <div className="flex justify-between items-center text-xs text-gray-400">
+                                <span className="font-semibold">{toRoman(measureCount)}</span>
+                                <div className="flex items-center space-x-1">
+                                  {[1, 2, 4].map(num => (
+                                    <button
+                                      key={num}
+                                      onClick={() => cambiarDivisiones(sec.id, lIdx, cIdx, num)}
+                                      className={`w-4 h-4 rounded text-[10px] font-bold flex items-center justify-center transition-colors ${compas.divisiones === num ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                                        }`}
+                                    >
+                                      {num}
+                                    </button>
                                   ))}
-                                </select>
+                                </div>
                               </div>
 
-                              <div className="grid grid-cols-2 gap-1.5">
+                              <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${compas.divisiones}, minmax(0, 1fr))` }}>
                                 {compas.acordes.map((acorde, dIdx) => (
                                   <button
                                     key={acorde.id}
-                                    style={{ fontFamily: 'Protest Revolution, sans-serif' }}
-                                    className={`transition-all duration-150 ease-in-out min-h-[40px] px-2 py-1 text-sm rounded-lg shadow-sm flex items-center justify-center cursor-pointer ${acorde.valor
-                                      ? "bg-gray-900 text-white hover:bg-gray-800"
-                                      : "bg-blue-50 text-blue-800 hover:bg-blue-100 border border-blue-100"
-                                      }`}
-                                    onClick={() => setModalData({ seccionId: sec.id, lineaIndex: lIdx, compasIndex: cIdx, divisionIndex: dIdx, acordeActual: acorde.valor })}
+                                    onClick={() => setModalData({
+                                      seccionId: sec.id,
+                                      lineaIndex: lIdx,
+                                      compasIndex: cIdx,
+                                      divisionIndex: dIdx,
+                                      valorActual: acorde.valor
+                                    })}
+                                    className="w-full py-1.5 px-1 bg-white border border-gray-200 rounded-lg text-sm font-bold text-center hover:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors min-h-[32px] flex items-center justify-center"
                                   >
-                                    {acorde.valor || "+"}
+                                    {acorde.valor || <span className="text-gray-300">-</span>}
                                   </button>
                                 ))}
                               </div>
@@ -934,7 +985,7 @@ export default function SongCreator() {
 
               <button
                 onClick={() => agregarLinea(sec.id)}
-                className="w-full py-2 border-2 border-dashed border-gray-200 rounded-xl text-xs font-semibold text-gray-500 hover:border-blue-300 hover:text-blue-600 transition-colors"
+                className="w-full py-2 border-2 border-dashed border-gray-200 hover:border-blue-400 rounded-xl text-xs font-semibold text-gray-500 hover:text-blue-600 transition-colors"
               >
                 + Agregar Línea
               </button>
@@ -942,77 +993,52 @@ export default function SongCreator() {
           </div>
         ))}
 
-        {/* Botón para nueva sección */}
-        <div className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100 flex items-center gap-3">
+        {/* Input para nueva sección */}
+        <div className="flex gap-2">
           <input
             type="text"
             value={nuevaSeccionNombre}
             onChange={(e) => setNuevaSeccionNombre(e.target.value)}
-            placeholder="Nombre de la nueva sección (ej. Coro, Puente)"
-            className="flex-1 p-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             onKeyDown={(e) => e.key === 'Enter' && agregarSeccion()}
+            placeholder="Nombre de nueva sección (ej: Coro, Estrofa...)"
+            className="flex-1 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
           />
           <button
             onClick={agregarSeccion}
-            className="px-4 py-2.5 bg-gray-900 hover:bg-gray-800 text-white font-semibold text-sm rounded-xl transition-colors cursor-pointer"
+            className="px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition-colors shadow-sm"
           >
             Agregar Sección
           </button>
         </div>
       </div>
 
-      {/* Selector / Modal de Acordes */}
+      {/* Modal / Pop-up Teclado Musical */}
       {modalData && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 z-50">
-          <div className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl p-5 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-5 max-w-lg w-full shadow-2xl space-y-4">
             <div className="flex justify-between items-center border-b border-gray-100 pb-3">
-              <h3 className="font-bold text-gray-900">Seleccionar Acorde</h3>
+              <h3 className="font-bold text-gray-800">Seleccionar Acorde</h3>
               <button
                 onClick={() => setModalData(null)}
-                className="text-gray-400 hover:text-gray-600 font-bold p-1"
+                className="text-gray-400 hover:text-gray-600 text-lg font-bold"
               >
                 ✕
               </button>
             </div>
 
-            <div className="grid grid-cols-4 gap-2">
-              <button
-                onClick={() => handleAcordeChange(modalData.seccionId, modalData.lineaIndex, modalData.compasIndex, modalData.divisionIndex, "")}
-                className="col-span-4 py-2 bg-red-50 text-red-600 rounded-xl font-semibold text-xs border border-red-100 hover:bg-red-100"
-              >
-                Limpiar casillero
-              </button>
-              {getAcordesDisponibles().map((acorde, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleAcordeChange(modalData.seccionId, modalData.lineaIndex, modalData.compasIndex, modalData.divisionIndex, acorde)}
-                  className="py-2.5 px-2 bg-gray-100 hover:bg-blue-600 hover:text-white rounded-xl text-xs font-bold transition-colors text-gray-800"
-                  style={{ fontFamily: 'Protest Revolution, sans-serif' }}
-                >
-                  {acorde}
-                </button>
-              ))}
-            </div>
-
-            <div className="pt-2 border-t border-gray-100">
-              <p className="text-xs text-gray-400 mb-2 font-medium">Entrada personalizada:</p>
-              <input
-                type="text"
-                placeholder="Ej. Cmaj7, F#m7b5..."
-                className="w-full p-2.5 border border-gray-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && e.target.value.trim()) {
-                    handleAcordeChange(
-                      modalData.seccionId,
-                      modalData.lineaIndex,
-                      modalData.compasIndex,
-                      modalData.divisionIndex,
-                      e.target.value.trim()
-                    );
-                  }
-                }}
-              />
-            </div>
+            <MusicKeyboard
+              currentChord={modalData.valorActual}
+              availableChords={getAcordesDisponibles()}
+              onSelectChord={(nuevoAcorde) => {
+                handleAcordeChange(
+                  modalData.seccionId,
+                  modalData.lineaIndex,
+                  modalData.compasIndex,
+                  modalData.divisionIndex,
+                  nuevoAcorde
+                );
+              }}
+            />
           </div>
         </div>
       )}

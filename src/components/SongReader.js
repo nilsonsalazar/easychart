@@ -8,7 +8,6 @@ import SongPDF from "./SongPDF";
 import toRoman from "./toRoman";
 
 
-
 const SongReader = () => {
   const location = useLocation();
   const [tono, setTono] = useState("C");
@@ -21,7 +20,13 @@ const SongReader = () => {
   const [filteredSongs, setFilteredSongs] = useState([]);
   const [showSongDropdown, setShowSongDropdown] = useState(false);
   const [showToneMenu, setShowToneMenu] = useState(false);
+  const handleLogout = () => {
+    // 1. Eliminamos el token de autenticación
+    localStorage.removeItem('easychart_token');
 
+    // 2. Redirigimos a la raíz o refrescamos para que el App.js evalúe la sesión
+    window.location.href = '/';
+  };
   const tonos = [
     "C", "D♭", "D", "E♭", "E", "F",
     "G♭", "G", "A♭", "A", "B♭", "B"
@@ -37,10 +42,7 @@ const SongReader = () => {
     const noteOrderSharps = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
     const noteOrderFlats = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"];
 
-    // Definir qué tonalidades deben usar bemoles (♭)
     const flatKeys = ["D♭", "E♭", "G♭", "A♭", "B♭"];
-
-    // Determinar si debemos usar bemoles para la tonalidad actual
     const useFlats = flatKeys.includes(currentKey);
 
     const baseNoteMatch = chord.match(/^[A-Ga-g](#|♭)?/);
@@ -59,7 +61,6 @@ const SongReader = () => {
     let newIndex = (originalIndex + semitones) % 12;
     if (newIndex < 0) newIndex += 12;
 
-    // Siempre usar la notación correcta (bemoles para flatKeys)
     let newBaseNote = useFlats ? noteOrderFlats[newIndex] : noteOrderSharps[newIndex];
 
     if (chord.includes('/')) {
@@ -121,16 +122,32 @@ const SongReader = () => {
     );
   };
 
-
+  // 1. useEffect de carga inicial y búsqueda local
   useEffect(() => {
     const fetchSongs = async () => {
+      const token = localStorage.getItem('easychart_token');
       try {
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.status === 401) {
+          localStorage.removeItem('easychart_token');
+          window.location.reload();
+          return;
+        }
+
         const data = await response.json();
+        const songList = Array.isArray(data) ? data : (data.data || []);
+
         if (response.ok) {
-          setSavedSongs(data);
+          setSavedSongs(songList);
           if (searchTerm) {
-            const filtered = data.filter(song =>
+            const filtered = songList.filter(song =>
               song.title.toLowerCase().includes(searchTerm.toLowerCase())
             );
             setFilteredSongs(filtered);
@@ -145,29 +162,41 @@ const SongReader = () => {
     fetchSongs();
   }, [searchTerm]);
 
-
   const generarId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+  // 2. Carga individual de una canción
   const loadSong = async (songId) => {
+    const token = localStorage.getItem('easychart_token');
     try {
-      const response = await fetch(`${API_URL}?id=${songId}&_=${Date.now()}`);
-      const song = await response.json();
+      const response = await fetch(`${API_URL}?id=${songId}&_=${Date.now()}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.status === 401) {
+        localStorage.removeItem('easychart_token');
+        window.location.reload();
+        return;
+      }
+
+      const responseData = await response.json();
+      const song = responseData.data || responseData;
 
       if (song.error) {
         alert(song.error);
         return;
       }
 
-      // Resetear el estado con los datos exactos de la canción
       setTituloCancion(song.title);
       setArtista(song.artist);
       setTono(song.key_signature);
       setTempo(song.tempo);
-      //setCompas(song.time_signature);
-      setSemitono(0); // Resetear semitono a 0 al cargar
+      setSemitono(0);
       setSelectedSongId(songId);
 
-
-      // Cargar las secciones exactamente como están en la base de datos
       const loadedSections = song.song_data?.sections?.map(section => ({
         ...section,
         lineas: section.lineas?.map(line => ({
@@ -177,7 +206,7 @@ const SongReader = () => {
             ...measure,
             acordes: measure.acordes?.map(chord => ({
               ...chord,
-              valor: chord.valor || "" // Cargar el valor exacto sin transponer
+              valor: chord.valor || ""
             })) || Array(1).fill("").map(() => ({ id: generarId("division"), valor: "" }))
           })) || Array(4).fill("").map(() => ({
             id: generarId("compas"),
@@ -226,20 +255,38 @@ const SongReader = () => {
       alert('Error al cargar la canción');
     }
   };
+
+  // 3. Búsqueda remota de canciones
   const searchSongs = async (searchTerm) => {
+    const token = localStorage.getItem('easychart_token');
     try {
-      const response = await fetch(`${API_URL}?search=${encodeURIComponent(searchTerm)}`);
+      const response = await fetch(`${API_URL}?search=${encodeURIComponent(searchTerm)}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.status === 401) {
+        localStorage.removeItem('easychart_token');
+        window.location.reload();
+        return [];
+      }
+
       if (!response.ok) {
         throw new Error('Error en la búsqueda');
       }
-      const data = await response.json();
-      console.log('Resultados de búsqueda:', data);
+
+      const resData = await response.json();
+      const data = resData.data || resData;
       return Array.isArray(data) ? data : [];
     } catch (error) {
       console.error('Error buscando canciones:', error);
       return [];
     }
   };
+
   const handleSearch = async (term) => {
     setSearchTerm(term);
 
@@ -277,24 +324,8 @@ const SongReader = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchSongs = async () => {
-      try {
-        const response = await fetch(`${API_URL}?_=${Date.now()}`);
-        const data = await response.json();
-        if (response.ok) {
-          setSavedSongs(data);
-        }
-      } catch (error) {
-        console.error('Error:', error);
-      }
-    };
-    fetchSongs();
-  }, []);
-
   return (
     <div className="min-h-screen bg-gray-50 p-4 pb-20">
-      {/* Header con marca EasyChart */}
       <header className="sticky top-0 z-10 bg-white/95 backdrop-blur shadow-sm py-4 px-6 rounded-2xl mb-6 border border-gray-100">
         <div className="max-w-4xl mx-auto flex justify-between items-center flex-wrap gap-4">
           <div className="flex items-center space-x-3">
@@ -311,20 +342,35 @@ const SongReader = () => {
             </div>
           </div>
 
-          <Link
-            to="/crear"
-            className="flex items-center px-4 py-2.5 bg-blue-600 text-white font-medium text-sm rounded-xl hover:bg-blue-700 transition-all shadow-sm hover:shadow"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Crear o Editar Canción
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              to="/crear"
+              className="flex items-center px-4 py-2.5 bg-blue-600 text-white font-medium text-sm rounded-xl hover:bg-blue-700 transition-all shadow-sm hover:shadow"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Crear o Editar Canción
+            </Link>
+
+            {/* BOTÓN DE LOGOUT */}
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="flex items-center px-3.5 py-2.5 bg-gray-100 text-gray-700 hover:bg-red-50 hover:text-red-600 font-medium text-sm rounded-xl transition-all border border-gray-200 cursor-pointer"
+              title="Cerrar Sesión"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              <span className="hidden sm:inline">Salir</span>
+            </button>
+          </div>
         </div>
       </header>
 
       <div className="max-w-4xl mx-auto space-y-6">
-        {/* Panel de Consulta y Búsqueda */}
+        {/* BUSCADOR: SIEMPRE VISIBLE */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">
@@ -372,243 +418,191 @@ const SongReader = () => {
             </div>
           </div>
 
-          {/* Panel de Controles de Transposición Interactivos (súper friendly, sólo en memoria) */}
-          <div className="pt-4 border-t border-gray-100 space-y-4">
-            {/* Fila de Botones para cambiar Tonalidad */}
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <label className="text-xs font-extrabold uppercase tracking-wider text-gray-600 flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zm12 0c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zM9 10l12-3" />
-                  </svg>
-                  Tonalidad Directa
-                </label>
-                <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">
-                  Tono Actual: {tono} {semitono !== 0 ? `(${semitono > 0 ? '+' : ''}${semitono} st)` : ''}
-                </span>
+          {/* CONTROLES DE TONALIDAD / EXPORTACIÓN (SOLO SI HAY CANCIÓN CARGADA) */}
+          {selectedSongId && (
+            <div className="pt-4 border-t border-gray-100 space-y-4">
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="text-xs font-extrabold uppercase tracking-wider text-gray-600 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zm12 0c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zM9 10l12-3" />
+                    </svg>
+                    Tonalidad Directa
+                  </label>
+                  <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">
+                    Tono Actual: {tono} {semitono !== 0 ? `(${semitono > 0 ? '+' : ''}${semitono} st)` : ''}
+                  </span>
+                </div>
+
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowToneMenu(!showToneMenu)}
+                    className="flex items-center justify-between w-full sm:w-64 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow hover:shadow-lg transition"
+                  >
+                    <span>
+                      🎵 Tono: <strong>{tono}</strong>
+                    </span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className={`w-5 h-5 transition-transform ${showToneMenu ? "rotate-180" : ""}`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {showToneMenu && (
+                    <div className="absolute z-50 mt-2 w-full sm:w-72 rounded-2xl border bg-white shadow-2xl p-3">
+                      <p className="text-xs text-gray-500 mb-3">Selecciona una tonalidad</p>
+                      <div className="grid grid-cols-4 gap-2">
+                        {tonos.map((t) => {
+                          const activo = tono === t;
+                          return (
+                            <button
+                              key={t}
+                              type="button"
+                              onClick={() => {
+                                cambiarTonalidad(t);
+                                setShowToneMenu(false);
+                              }}
+                              className={`py-2 rounded-xl font-bold transition ${activo ? "bg-blue-600 text-white" : "bg-gray-100 hover:bg-blue-100"
+                                }`}
+                            >
+                              {t}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* Grid / Fila de Botones de Tono */}
-              <div className="relative">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-3 pt-1">
+                <button
+                  type="button"
+                  onClick={() => ajustarSemitono(-1)}
+                  className="w-full md:w-auto flex-1 flex items-center justify-center space-x-2 py-2.5 px-4 bg-white border border-gray-200 hover:border-blue-400 hover:bg-blue-50/50 text-gray-800 rounded-xl font-bold text-sm shadow-sm transition-all active:scale-95 cursor-pointer group"
+                  title="Bajar medio tono (-1 semitono)"
+                >
+                  <span className="w-6 h-6 rounded-lg bg-blue-100 group-hover:bg-blue-200 text-blue-700 flex items-center justify-center text-sm font-black transition-colors">
+                    ♭
+                  </span>
+                  <span>Bajar Tono (-1 st)</span>
+                </button>
 
                 <button
                   type="button"
-                  onClick={() => setShowToneMenu(!showToneMenu)}
-                  className="flex items-center justify-between w-full sm:w-64
-        px-4 py-3 rounded-xl
-        bg-gradient-to-r from-blue-600 to-indigo-600
-        text-white font-semibold shadow hover:shadow-lg transition"
+                  onClick={() => ajustarSemitono(1)}
+                  className="w-full md:w-auto flex-1 flex items-center justify-center space-x-2 py-2.5 px-4 bg-white border border-gray-200 hover:border-indigo-400 hover:bg-indigo-50/50 text-gray-800 rounded-xl font-bold text-sm shadow-sm transition-all active:scale-95 cursor-pointer group"
+                  title="Subir medio tono (+1 semitono)"
                 >
-
-                  <span>
-                    🎵 Tono: <strong>{tono}</strong>
+                  <span>Subir Tono (+1 st)</span>
+                  <span className="w-6 h-6 rounded-lg bg-indigo-100 group-hover:bg-indigo-200 text-indigo-700 flex items-center justify-center text-sm font-black transition-colors">
+                    ♯
                   </span>
-
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className={`w-5 h-5 transition-transform ${showToneMenu ? "rotate-180" : ""
-                      }`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-
                 </button>
 
-                {showToneMenu && (
-
-                  <div
-                    className="
-            absolute
-            z-50
-            mt-2
-            w-full
-            sm:w-72
-            rounded-2xl
-            border
-            bg-white
-            shadow-2xl
-            p-3"
+                <div className="w-full md:w-auto flex-1">
+                  <PDFDownloadLink
+                    document={<SongPDF title={tituloCancion} artist={artista} sections={secciones} keySignature={tono} tempo={tempo} />}
+                    fileName={`${(tituloCancion || 'chart').replace(/\s+/g, '_')}_${tono}.pdf`}
+                    className="flex items-center justify-center space-x-2 w-full py-2.5 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium text-sm rounded-xl transition-all shadow-sm hover:shadow cursor-pointer"
                   >
-
-                    <p className="text-xs text-gray-500 mb-3">
-                      Selecciona una tonalidad
-                    </p>
-
-                    <div className="grid grid-cols-4 gap-2">
-
-                      {tonos.map((t) => {
-
-                        const activo = tono === t;
-
-                        return (
-
-                          <button
-                            key={t}
-                            type="button"
-                            onClick={() => {
-                              cambiarTonalidad(t);
-                              setShowToneMenu(false);
-                            }}
-                            className={`
-                                py-2
-                                rounded-xl
-                                font-bold
-                                transition
-
-                                ${activo
-                                ? "bg-blue-600 text-white"
-                                : "bg-gray-100 hover:bg-blue-100"
-                              }
-                            `}
-                          >
-                            {t}
-                          </button>
-
-                        );
-
-                      })}
-
-                    </div>
-
-                  </div>
-
-                )}
-
+                    {({ loading, error }) => (
+                      loading ? 'Preparando PDF...' : error ? 'Error al generar PDF' : (
+                        <>
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          <span>Exportar a PDF</span>
+                        </>
+                      )
+                    )}
+                  </PDFDownloadLink>
+                </div>
               </div>
             </div>
-
-            {/* Controles de Subir / Bajar Tono y Exportación a PDF */}
-            <div className="flex flex-col md:flex-row items-center justify-between gap-3 pt-1">
-              {/* Botón Bajar Tono */}
-              <button
-                type="button"
-                onClick={() => ajustarSemitono(-1)}
-                className="w-full md:w-auto flex-1 flex items-center justify-center space-x-2 py-2.5 px-4 bg-white border border-gray-200 hover:border-blue-400 hover:bg-blue-50/50 text-gray-800 rounded-xl font-bold text-sm shadow-sm transition-all active:scale-95 cursor-pointer group"
-                title="Bajar medio tono (-1 semitono)"
-              >
-                <span className="w-6 h-6 rounded-lg bg-blue-100 group-hover:bg-blue-200 text-blue-700 flex items-center justify-center text-sm font-black transition-colors">
-                  ♭
-                </span>
-                <span>Bajar Tono (-1 st)</span>
-              </button>
-
-              {/* Botón Subir Tono */}
-              <button
-                type="button"
-                onClick={() => ajustarSemitono(1)}
-                className="w-full md:w-auto flex-1 flex items-center justify-center space-x-2 py-2.5 px-4 bg-white border border-gray-200 hover:border-indigo-400 hover:bg-indigo-50/50 text-gray-800 rounded-xl font-bold text-sm shadow-sm transition-all active:scale-95 cursor-pointer group"
-                title="Subir medio tono (+1 semitono)"
-              >
-                <span>Subir Tono (+1 st)</span>
-                <span className="w-6 h-6 rounded-lg bg-indigo-100 group-hover:bg-indigo-200 text-indigo-700 flex items-center justify-center text-sm font-black transition-colors">
-                  ♯
-                </span>
-              </button>
-
-              {/* Botón Exportar PDF */}
-              <div className="w-full md:w-auto flex-1">
-                <PDFDownloadLink
-                  document={<SongPDF title={tituloCancion} artist={artista} sections={secciones} keySignature={tono} tempo={tempo} />}
-                  fileName={`${(tituloCancion || 'chart').replace(/\s+/g, '_')}_${tono}.pdf`}
-                  className="flex items-center justify-center space-x-2 w-full py-2.5 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium text-sm rounded-xl transition-all shadow-sm hover:shadow cursor-pointer"
-                >
-                  {({ loading, error }) => (
-                    loading ? 'Preparando PDF...' : error ? 'Error al generar PDF' : (
-                      <>
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        <span>Exportar a PDF</span>
-                      </>
-                    )
-                  )}
-                </PDFDownloadLink>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
 
-        {/* Visualización estilo PDF */}
-        <div className="bg-white rounded-xl shadow-sm p-8" style={{
-          fontFamily: 'Protest Revolution',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
-        }}>
-          {/* Encabezado del Chart*/}
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold mb-2">{tituloCancion || "Canción"} - {artista || "Autor"}</h2>
-            <p className="text-lg text-gray-600">
-              Tonalidad: {tono} • Compás: {compas} • Tempo: {tempo}
-            </p>
-          </div>
+        {/* VISTA DEL CHART (SI HAY CANCIÓN CARGADA) O MENSAJE VACÍO */}
+        {selectedSongId ? (
+          <div className="bg-white rounded-xl shadow-sm p-8" style={{
+            fontFamily: 'Protest Revolution',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
+          }}>
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold mb-2">{tituloCancion} - {artista || "Autor"}</h2>
+              <p className="text-lg text-gray-600">
+                Tonalidad: {tono} • Compás: {compas} • Tempo: {tempo}
+              </p>
+            </div>
 
-          {/* Secciones de la canción */}
-          {secciones.map((sec, secIdx) => (
-            <div key={secIdx} className="mb-10">
-              <h3 className="text-xl font-bold border-b border-gray-300 pb-1 mb-6">
-                {sec.nombre} • {sec.compas}
-              </h3>
+            {secciones.map((sec, secIdx) => (
+              <div key={secIdx} className="mb-10">
+                <h3 className="text-xl font-bold border-b border-gray-300 pb-1 mb-6">
+                  {sec.nombre} • {sec.compas}
+                </h3>
 
-              {sec.lineas.map((linea, lIdx) => {
-                let measureCount = 0;
-                for (let i = 0; i < lIdx; i++) {
-                  measureCount += sec.lineas[i].compasses.length;
-                }
+                {sec.lineas.map((linea, lIdx) => {
+                  let measureCount = 0;
+                  for (let i = 0; i < lIdx; i++) {
+                    measureCount += sec.lineas[i].compasses.length;
+                  }
 
-                return (
-                  <div key={lIdx} className="mb-8 flex items-center">
-                    {/* Símbolo de repetición al inicio */}
-                    {linea.repetir && <span className="text-2xl mx-2">||:</span>}
+                  return (
+                    <div key={lIdx} className="mb-8 flex items-center">
+                      {linea.repetir && <span className="text-2xl mx-2">||:</span>}
 
-                    {/* Línea de 4 compasses distribuidos equitativamente */}
-                    <div className="flex justify-evenly gap-0 flex-1">
-                      {linea.compasses.map((compass, cIdx) => {
-                        measureCount++;
-                        const divisiones = compass.acordes.length;
+                      <div className="flex justify-evenly gap-0 flex-1">
+                        {linea.compasses.map((compass, cIdx) => {
+                          measureCount++;
+                          const divisiones = compass.acordes.length;
 
-                        return (
-                          <div key={cIdx} className="relative w-1/4 border-l border-r border-black">
+                          return (
+                            <div key={cIdx} className="relative w-1/4 border-l border-r border-black">
+                              <div className="absolute -top-5 left-0 right-0 text-center">
+                                <span className="text-xs text-gray-500">{toRoman(measureCount)}</span>
+                              </div>
 
-
-                            {/* Número de compás */}
-                            <div className="absolute -top-5 left-0 right-0 text-center">
-                              <span className="text-xs text-gray-500">{toRoman(measureCount)}</span>
+                              <div
+                                className={`grid gap-2`}
+                                style={{
+                                  gridTemplateColumns: `repeat(${divisiones}, minmax(0, 1fr))`,
+                                  textAlign: 'center',
+                                }}
+                              >
+                                {compass.acordes.map((acorde, dIdx) => (
+                                  <div key={dIdx} className="py-1 text-lg">
+                                    {acorde.valor || "-"}
+                                  </div>
+                                ))}
+                              </div>
                             </div>
+                          );
+                        })}
+                      </div>
 
-                            {/* Acordes distribuidos equitativamente en el compás */}
-                            <div
-                              className={`grid gap-2`}
-                              style={{
-                                gridTemplateColumns: `repeat(${divisiones}, minmax(0, 1fr))`,
-                                textAlign: 'center',
-                              }}
-                            >
-                              {compass.acordes.map((acorde, dIdx) => (
-                                <div key={dIdx} className="py-1 text-lg">
-                                  {acorde.valor || "-"}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        );
-                      })}
+                      {linea.repetir && <span className="text-2xl mx-2">:||</span>}
                     </div>
-
-                    {/* Símbolo de cierre de repetición */}
-                    {linea.repetir && <span className="text-2xl mx-2">:||</span>}
-                  </div>
-                );
-              })}
-            </div>
-          ))}
-        </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        ) : (
+          /* ESTADO INICIAL / PLACEHOLDER */
+          <div className="bg-white rounded-2xl p-12 text-center border-2 border-dashed border-gray-200 shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zm12 0c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zM9 10l12-3" />
+            </svg>
+            <p className="text-gray-500 font-medium">Selecciona o busca una canción arriba para visualizar el chart</p>
+          </div>
+        )}
       </div>
     </div>
   );
