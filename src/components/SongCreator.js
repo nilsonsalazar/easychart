@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
-import ReactDOM from "react-dom";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import circulos from "./circulos";
 import { API_URL, API_CONFIG } from './config';
@@ -18,15 +17,6 @@ export default function SongCreator() {
   const [filteredSongs, setFilteredSongs] = useState([]);
   const [showSongDropdown, setShowSongDropdown] = useState(false);
   const [showToneMenu, setShowToneMenu] = useState(false);
-
-  // Posiciones para portales flotantes (igual que SongReader)
-  const [toneMenuCoords, setToneMenuCoords] = useState({ top: 0, left: 0, width: 0 });
-  const [searchCoords, setSearchCoords] = useState({ top: 0, left: 0, width: 0 });
-
-  const searchInputRef = useRef(null);
-  const toneBtnRef = useRef(null);
-  const toneMenuRef = useRef(null);
-  const searchDropdownRef = useRef(null);
 
   const handleLogout = () => {
     localStorage.removeItem('easychart_token');
@@ -66,65 +56,6 @@ export default function SongCreator() {
   const [tituloCancion, setTituloCancion] = useState("");
   const [artista, setArtista] = useState("");
   const [showPDFOptions, setShowPDFOptions] = useState(false);
-
-  // Calcular posiciones absolutas en pantalla al abrir desplegables o hacer scroll
-  const updateToneCoords = () => {
-    if (toneBtnRef.current) {
-      const rect = toneBtnRef.current.getBoundingClientRect();
-      setToneMenuCoords({
-        top: rect.bottom + window.scrollY + 8,
-        left: rect.left + window.scrollX,
-        width: Math.max(rect.width, 320)
-      });
-    }
-  };
-
-  const updateSearchCoords = () => {
-    if (searchInputRef.current) {
-      const rect = searchInputRef.current.getBoundingClientRect();
-      setSearchCoords({
-        top: rect.bottom + window.scrollY + 8,
-        left: rect.left + window.scrollX,
-        width: rect.width
-      });
-    }
-  };
-
-  const toggleToneMenu = () => {
-    if (!showToneMenu) {
-      updateToneCoords();
-    }
-    setShowToneMenu(!showToneMenu);
-  };
-
-  // Escuchar clics fuera de los menús para cerrarlos con seguridad
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        toneBtnRef.current && !toneBtnRef.current.contains(event.target) &&
-        toneMenuRef.current && !toneMenuRef.current.contains(event.target)
-      ) {
-        setShowToneMenu(false);
-      }
-
-      if (
-        searchInputRef.current && !searchInputRef.current.contains(event.target) &&
-        searchDropdownRef.current && !searchDropdownRef.current.contains(event.target)
-      ) {
-        setShowSongDropdown(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    window.addEventListener("resize", updateToneCoords);
-    window.addEventListener("scroll", updateToneCoords, true);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      window.removeEventListener("resize", updateToneCoords);
-      window.removeEventListener("scroll", updateToneCoords, true);
-    };
-  }, []);
 
   const generarId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
@@ -248,7 +179,6 @@ export default function SongCreator() {
             );
             setFilteredSongs(filtered);
             setShowSongDropdown(filtered.length > 0);
-            updateSearchCoords();
           }
         } else {
           console.error('Error al cargar canciones:', data.error);
@@ -262,7 +192,6 @@ export default function SongCreator() {
 
   const handleSearch = async (term) => {
     setSearchTerm(term);
-    updateSearchCoords();
 
     if (!term.trim()) {
       setFilteredSongs([]);
@@ -666,27 +595,21 @@ export default function SongCreator() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-4 pb-20">
-      <header className="sticky top-0 z-10 bg-card/80 backdrop-blur-md shadow-2xl py-4 px-6 rounded-2xl mb-6 border border-border">
-        <div className="max-w-4xl mx-auto flex justify-between items-center flex-wrap gap-4 mb-3 pb-3 border-b border-border">
+    <div className="min-h-screen bg-black/40 p-4 pb-20 backdrop-blur-[2px]">
+      {/* HEADER ESTILO LOGIN */}
+      <header className="sticky top-0 z-10 bg-[#EAEAEA]/90 backdrop-blur-md shadow-lg py-4 px-6 rounded-2xl mb-6 border border-white/40">
+        <div className="max-w-4xl mx-auto flex justify-between items-center flex-wrap gap-4 mb-3 pb-3 border-b border-stone-300/60">
           <div className="flex items-center space-x-3">
-            <div className="bg-primary text-primary-foreground p-2.5 rounded-xl shadow-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-            </div>
-            <div>
-              <h1 className="text-2xl font-black text-primary tracking-tight">
-                EasyChart Creator
-              </h1>
-              <p className="text-xs text-muted-foreground font-medium">Chord Chart Editor & Creator</p>
+            <div className="bg-[#383023] text-[#D8B45A] px-3 py-1 rounded-full text-xs font-mono tracking-widest uppercase flex items-center gap-1.5 shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-[#C29B38]"></span>
+              EASYCHART CREATOR
             </div>
           </div>
 
           <div className="flex items-center gap-3">
             <Link
               to="/"
-              className="flex items-center px-4 py-2.5 bg-secondary text-secondary-foreground font-medium text-sm rounded-xl hover:bg-secondary/80 transition-all border border-border"
+              className="flex items-center px-3.5 py-1.5 bg-stone-300/60 text-stone-800 font-medium text-xs rounded-xl hover:bg-stone-300 transition-all border border-stone-400/30"
             >
               ← Volver a Consulta
             </Link>
@@ -694,10 +617,10 @@ export default function SongCreator() {
             <button
               type="button"
               onClick={handleLogout}
-              className="flex items-center px-3.5 py-2.5 bg-secondary text-muted-foreground hover:bg-destructive/20 hover:text-destructive font-medium text-sm rounded-xl transition-all border border-border cursor-pointer"
+              className="flex items-center px-3.5 py-1.5 bg-stone-300/60 text-stone-700 hover:bg-stone-300 font-medium text-xs rounded-xl transition-all border border-stone-400/30 cursor-pointer"
               title="Cerrar Sesión"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
               <span className="hidden sm:inline">Salir</span>
@@ -705,78 +628,88 @@ export default function SongCreator() {
           </div>
         </div>
 
-        <div className="space-y-2 max-w-4xl mx-auto">
+        <div className="space-y-1">
           <input
             type="text"
             value={tituloCancion}
             onChange={(e) => setTituloCancion(e.target.value)}
-            className="text-2xl sm:text-3xl font-black w-full text-center bg-transparent focus:outline-none text-foreground placeholder-muted-foreground tracking-tight"
+            className="text-2xl font-bold w-full text-center bg-transparent focus:outline-none text-stone-900 placeholder-stone-400"
             placeholder="Título de la canción"
+            style={{ fontFamily: 'Architects Daughter, cursive' }}
           />
           <input
             type="text"
             value={artista}
             onChange={(e) => setArtista(e.target.value)}
-            className="text-lg sm:text-xl font-semibold w-full text-center bg-transparent focus:outline-none text-muted-foreground placeholder-muted-foreground"
+            className="text-lg font-semibold w-full text-center bg-transparent focus:outline-none text-stone-600 placeholder-stone-400"
             placeholder="Autor o Artista"
+            style={{ fontFamily: 'Architects Daughter, cursive' }}
           />
         </div>
       </header>
 
       <div className="max-w-4xl mx-auto space-y-6">
-        <div className="bg-card/70 backdrop-blur-md rounded-2xl shadow-xl border border-border p-6 space-y-5">
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-primary/90 mb-2">
-              Buscar título o artista
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+        {/* CONFIGURACIÓN Y BUSCADOR CON ESTILO LOGIN */}
+        <div className="bg-[#EAEAEA]/95 backdrop-blur-md rounded-2xl shadow-xl border border-white/50 p-6 space-y-4">
+          <h2 className="text-xs font-mono uppercase tracking-widest text-stone-500">Configuración & Búsqueda</h2>
+
+          {/* Input de búsqueda de canciones */}
+          <div className="relative mt-2">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => handleSearch(e.target.value)}
+              placeholder="Buscar título o artista..."
+              className="w-full px-4 py-3 bg-[#E2E8F0]/70 border border-stone-300/80 rounded-xl focus:outline-none focus:border-stone-500 transition-all text-stone-800 placeholder-stone-400 font-sans text-sm"
+            />
+
+            {showSongDropdown && filteredSongs.length > 0 && (
+              <div className="absolute z-20 w-full mt-2 bg-[#EAEAEA] border border-stone-300 rounded-xl shadow-2xl max-h-60 overflow-y-auto divide-y divide-stone-200">
+                {filteredSongs.map(song => (
+                  <div
+                    key={song.id}
+                    className={`p-3.5 hover:bg-stone-200/80 cursor-pointer flex justify-between items-center ${selectedSongId === song.id ? 'bg-stone-200' : ''}`}
+                    onClick={() => {
+                      loadSong(song.id);
+                      setSearchTerm(song.title);
+                      setSelectedSongId(song.id);
+                      setShowSongDropdown(false);
+                    }}
+                  >
+                    <div>
+                      <div className="font-semibold text-stone-900 text-sm">{song.title}</div>
+                      <div className="text-xs text-stone-500 mt-0.5">
+                        {song.key_signature} • {song.tempo} BPM
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <input
-                ref={searchInputRef}
-                type="text"
-                value={searchTerm}
-                onChange={(e) => handleSearch(e.target.value)}
-                onFocus={() => {
-                  updateSearchCoords();
-                  if (filteredSongs.length > 0) setShowSongDropdown(true);
-                }}
-                placeholder="Buscar título o artista..."
-                className="w-full pl-10 pr-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all text-foreground placeholder-muted-foreground font-medium"
-              />
-            </div>
+            )}
           </div>
 
-          <div className="space-y-4 pt-4 border-t border-border">
+          <div className="space-y-4 pt-2">
+            {/* Controles de Tonalidad */}
             <div>
               <div className="flex justify-between items-center mb-2">
-                <label className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zm12 0c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zM9 10l12-3" />
-                  </svg>
+                <label className="text-xs font-mono uppercase tracking-widest text-stone-500">
                   Tonalidad Directa
                 </label>
-                <span className="text-xs font-bold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full border border-primary/20">
+                <span className="text-xs font-mono font-bold text-[#383023] bg-stone-300/60 px-3 py-1 rounded-full border border-stone-300">
                   Tono Actual: {tono} {semitono !== 0 ? `(${semitono > 0 ? '+' : ''}${semitono} st)` : ''}
                 </span>
               </div>
 
-              <div>
+              <div className="relative">
                 <button
-                  ref={toneBtnRef}
                   type="button"
-                  onClick={toggleToneMenu}
-                  className="flex items-center justify-between w-full sm:w-64 px-4 py-3 rounded-xl bg-primary text-primary-foreground font-bold shadow-lg hover:shadow-primary/20 transition cursor-pointer"
+                  onClick={() => setShowToneMenu(!showToneMenu)}
+                  className="flex items-center justify-between w-full sm:w-64 px-4 py-2.5 rounded-xl bg-[#383023] text-[#EAEAEA] font-mono text-xs tracking-wider uppercase font-semibold shadow hover:bg-[#252017] transition"
                 >
-                  <span>
-                    🎵 Tono: <strong>{tono}</strong>
-                  </span>
+                  <span>🎵 Tono: {tono}</span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className={`w-5 h-5 transition-transform ${showToneMenu ? "rotate-180" : ""}`}
+                    className={`w-4 h-4 transition-transform ${showToneMenu ? "rotate-180" : ""}`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -784,12 +717,36 @@ export default function SongCreator() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
+
+                {showToneMenu && (
+                  <div className="absolute z-50 mt-2 w-full sm:w-72 rounded-xl border border-stone-300 bg-[#EAEAEA] shadow-2xl p-3">
+                    <p className="text-xs font-mono uppercase tracking-widest text-stone-500 mb-2">
+                      Selecciona tonalidad
+                    </p>
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {tonos.map((t) => (
+                        <button
+                          key={t}
+                          type="button"
+                          onClick={() => {
+                            cambiarTonalidad(t);
+                            setShowToneMenu(false);
+                          }}
+                          className={`py-2 rounded-lg font-bold text-xs font-mono transition ${tono === t ? "bg-[#383023] text-[#D8B45A]" : "bg-stone-200 text-stone-800 hover:bg-stone-300"}`}
+                        >
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-1">
-              <div className="w-full md:w-auto">
-                <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">Tempo (BPM)</label>
+            <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
+              {/* Tempo */}
+              <div>
+                <label className="block text-xs font-mono uppercase tracking-widest text-stone-500 mb-1">Tempo (BPM)</label>
                 <input
                   type="number"
                   value={tempo}
@@ -798,37 +755,37 @@ export default function SongCreator() {
                   min="0"
                   max="360"
                   step="1"
-                  className="w-full md:w-32 rounded-xl border border-border bg-background py-2.5 px-3 text-sm font-bold text-foreground focus:outline-none focus:border-primary"
+                  className="w-28 rounded-xl border border-stone-300/80 bg-[#E2E8F0]/70 py-2 px-3 text-sm font-semibold text-stone-800 focus:outline-none focus:border-stone-500"
                 />
               </div>
 
-              <div className="w-full md:w-auto flex-1 flex items-center justify-center gap-2">
+              {/* Botones Semitono */}
+              <div className="flex items-center space-x-2">
                 <button
                   type="button"
                   onClick={() => ajustarSemitono(-1)}
-                  className="flex-1 flex items-center justify-center space-x-1.5 py-2.5 px-3 bg-secondary border border-border hover:border-primary/50 hover:bg-secondary/80 text-secondary-foreground rounded-xl font-bold text-xs shadow-sm transition-all active:scale-95 cursor-pointer group"
+                  className="px-4 py-2 bg-stone-200/80 border border-stone-300 hover:bg-stone-300 text-stone-800 rounded-xl font-bold text-xs font-mono transition active:scale-95"
                 >
-                  <span className="w-5 h-5 rounded bg-muted group-hover:bg-primary/20 text-primary flex items-center justify-center font-black">♭</span>
-                  <span>-1 st</span>
+                  ♭ -1 Semitono
                 </button>
 
                 <button
                   type="button"
                   onClick={() => ajustarSemitono(1)}
-                  className="flex-1 flex items-center justify-center space-x-1.5 py-2.5 px-3 bg-secondary border border-border hover:border-primary/50 hover:bg-secondary/80 text-secondary-foreground rounded-xl font-bold text-xs shadow-sm transition-all active:scale-95 cursor-pointer group"
+                  className="px-4 py-2 bg-stone-200/80 border border-stone-300 hover:bg-stone-300 text-stone-800 rounded-xl font-bold text-xs font-mono transition active:scale-95"
                 >
-                  <span>+1 st</span>
-                  <span className="w-5 h-5 rounded bg-muted group-hover:bg-primary/20 text-primary flex items-center justify-center font-black">♯</span>
+                  ♯ +1 Semitono
                 </button>
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-border">
+            {/* Acciones principales */}
+            <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-stone-300/60">
               <button
                 onClick={() => selectedSongId ? updateSong(selectedSongId) : saveSong()}
-                className="flex items-center px-5 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm rounded-xl transition-all shadow-md cursor-pointer"
+                className="flex items-center px-4 py-2.5 bg-[#383023] text-[#EAEAEA] hover:bg-[#252017] font-mono text-xs tracking-wider uppercase font-medium rounded-xl transition shadow cursor-pointer"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-[#D8B45A]" viewBox="0 0 20 20" fill="currentColor">
                   <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z" />
                 </svg>
                 {selectedSongId ? 'Actualizar Canción' : 'Guardar Canción'}
@@ -842,9 +799,9 @@ export default function SongCreator() {
                   }
                   setShowPDFOptions(!showPDFOptions);
                 }}
-                className="flex items-center px-5 py-2.5 bg-secondary border border-border text-secondary-foreground hover:bg-secondary/80 font-bold text-sm rounded-xl transition-all shadow-sm cursor-pointer"
+                className="flex items-center px-4 py-2.5 bg-stone-200 border border-stone-300 text-stone-800 hover:bg-stone-300 font-mono text-xs tracking-wider uppercase font-medium rounded-xl transition shadow cursor-pointer"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-primary" viewBox="0 0 20 20" fill="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-stone-600" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L10 11.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
                 </svg>
                 {showPDFOptions ? 'Ocultar PDF' : 'Exportar a PDF'}
@@ -852,11 +809,11 @@ export default function SongCreator() {
             </div>
 
             {showPDFOptions && (
-              <div className="mt-3 p-4 border border-border rounded-xl bg-background/60">
+              <div className="mt-4 p-4 border border-stone-300/80 rounded-xl bg-stone-200/50">
                 <PDFDownloadLink
                   document={<SongPDF title={tituloCancion} artist={artista} sections={secciones} keySignature={tono} tempo={tempo} />}
                   fileName={`${(tituloCancion || 'cancion').replace(/\s+/g, '_')}.pdf`}
-                  className="block w-full text-center px-4 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm rounded-xl transition-all shadow-md cursor-pointer"
+                  className="block w-full text-center px-4 py-2.5 bg-[#383023] text-[#EAEAEA] hover:bg-[#252017] font-mono text-xs tracking-wider uppercase font-medium rounded-xl transition shadow cursor-pointer"
                 >
                   {({ loading, error }) => (
                     loading ? 'Preparando PDF...' : error ? 'Error al generar PDF' : 'Descargar PDF ahora'
@@ -867,43 +824,27 @@ export default function SongCreator() {
           </div>
         </div>
 
-        <div className="bg-card/70 backdrop-blur-md rounded-2xl shadow-xl border border-border p-6 flex flex-col md:flex-row items-center gap-3">
-          <input
-            type="text"
-            value={nuevaSeccionNombre}
-            onChange={(e) => setNuevaSeccionNombre(e.target.value)}
-            placeholder="Nombre de nueva sección (ej. Coro, Intro...)"
-            className="flex-1 w-full px-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:border-primary text-foreground font-medium"
-          />
-          <button
-            type="button"
-            onClick={agregarSeccion}
-            className="w-full md:w-auto px-5 py-3 bg-secondary border border-border hover:border-primary/50 hover:bg-secondary/80 text-primary font-bold text-sm rounded-xl transition cursor-pointer"
-          >
-            + Agregar Sección
-          </button>
-        </div>
-
+        {/* SONG SECTIONS CON HOJA ESTILO LOGIN */}
         {secciones.map((sec, secIdx) => (
-          <div key={sec.id} className="bg-card/80 backdrop-blur-md rounded-2xl shadow-2xl overflow-hidden border border-border text-foreground">
-            <div className="flex justify-between items-center p-4 border-b border-border bg-muted/50">
+          <div key={sec.id} className="bg-[#EAEAEA]/95 backdrop-blur-md rounded-2xl shadow-xl overflow-hidden border border-white/50 text-stone-900">
+            {/* Header de sección */}
+            <div className="flex justify-between items-center p-4 border-b border-stone-300/80 bg-stone-200/50">
               {editingSeccionId === sec.id ? (
                 <input
                   type="text"
                   defaultValue={sec.nombre}
                   onBlur={(e) => editarNombreSeccion(sec.id, e.target.value)}
                   autoFocus
-                  className="px-3 py-1.5 bg-background border border-primary/60 rounded-xl text-foreground font-bold text-base focus:outline-none"
+                  className="px-3 py-1 bg-white border border-stone-400 rounded text-stone-900 font-bold"
                 />
               ) : (
                 <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-primary text-lg uppercase tracking-wider">
+                  <h3 className="font-bold text-stone-800 text-base uppercase tracking-wider font-sans">
                     {sec.nombre}
                   </h3>
                   <button
                     onClick={() => setEditingSeccionId(sec.id)}
-                    className="text-muted-foreground hover:text-primary transition text-sm cursor-pointer"
-                    title="Editar nombre"
+                    className="text-stone-400 hover:text-stone-700 transition"
                   >
                     ✏️
                   </button>
@@ -912,158 +853,173 @@ export default function SongCreator() {
 
               <button
                 onClick={() => eliminarSeccion(sec.id)}
-                className="text-xs font-bold uppercase tracking-wider text-destructive hover:text-destructive/80 px-3.5 py-1.5 bg-destructive/10 rounded-xl border border-destructive/20 transition cursor-pointer"
+                className="text-xs font-mono uppercase tracking-wider text-red-700 hover:text-red-900 px-3 py-1 bg-red-100/60 rounded-lg border border-red-200/60 transition"
               >
                 Eliminar Sección
               </button>
             </div>
 
-            <div className="p-6 space-y-6">
+            {/* Contenido de líneas de la sección */}
+            <div className="p-6 space-y-6" style={{ fontFamily: 'Architects Daughter, cursive' }}>
               {sec.lineas.map((linea, lIdx) => (
                 <div key={linea.id} className="flex items-center gap-3">
                   <button
-                    type="button"
                     onClick={() => toggleRepetirLinea(sec.id, lIdx)}
-                    className={`px-3 py-1 rounded-lg border font-mono text-sm font-bold transition cursor-pointer ${linea.repetir ? "bg-primary/20 border-primary text-primary" : "bg-secondary border-border text-muted-foreground hover:text-foreground"
-                      }`}
-                    title="Alternar barra de repetición (% / %)"
+                    className={`px-2 py-1 rounded text-xs font-sans transition ${linea.repetir ? 'bg-[#383023] text-[#D8B45A]' : 'bg-stone-200 text-stone-600 hover:bg-stone-300'}`}
                   >
-                    {linea.repetir ? "% %" : "Repetir"}
+                    {linea.repetir ? ':||' : '||'}
                   </button>
 
-                  <div className="flex justify-evenly gap-0 flex-1">
-                    {linea.compasses.map((compass, cIdx) => {
-                      const divisiones = compass.acordes.length;
-
-                      return (
-                        <div key={compass.id} className="relative w-1/4 border-l border-r border-border px-2 py-1 bg-background/50 my-1 rounded-sm">
-                          <div className="absolute -top-5 left-0 right-0 flex justify-between px-1">
-                            <span className="text-[10px] text-muted-foreground font-sans">{toRoman(cIdx + 1)}</span>
-                            <div className="flex gap-1">
-                              {[1, 2, 4].map(divOpt => (
-                                <button
-                                  key={divOpt}
-                                  type="button"
-                                  onClick={() => cambiarDivisiones(sec.id, lIdx, cIdx, divOpt)}
-                                  className={`text-[10px] px-1 rounded font-sans cursor-pointer ${divisiones === divOpt ? 'bg-primary text-primary-foreground font-bold' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}
-                                >
-                                  {divOpt}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-
-                          <div
-                            className="grid gap-1 mt-1"
-                            style={{
-                              gridTemplateColumns: `repeat(${divisiones}, minmax(0, 1fr))`,
-                              textAlign: 'center',
-                            }}
+                  <div className="flex justify-evenly gap-2 flex-1">
+                    {linea.compasses.map((compass, cIdx) => (
+                      <div key={compass.id} className="relative w-1/4 border-l border-r border-stone-800 px-2 py-2 bg-stone-100/40 rounded-sm">
+                        <div className="flex justify-between items-center mb-1 font-sans">
+                          <span className="text-[10px] text-stone-500 font-mono">
+                            C{cIdx + 1}
+                          </span>
+                          <select
+                            value={compass.divisiones}
+                            onChange={(e) => cambiarDivisiones(sec.id, lIdx, cIdx, parseInt(e.target.value))}
+                            className="text-[10px] bg-transparent border-none text-stone-600 font-mono focus:outline-none"
                           >
-                            {compass.acordes.map((acorde, dIdx) => (
-                              <input
-                                key={acorde.id}
-                                type="text"
-                                value={acorde.valor}
-                                onChange={(e) => handleAcordeChange(sec.id, lIdx, cIdx, dIdx, e.target.value)}
-                                placeholder="-"
-                                className="w-full bg-secondary/90 border border-border rounded text-center text-xl font-bold text-foreground focus:outline-none focus:border-primary py-1"
-                              />
-                            ))}
-                          </div>
+                            <option value={1}>1 div</option>
+                            <option value={2}>2 div</option>
+                            <option value={4}>4 div</option>
+                          </select>
                         </div>
-                      );
-                    })}
+
+                        <div
+                          className="grid gap-1 text-center"
+                          style={{
+                            gridTemplateColumns: `repeat(${compass.divisiones}, minmax(0, 1fr))`
+                          }}
+                        >
+                          {compass.acordes.map((acorde, dIdx) => (
+                            <button
+                              key={acorde.id}
+                              onClick={() => setModalData({ seccionId: sec.id, lineaIndex: lIdx, compasIndex: cIdx, divisionIndex: dIdx })}
+                              className="py-1 text-xl font-extrabold text-stone-900 hover:bg-stone-200 rounded transition border border-dashed border-stone-300 hover:border-stone-500"
+                            >
+                              {acorde.valor || "-"}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ))}
 
-              <div className="pt-2 flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => agregarLinea(sec.id)}
-                  className="px-4 py-2 bg-secondary border border-border hover:border-primary/50 text-primary text-xs font-bold uppercase tracking-wider rounded-xl transition cursor-pointer"
-                >
-                  + Agregar Línea
-                </button>
-              </div>
+              <button
+                onClick={() => agregarLinea(sec.id)}
+                className="w-full py-2 bg-stone-200/60 border border-dashed border-stone-400 text-stone-700 hover:bg-stone-200 rounded-xl font-sans text-xs uppercase font-semibold transition"
+              >
+                + Agregar Línea
+              </button>
             </div>
           </div>
         ))}
+
+        {/* AGREGAR NUEVA SECCIÓN */}
+        <div className="bg-[#EAEAEA]/90 backdrop-blur-md rounded-2xl shadow-lg p-6 border border-white/40 flex gap-3">
+          <input
+            type="text"
+            value={nuevaSeccionNombre}
+            onChange={(e) => setNuevaSeccionNombre(e.target.value)}
+            placeholder="Nombre de nueva sección (ej. Estrofa, Coro, Puente)..."
+            className="flex-1 px-4 py-2.5 bg-[#E2E8F0]/70 border border-stone-300/80 rounded-xl focus:outline-none focus:border-stone-500 text-stone-800 placeholder-stone-400 font-sans text-sm"
+          />
+          <button
+            onClick={agregarSeccion}
+            className="px-5 py-2.5 bg-[#383023] text-[#EAEAEA] hover:bg-[#252017] font-mono text-xs tracking-wider uppercase font-semibold rounded-xl transition shadow"
+          >
+            + Nueva Sección
+          </button>
+        </div>
       </div>
 
-      {showSongDropdown && filteredSongs.length > 0 && ReactDOM.createPortal(
-        <div
-          ref={searchDropdownRef}
-          style={{
-            position: 'absolute',
-            top: `${searchCoords.top}px`,
-            left: `${searchCoords.left}px`,
-            width: `${searchCoords.width}px`,
-            zIndex: 99999
-          }}
-          className="bg-card border border-border rounded-xl shadow-2xl max-h-64 overflow-y-auto divide-y divide-border"
-        >
-          {filteredSongs.map(song => (
-            <div
-              key={song.id}
-              className={`p-3.5 hover:bg-primary/10 transition-colors cursor-pointer flex justify-between items-center ${selectedSongId === song.id ? 'bg-primary/20' : ''}`}
-              onClick={() => {
-                loadSong(song.id);
-                setSearchTerm(song.title);
-                setSelectedSongId(song.id);
-                setShowSongDropdown(false);
-              }}
-            >
-              <div>
-                <div className="font-semibold text-foreground">{song.title}</div>
-                <div className="text-xs text-muted-foreground mt-0.5">
-                  {song.artist ? `Artista: ${song.artist} • ` : ''}Tonalidad: {song.key_signature}
-                </div>
-              </div>
-              <span className="text-xs font-semibold px-2.5 py-1 bg-secondary text-primary border border-border rounded-lg">
-                {song.tempo} BPM
-              </span>
+      {/* MODAL SELECCIÓN DE ACORDES */}
+      {modalData && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#EAEAEA] rounded-2xl shadow-2xl border border-white/50 p-6 max-w-md w-full space-y-4">
+            <div className="flex justify-between items-center border-b border-stone-300 pb-2">
+              <h4 className="font-bold text-stone-800 text-sm font-sans uppercase">Seleccionar Acorde ({tono})</h4>
+              <button
+                onClick={() => setModalData(null)}
+                className="text-stone-500 hover:text-stone-800 font-bold"
+              >
+                ✕
+              </button>
             </div>
-          ))}
-        </div>,
-        document.body
-      )}
 
-      {showToneMenu && ReactDOM.createPortal(
-        <div
-          ref={toneMenuRef}
-          style={{
-            position: 'absolute',
-            top: `${toneMenuCoords.top}px`,
-            left: `${toneMenuCoords.left}px`,
-            width: `${toneMenuCoords.width}px`,
-            zIndex: 99999
-          }}
-          className="rounded-2xl border border-border bg-card shadow-2xl p-3"
-        >
-          <p className="text-xs text-muted-foreground mb-3 font-medium">Selecciona una tonalidad</p>
-          <div className="grid grid-cols-4 gap-2">
-            {tonos.map((t) => {
-              const activo = tono === t;
-              return (
+            <div className="grid grid-cols-3 gap-2 max-h-60 overflow-y-auto p-1">
+              <button
+                onClick={() => handleAcordeChange(modalData.seccionId, modalData.lineaIndex, modalData.compasIndex, modalData.divisionIndex, "")}
+                className="py-2 bg-stone-300/60 hover:bg-stone-300 text-stone-700 rounded-lg font-bold text-xs font-mono"
+              >
+                Limpiar (-)
+              </button>
+              {getAcordesDisponibles().map((acorde, i) => (
                 <button
-                  key={t}
-                  type="button"
-                  onClick={() => {
-                    cambiarTonalidad(t);
-                    setShowToneMenu(false);
-                  }}
-                  className={`py-2 rounded-xl font-bold transition cursor-pointer ${activo ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-primary/20 hover:text-primary"
-                    }`}
+                  key={i}
+                  onClick={() => handleAcordeChange(modalData.seccionId, modalData.lineaIndex, modalData.compasIndex, modalData.divisionIndex, acorde)}
+                  className="py-2 bg-stone-200 hover:bg-[#383023] hover:text-[#D8B45A] text-stone-800 rounded-lg font-bold text-xs font-mono transition"
                 >
-                  {t}
+                  {acorde}
                 </button>
-              );
-            })}
+              ))}
+            </div>
           </div>
-        </div>,
-        document.body
+          {/* Entrada manual */}
+          <div className="pt-3 border-t border-stone-300">
+            <label className="block text-xs font-mono uppercase tracking-widest text-stone-500 mb-2">
+              Acorde Personalizado
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                id="customChordInput"
+                className="flex-1 px-3 py-2 bg-[#E2E8F0]/70 border border-stone-300/80 rounded-xl focus:outline-none focus:border-stone-500 text-stone-800 placeholder-stone-400 font-sans text-sm font-semibold"
+                placeholder="Ej: C#m7, G7sus4..."
+                onClick={(e) => {
+                  const keyboard = document.getElementById('musicKeyboard');
+                  if (keyboard) keyboard.classList.remove('hidden');
+                  e.stopPropagation();
+                }}
+              />
+              <button
+                className="px-4 py-2 bg-[#383023] hover:bg-[#252017] text-[#EAEAEA] font-mono text-xs tracking-wider uppercase font-semibold rounded-xl transition shadow cursor-pointer"
+                onClick={() => {
+                  const input = document.getElementById('customChordInput');
+                  if (input.value.trim()) {
+                    handleAcordeChange(
+                      modalData.seccionId,
+                      modalData.lineaIndex,
+                      modalData.compasIndex,
+                      modalData.divisionIndex,
+                      input.value.trim()
+                    );
+                  }
+                }}
+              >
+                Usar
+              </button>
+            </div>
+          </div>
+
+          {/* Teclado virtual encajado */}
+          <div id="musicKeyboard" className="hidden pt-1 w-full">
+            <MusicKeyboard
+              onKeyPress={(char) => {
+                const input = document.getElementById('customChordInput');
+                if (input) {
+                  input.value = (input.value || '') + char;
+                  input.focus();
+                }
+              }}
+            />
+          </div>
+        </div>
       )}
     </div>
   );
