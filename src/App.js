@@ -64,11 +64,11 @@ function Login({ onLoginSuccess }) {
               EASYCHART
             </span>
           </div>
-          <h2 className="text-xl font-bold tracking-tight text-stone-100 font-serif">
+          <h2 className="text-2xl font-black text-primary tracking-tight">
             Charts & Setlists
           </h2>
           <p className="text-xs text-stone-400 mt-1">
-            Estructuras y cifrados para el ensayo y el directo.
+            Everything you need for rehearsals and live performances
           </p>
         </div>
 

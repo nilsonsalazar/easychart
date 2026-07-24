@@ -136,7 +136,7 @@ const SongPDF = ({ title, artist, sections = [], keySignature = "C", tempo = "12
                         </View>
                       );
                     })}
-                    {linea?.repetir && <Text style={styles.repeatSymbol}>:||</Text>}
+                    {linea?.repetir && <Text style={styles.repeatSymbol}>%</Text>}
                   </View>
                 );
               })}

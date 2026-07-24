@@ -2,262 +2,117 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ==========================================================================
-   1. VARIABLES Y ESTILOS BASE (Mapeo Global)
-   ========================================================================== */
-@layer base {
-  :root {
-    --bg-main: #0A0A0B;
-    --bg-card: #121214;
-    --border-color: #27272A;
-    --text-main: #E7E5E4;
-    --text-muted: #A1A1AA;
-    --accent: #F59E0B;
-  }
-
-  body {
-    margin: 0;
-    /* 1. Capa oscura al 80%, 2. Tu imagen de fondo */
-    background-image: linear-gradient(rgba(10, 10, 11, 0.85), rgba(10, 10, 11, 0.95)), url('https://images.unsplash.com/photo-1564186763535-ebb21ef5277f?q=80&w=1920&auto=format&fit=crop');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    /* Mantiene el fondo quieto al hacer scroll */
-    color: #E7E5E4;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-      sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  code {
-    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
-  }
+@font-face {
+  font-family: 'Architects Daughter';
+  src: url('fonts/ArchitectsDaughter-Regular.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
 }
 
-/* ==========================================================================
-   2. COMPONENTES Y REGIONALIZACIÓN (Live Stage / Rack Theme)
-   ========================================================================== */
-@layer components {
+:root {
+  /* Tonalidad de papel limpio y mate, con tarjetas ligeramente texturizadas en blanco papel */
+  --bg-main: #F5F4F0;
+  --bg-card: #FAF9F5;
+  --bg-card-hover: #F2F0EA;
+  --bg-input: #EBE9E1;
+  --border-color: #D3CEBE;
+  --border-focus: #2C2A29;
 
-  /* Contenedores y Grilla de Acordes */
-  .chord-grid-container {
-    width: 100%;
-    overflow-x: auto;
-    margin-top: 20px;
-    padding-bottom: 20px;
-  }
+  --text-primary: #2C2A29;
+  --text-secondary: #5C5853;
+  --text-muted: #8C867E;
 
-  .chord-grid {
-    display: flex;
-    gap: 15px;
-    min-width: fit-content;
-    padding: 10px 0;
-  }
+  --accent-primary: #2C2A29;
+  --accent-hover: #1A1918;
+  --accent-text: #FAF9F5;
+  --accent-subtle: #E8E5DC;
 
-  /* Caja de Compás Principal (Estilo Módulo de Rack) */
-  .chord-box {
-    display: inline-block;
-    min-width: 200px;
-    border: 1px solid #27272A;
-    border-radius: 12px;
-    padding: 12px 16px;
-    background-color: #121214;
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.03), 0 4px 20px rgba(0, 0, 0, 0.5);
-    flex: 1;
-    font-family: 'Architects Daughter', cursive;
-    font-size: 2rem;
-    font-weight: 600;
-    line-height: 1.1;
-    transition: all 0.2s ease;
-  }
-
-  .chord-box.hovered {
-    border-color: #D97706;
-    background: #18181B;
-    box-shadow: 0 0 12px rgba(217, 119, 6, 0.2);
-  }
-
-  /* Cabecera del Compás */
-  .box-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #27272A;
-  }
-
-  .box-header span {
-    font-weight: 600;
-    color: #A1A1AA;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-size: 0.8rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
-
-  /* Selector de divisiones */
-  .divide-select {
-    padding: 4px 8px;
-    border-radius: 6px;
-    border: 1px solid #27272A;
-    background: #0A0A0B;
-    color: #F59E0B;
-    font-family: monospace;
-    font-size: 0.8rem;
-    outline: none;
-  }
-
-  .divide-select:focus {
-    border-color: #D97706;
-  }
-
-  /* Divisiones dentro del compás */
-  .divisions-container {
-    display: flex;
-    gap: 8px;
-    min-height: 110px;
-  }
-
-  .division {
-    flex: 1;
-    position: relative;
-    min-height: 60px;
-    background: rgba(10, 10, 11, 0.6);
-    border: 1px dashed #27272A;
-    border-radius: 6px;
-    padding: 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    transition: all 0.2s;
-  }
-
-  .division.hovered {
-    background-color: rgba(217, 119, 6, 0.1);
-    border-color: #F59E0B;
-  }
-
-  .divisions-1 .division {
-    width: 100%;
-  }
-
-  .divisions-2 .division {
-    width: calc(50% - 4px);
-  }
-
-  .divisions-3 .division {
-    width: calc(33.33% - 5.33px);
-  }
-
-  .divisions-4 .division {
-    width: calc(25% - 6px);
-  }
-
-  .divisions-6 .division {
-    width: calc(16.66% - 6.66px);
-  }
-
-  .divisions-8 .division {
-    width: calc(12.5% - 7px);
-  }
-
-  /* Tarjetas de Acordes */
-  .chord-item {
-    margin: 4px 0;
-    padding: 8px 12px;
-    background: #1C1917;
-    border: 1px solid #44403C;
-    border-radius: 6px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-    position: relative;
-    text-align: center;
-    cursor: grab;
-
-    font-family: 'Architects Daughter', cursive;
-    font-size: 2.2rem;
-    font-weight: 600;
-    line-height: 1;
-    color: #FEF3C7;
-    transition: transform 0.15s, border-color 0.15s;
-  }
-
-  .chord-item:active {
-    cursor: grabbing;
-    transform: scale(0.98);
-  }
-
-  .chord-item:hover {
-    border-color: #F59E0B;
-    color: #FFFFFF;
-  }
-
-  .remove-chord {
-    position: absolute;
-    top: -6px;
-    right: -6px;
-    background: #991B1B;
-    color: #FECACA;
-    border: 1px solid #7F1D1D;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    font-size: 11px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-    transition: all 0.15s ease;
-  }
-
-  .remove-chord:hover {
-    background: #DC2626;
-    color: white;
-    transform: scale(1.1);
-  }
-
-  .sections-container {
-    margin-top: 20px;
-    padding: 18px;
-    border: 1px solid #27272A;
-    border-radius: 12px;
-    background-color: #121214;
-    min-height: 200px;
-  }
-
-  .section {
-    margin-bottom: 15px;
-    padding: 14px;
-    background-color: #18181B;
-    border: 1px solid #27272A;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-  }
+  /* Estética Real Book clásico: trazos limpios negros/grafito sobre papel limpio */
+  --chord-text: #1A1918;
+  --chord-bg: #FFFFFF;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .chord-grid {
-    gap: 10px;
-  }
+body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
 
-  .chord-box {
-    min-width: 180px;
-  }
+/* Clases utilitarias globales automáticas para evitar tocar los JSX */
+.app-container {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
 
-  .divisions-container {
-    flex-direction: column;
-  }
+.app-card {
+  background-color: var(--bg-card);
+  border: 2px solid #2C2A29;
+  box-shadow: 3px 3px 0px rgba(44, 42, 41, 0.15);
+  border-radius: 0.75rem;
+}
 
-  .division {
-    width: 100% !important;
-    min-height: 40px;
-  }
+.app-input {
+  background-color: var(--bg-input);
+  border: 1.5px solid var(--border-color);
+  color: var(--text-primary);
+  min-height: 48px;
+  border-radius: 0.75rem;
+  padding: 0 1rem;
+  font-size: 1rem;
+}
 
-  .chord-item {
-    font-size: 1.8rem;
-  }
+.app-input:focus {
+  border-color: var(--border-focus);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(44, 42, 41, 0.15);
+}
+
+.app-button-primary {
+  background-color: var(--accent-primary);
+  color: var(--accent-text);
+  min-height: 48px;
+  font-weight: 700;
+  border-radius: 0.75rem;
+  padding: 0 1.25rem;
+  transition: background-color 0.2s;
+  border: 1.5px solid #1A1918;
+}
+
+.app-button-primary:hover {
+  background-color: var(--accent-hover);
+}
+
+/* Cifrado / Partitura estilo Real Book tipográfico */
+.chord-box-global {
+  background-color: var(--chord-bg);
+  border: 1.5px solid #2C2A29;
+  color: var(--chord-text);
+  font-family: 'Architects Daughter', cursive;
+  font-size: 1.5rem;
+  font-weight: 800;
+  text-align: center;
+  border-radius: 0.375rem;
+  padding: 0.5rem;
+  box-shadow: 1px 1px 0 rgba(44, 42, 41, .12);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.divisiones-3 .chord-box-global {
+  font-size: 1.05rem;
+}
+
+.divisiones-4 .chord-box-global {
+  font-size: .95rem;
+}
+
+.divisiones-5 .chord-box-global,
+.divisiones-6 .chord-box-global {
+  font-size: .95rem;
 }

@@ -389,45 +389,45 @@ const SongReader = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0B]/90 text-stone-200 p-4 pb-20">
+    <div className="app-container p-4 pb-20">
       {/* HEADER TIPO RACK */}
-      <header className="sticky top-0 z-10 bg-[#121214]/80 backdrop-blur-md shadow-2xl py-4 px-6 rounded-2xl mb-6 border border-stone-800/80">
+      <header className="sticky top-0 z-10 app-card py-4 px-6 mb-6">
         <div className="max-w-4xl mx-auto flex justify-between items-center flex-wrap gap-4">
           <div className="flex items-center space-x-3">
-            <div className="bg-gradient-to-r from-amber-600 to-amber-500 text-stone-950 p-2.5 rounded-xl shadow-lg">
+            <div className="bg-[#2C2A29] text-[#FAF9F5] p-2.5 rounded-xl border border-[#1A1918] shadow-sm">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zm12 0c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zM9 10l12-3" />
               </svg>
             </div>
             <div>
-              <h1 className="text-2xl font-black text-amber-500 tracking-tight" style={{ fontFamily: 'Caveat, sans-serif' }}>
+              <h1 className="text-2xl font-black text-primary tracking-tight">
                 EasyChart
               </h1>
-              <p className="text-xs text-stone-400 font-medium">Consulta y Lector de Charts Musicales</p>
+              <p className="text-xs text-[#5C5853] font-medium">Chord Chart Viewer & Browser</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
             <Link
               to="/crear"
-              className="flex items-center px-4 py-2.5 bg-amber-600 text-stone-950 font-semibold text-sm rounded-xl hover:bg-amber-500 transition-all shadow-md hover:shadow-amber-500/20"
+              className="app-button-primary flex items-center text-sm"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              Crear o Editar Canción
+              Add / Edit
             </Link>
 
             <button
               type="button"
               onClick={handleLogout}
-              className="flex items-center px-3.5 py-2.5 bg-stone-900/80 text-stone-400 hover:bg-red-950/40 hover:text-red-400 font-medium text-sm rounded-xl transition-all border border-stone-800 cursor-pointer"
+              className="flex items-center px-3.5 py-2.5 bg-[#EBE9E1] text-[#2C2A29] hover:bg-[#D3CEBE] font-medium text-sm rounded-xl transition-all border border-[#D3CEBE] cursor-pointer"
               title="Cerrar Sesión"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
-              <span className="hidden sm:inline">Salir</span>
+              <span className="hidden sm:inline">Logout</span>
             </button>
           </div>
         </div>
@@ -435,13 +435,13 @@ const SongReader = () => {
 
       <div className="max-w-4xl mx-auto space-y-6">
         {/* CONTENEDOR BUSCADOR Y CONTROLES */}
-        <div className="bg-[#121214]/70 backdrop-blur-md rounded-2xl shadow-xl border border-stone-800/80 p-6 space-y-4">
+        <div className="app-card p-6 space-y-4">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-amber-500/90 mb-2">
-              ingresa artista o canción
+            <label className="block text-xs font-bold uppercase tracking-wider text-[#5C5853] mb-2">
+              Search by artist or song
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-500">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#8C867E]">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
@@ -455,24 +455,24 @@ const SongReader = () => {
                   updateSearchCoords();
                   if (filteredSongs.length > 0) setShowSongDropdown(true);
                 }}
-                placeholder="ingresa artista o canción..."
-                className="w-full pl-10 pr-4 py-3 bg-stone-950/80 border border-stone-800 rounded-xl focus:outline-none focus:border-amber-500/80 focus:ring-1 focus:ring-amber-500/50 transition-all text-stone-100 placeholder-stone-500 font-medium"
+                placeholder="Search by artist or song..."
+                className="app-input w-full pl-10 pr-4"
               />
             </div>
           </div>
 
           {/* CONTROLES DE TONALIDAD / EXPORTACIÓN */}
           {selectedSongId && (
-            <div className="pt-4 border-t border-stone-800/80 space-y-4">
+            <div className="pt-4 border-t border-[#D3CEBE] space-y-4">
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <label className="text-xs font-extrabold uppercase tracking-wider text-stone-400 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <label className="text-xs font-extrabold uppercase tracking-wider text-[#5C5853] flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5 text-[#2C2A29]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zm12 0c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zM9 10l12-3" />
                     </svg>
                     Tonalidad Directa
                   </label>
-                  <span className="text-xs font-bold text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
+                  <span className="text-xs font-bold text-[#2C2A29] bg-[#E8E5DC] px-2.5 py-0.5 rounded-full border border-[#D3CEBE]">
                     Tono Actual: {tono} {semitono !== 0 ? `(${semitono > 0 ? '+' : ''}${semitono} st)` : ''}
                   </span>
                 </div>
@@ -482,7 +482,7 @@ const SongReader = () => {
                     ref={toneBtnRef}
                     type="button"
                     onClick={toggleToneMenu}
-                    className="flex items-center justify-between w-full sm:w-64 px-4 py-3 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 text-stone-950 font-bold shadow-lg hover:shadow-amber-500/20 transition cursor-pointer"
+                    className="flex items-center justify-between w-full sm:w-64 px-4 py-3 rounded-xl bg-[#2C2A29] text-[#FAF9F5] font-bold shadow-sm hover:bg-[#1A1918] transition cursor-pointer border border-[#1A1918]"
                   >
                     <span>
                       🎵 Tono: <strong>{tono}</strong>
@@ -504,10 +504,10 @@ const SongReader = () => {
                 <button
                   type="button"
                   onClick={() => ajustarSemitono(-1)}
-                  className="w-full md:w-auto flex-1 flex items-center justify-center space-x-2 py-2.5 px-4 bg-stone-900 border border-stone-800 hover:border-amber-500/50 hover:bg-stone-800/80 text-stone-200 rounded-xl font-bold text-sm shadow-sm transition-all active:scale-95 cursor-pointer group"
+                  className="w-full md:w-auto flex-1 flex items-center justify-center space-x-2 py-2.5 px-4 bg-[#FAF9F5] border border-[#D3CEBE] hover:border-[#2C2A29] hover:bg-[#F2F0EA] text-[#2C2A29] rounded-xl font-bold text-sm shadow-sm transition-all active:scale-95 cursor-pointer group"
                   title="Bajar medio tono (-1 semitono)"
                 >
-                  <span className="w-6 h-6 rounded-lg bg-stone-800 group-hover:bg-amber-500/20 text-amber-500 flex items-center justify-center text-sm font-black transition-colors">
+                  <span className="w-6 h-6 rounded-lg bg-[#EBE9E1] group-hover:bg-[#2C2A29] group-hover:text-[#FAF9F5] text-[#2C2A29] flex items-center justify-center text-sm font-black transition-colors">
                     ♭
                   </span>
                   <span>Bajar Tono (-1 st)</span>
@@ -516,11 +516,11 @@ const SongReader = () => {
                 <button
                   type="button"
                   onClick={() => ajustarSemitono(1)}
-                  className="w-full md:w-auto flex-1 flex items-center justify-center space-x-2 py-2.5 px-4 bg-stone-900 border border-stone-800 hover:border-amber-500/50 hover:bg-stone-800/80 text-stone-200 rounded-xl font-bold text-sm shadow-sm transition-all active:scale-95 cursor-pointer group"
+                  className="w-full md:w-auto flex-1 flex items-center justify-center space-x-2 py-2.5 px-4 bg-[#FAF9F5] border border-[#D3CEBE] hover:border-[#2C2A29] hover:bg-[#F2F0EA] text-[#2C2A29] rounded-xl font-bold text-sm shadow-sm transition-all active:scale-95 cursor-pointer group"
                   title="Subir medio tono (+1 semitono)"
                 >
                   <span>Subir Tono (+1 st)</span>
-                  <span className="w-6 h-6 rounded-lg bg-stone-800 group-hover:bg-amber-500/20 text-amber-500 flex items-center justify-center text-sm font-black transition-colors">
+                  <span className="w-6 h-6 rounded-lg bg-[#EBE9E1] group-hover:bg-[#2C2A29] group-hover:text-[#FAF9F5] text-[#2C2A29] flex items-center justify-center text-sm font-black transition-colors">
                     ♯
                   </span>
                 </button>
@@ -529,7 +529,7 @@ const SongReader = () => {
                   <PDFDownloadLink
                     document={<SongPDF title={tituloCancion} artist={artista} sections={secciones} keySignature={tono} tempo={tempo} />}
                     fileName={`${(tituloCancion || 'chart').replace(/\s+/g, '_')}_${tono}.pdf`}
-                    className="flex items-center justify-center space-x-2 w-full py-2.5 px-4 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-stone-950 font-bold text-sm rounded-xl transition-all shadow-md cursor-pointer"
+                    className="flex items-center justify-center space-x-2 w-full py-2.5 px-4 bg-[#2C2A29] hover:bg-[#1A1918] text-[#FAF9F5] font-bold text-sm rounded-xl transition-all shadow-sm cursor-pointer border border-[#1A1918]"
                   >
                     {({ loading, error }) => (
                       loading ? 'Preparando PDF...' : error ? 'Error al generar PDF' : (
@@ -550,19 +550,19 @@ const SongReader = () => {
 
         {/* VISUALIZADOR DEL CHART DE ACORDES */}
         {selectedSongId ? (
-          <div className="bg-[#121214]/80 backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-stone-800/80" style={{
+          <div className="app-card p-8" style={{
             fontFamily: 'Architects Daughter, cursive',
           }}>
-            <div className="text-center mb-8 border-b border-stone-800 pb-6">
-              <h2 className="text-3xl font-bold mb-2 text-[#FEF3C7] tracking-wide">{tituloCancion} - {artista || "Autor"}</h2>
-              <p className="text-lg text-amber-500/90 font-mono">
+            <div className="text-center mb-8 border-b-2 border-[#2C2A29] pb-6">
+              <h2 className="text-3xl font-bold mb-2 text-[#2C2A29] tracking-wide">{tituloCancion} - {artista || "Autor"}</h2>
+              <p className="text-lg text-[#5C5853] font-mono">
                 Tonalidad: {tono} • Compás: {compas} • Tempo: {tempo} BPM
               </p>
             </div>
 
             {secciones.map((sec, secIdx) => (
               <div key={secIdx} className="mb-10">
-                <h3 className="text-xl font-bold border-b border-amber-500/30 text-amber-400 pb-1 mb-6 uppercase tracking-wider">
+                <h3 className="text-xl font-bold border-b-2 border-[#2C2A29] text-[#2C2A29] pb-1 mb-6 uppercase tracking-wider">
                   {sec.nombre} • {sec.compas}
                 </h3>
 
@@ -574,28 +574,28 @@ const SongReader = () => {
 
                   return (
                     <div key={lIdx} className="mb-8 flex items-center">
-                      {linea.repetir && <span className="text-2xl mx-2 text-amber-500">%</span>}
+                      {linea.repetir && <span className="text-2xl mx-2 text-[#2C2A29] font-black">%</span>}
 
-                      <div className="flex justify-evenly gap-0 flex-1">
+                      <div className="flex justify-evenly gap-2 flex-1">
                         {linea.compasses.map((compass, cIdx) => {
                           measureCount++;
                           const divisiones = compass.acordes.length;
 
                           return (
-                            <div key={cIdx} className="relative w-1/4 border-l border-r border-stone-600/80 px-2 py-1 bg-stone-950/40 my-1 rounded-sm">
-                              <div className="absolute -top-5 left-0 right-0 text-center">
-                                <span className="text-xs text-stone-400 font-sans">{toRoman(measureCount)}</span>
+                            <div key={cIdx} className="relative w-1/4 border-2 border-[#2C2A29] px-2 py-2 bg-[#FAF9F5] my-1 rounded-md shadow-sm">
+                              <div className="absolute -top-3 left-0 right-0 text-center">
+                                <span className="text-xs text-[#5C5853] font-sans bg-[#FAF9F5] px-1 font-semibold">{toRoman(measureCount)}</span>
                               </div>
 
                               <div
-                                className={`grid gap-2`}
+                                className={`grid gap-2 mt-1 divisiones-${divisiones}`}
                                 style={{
                                   gridTemplateColumns: `repeat(${divisiones}, minmax(0, 1fr))`,
                                   textAlign: 'center',
                                 }}
                               >
                                 {compass.acordes.map((acorde, dIdx) => (
-                                  <div key={dIdx} className="py-1 text-2xl font-extrabold text-[#FEF3C7] drop-shadow-sm">
+                                  <div key={dIdx} className="chord-box-global py-1">
                                     {acorde.valor || "-"}
                                   </div>
                                 ))}
@@ -605,7 +605,7 @@ const SongReader = () => {
                         })}
                       </div>
 
-                      {linea.repetir && <span className="text-2xl mx-2 text-amber-500">:||</span>}
+                      {linea.repetir && <span className="text-2xl mx-2 text-[#2C2A29] font-black">%</span>}
                     </div>
                   );
                 })}
@@ -613,11 +613,11 @@ const SongReader = () => {
             ))}
           </div>
         ) : (
-          <div className="bg-[#121214]/60 backdrop-blur-md rounded-2xl p-12 text-center border-2 border-dashed border-stone-800/80 shadow-2xl">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-amber-500/40 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="app-card p-12 text-center border-2 border-dashed border-[#D3CEBE] shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-[#8C867E] mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zm12 0c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zM9 10l12-3" />
             </svg>
-            <p className="text-stone-400 font-medium">Selecciona o busca una canción arriba para visualizar el chart</p>
+            <p className="text-[#5C5853] font-medium">Search for a song above to view the chart</p>
           </div>
         )}
       </div>
@@ -633,12 +633,12 @@ const SongReader = () => {
             width: `${searchCoords.width}px`,
             zIndex: 99999
           }}
-          className="bg-[#18181B] border border-stone-700/80 rounded-xl shadow-2xl max-h-64 overflow-y-auto divide-y divide-stone-800"
+          className="bg-[#FAF9F5] border-2 border-[#2C2A29] rounded-xl shadow-xl max-h-64 overflow-y-auto divide-y divide-[#D3CEBE]"
         >
           {filteredSongs.map(song => (
             <div
               key={song.id}
-              className={`p-3.5 hover:bg-amber-500/10 transition-colors cursor-pointer flex justify-between items-center ${selectedSongId === song.id ? 'bg-amber-500/20' : ''}`}
+              className={`p-3.5 hover:bg-[#F2F0EA] transition-colors cursor-pointer flex justify-between items-center ${selectedSongId === song.id ? 'bg-[#E8E5DC]' : ''}`}
               onClick={() => {
                 loadSong(song.id);
                 setSearchTerm(song.title);
@@ -647,12 +647,12 @@ const SongReader = () => {
               }}
             >
               <div>
-                <div className="font-semibold text-stone-100">{song.title}</div>
-                <div className="text-xs text-stone-400 mt-0.5">
+                <div className="font-semibold text-[#2C2A29]">{song.title}</div>
+                <div className="text-xs text-[#5C5853] mt-0.5">
                   {song.artist || song.song_data?.artist ? `Artista: ${song.artist || song.song_data?.artist} • ` : ''}Tonalidad: {song.key_signature}
                 </div>
               </div>
-              <span className="text-xs font-semibold px-2.5 py-1 bg-stone-900 text-amber-500 border border-stone-800 rounded-lg">
+              <span className="text-xs font-semibold px-2.5 py-1 bg-[#EBE9E1] text-[#2C2A29] border border-[#D3CEBE] rounded-lg">
                 {song.tempo} BPM
               </span>
             </div>
@@ -672,9 +672,9 @@ const SongReader = () => {
             width: `${toneMenuCoords.width}px`,
             zIndex: 99999
           }}
-          className="rounded-2xl border border-stone-700 bg-[#18181B] shadow-2xl p-3"
+          className="rounded-2xl border-2 border-[#2C2A29] bg-[#FAF9F5] shadow-xl p-3"
         >
-          <p className="text-xs text-stone-400 mb-3">Selecciona una tonalidad</p>
+          <p className="text-xs text-[#5C5853] mb-3">Selecciona una tonalidad</p>
           <div className="grid grid-cols-4 gap-2">
             {tonos.map((t) => {
               const activo = tono === t;
@@ -686,7 +686,7 @@ const SongReader = () => {
                     cambiarTonalidad(t);
                     setShowToneMenu(false);
                   }}
-                  className={`py-2 rounded-xl font-bold transition cursor-pointer ${activo ? "bg-amber-500 text-stone-950" : "bg-stone-900 text-stone-300 hover:bg-amber-500/20 hover:text-amber-400"
+                  className={`py-2 rounded-xl font-bold transition cursor-pointer border ${activo ? "bg-[#2C2A29] text-[#FAF9F5] border-[#1A1918]" : "bg-[#EBE9E1] text-[#2C2A29] border-[#D3CEBE] hover:bg-[#F2F0EA]"
                     }`}
                 >
                   {t}

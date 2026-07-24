@@ -2756,7 +2756,7 @@ const SongPDF = ({ title, artist, sections = [], keySignature = "C", tempo = "12
                         </View>
                       );
                     })}
-                    {linea?.repetir && <Text style={styles.repeatSymbol}>:||</Text>}
+                    {linea?.repetir && <Text style={styles.repeatSymbol}>%</Text>}
                   </View>
                 );
               })}
@@ -4400,7 +4400,7 @@ const SongReader = () => {
                     </div>
 
                     {/* Símbolo de cierre de repetición */}
-                    {linea.repetir && <span className="text-2xl mx-2">:||</span>}
+                    {linea.repetir && <span className="text-2xl mx-2">%</span>}
                   </div>
                 );
               })}
