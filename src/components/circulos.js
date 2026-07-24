@@ -2,7 +2,6 @@ const circulos = {
   C: {
     scale: ["C", "D", "E", "F", "G", "A", "B"],
     degrees: [
-      
       {
         name: "C",
         degree: "I",
@@ -106,7 +105,7 @@ const circulos = {
       }
     ]
   },
- "E♭": {
+  "E♭": {
     scale: ["E♭", "F", "G", "A♭", "B♭", "C", "D"],
     degrees: [
       {
@@ -247,7 +246,7 @@ const circulos = {
       }
     ]
   },
-   "G♭": {
+  "G♭": {
     scale: ["G♭", "A♭", "B♭", "C♭", "D♭", "E♭", "F"],
     degrees: [
       {
@@ -530,5 +529,60 @@ const circulos = {
     ]
   }
 };
+
+// Mapeo directo de Tonalidad Menor -> Relativa Mayor
+export const relativasMenores = {
+  Am: "C",
+  "B♭m": "D♭",
+  "A#m": "D♭",
+  Bm: "D",
+  Cm: "E♭",
+  "C#m": "E",
+  Dm: "F",
+  "D#m": "G♭",
+  "E♭m": "G♭",
+  Em: "G",
+  Fm: "A♭",
+  "F#m": "A",
+  Gm: "B♭",
+  "G#m": "B"
+};
+
+// Función para obtener la información completa de un Círculo Menor
+export const getCirculoMenor = (key) => {
+  const relativaMayorKey = relativasMenores[key];
+  if (!relativaMayorKey || !circulos[relativaMayorKey]) return null;
+
+  const relativaMayor = circulos[relativaMayorKey];
+  const deg = relativaMayor.degrees;
+
+  // Reordenación de grados comenzando desde el VI grado de la relativa mayor
+  // [vi, vii°, I, ii, iii, IV, V] -> [i, ii°, III, iv, v, VI, VII]
+  const reorderedDegrees = [
+    { ...deg[5], degree: "i" },
+    { ...deg[6], degree: "ii°" },
+    { ...deg[0], degree: "III" },
+    { ...deg[1], degree: "iv" },
+    { ...deg[2], degree: "v" },
+    { ...deg[3], degree: "VI" },
+    { ...deg[4], degree: "VII" }
+  ];
+
+  const reorderedScale = [
+    relativaMayor.scale[5],
+    relativaMayor.scale[6],
+    relativaMayor.scale[0],
+    relativaMayor.scale[1],
+    relativaMayor.scale[2],
+    relativaMayor.scale[3],
+    relativaMayor.scale[4]
+  ];
+
+  return {
+    scale: reorderedScale,
+    degrees: reorderedDegrees
+  };
+};
+
 
 export default circulos;

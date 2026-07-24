@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import circulos from "./circulos";
+import circulos, { relativasMenores } from "./circulos";
 import { API_URL, API_CONFIG } from './config';
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import SongPDF from "./SongPDF";
@@ -24,8 +24,18 @@ export default function SongCreator() {
   };
 
   const tonos = [
-    "C", "D♭", "D", "E♭", "E", "F",
-    "G♭", "G", "A♭", "A", "B♭", "B"
+    "C", "Am",
+    "D♭", "B♭m",
+    "D", "Bm",
+    "E♭", "Cm",
+    "E", "C#m",
+    "F", "Dm",
+    "G♭", "E♭m",
+    "G", "Em",
+    "A♭", "Fm",
+    "A", "F#m",
+    "B♭", "Gm",
+    "B", "G#m"
   ];
   const [selectedSongId, setSelectedSongId] = useState(null);
 
@@ -97,8 +107,13 @@ export default function SongCreator() {
 
   const cambiarTonalidad = (nuevoTono) => {
     const notas = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"];
-    const indexActual = notas.indexOf(tono) !== -1 ? notas.indexOf(tono) : 0;
-    const indexNuevo = notas.indexOf(nuevoTono) !== -1 ? notas.indexOf(nuevoTono) : 0;
+
+    // Se elimina la 'm' para obtener la raíz cromática
+    const raizActual = tono.replace("m", "");
+    const raizNueva = nuevoTono.replace("m", "");
+
+    const indexActual = notas.indexOf(raizActual) !== -1 ? notas.indexOf(raizActual) : 0;
+    const indexNuevo = notas.indexOf(raizNueva) !== -1 ? notas.indexOf(raizNueva) : 0;
     const semitones = indexNuevo - indexActual;
 
     setTono(nuevoTono);
@@ -145,7 +160,9 @@ export default function SongCreator() {
   };
 
   const getAcordesDisponibles = () => {
-    const tonoActual = circulos[tono];
+    // Si la clave es menor, se consulta su relativa mayor
+    const claveCirculo = relativasMenores?.[tono] || tono;
+    const tonoActual = circulos[claveCirculo];
     if (!tonoActual) return [];
     return tonoActual.degrees.flatMap(degree => degree.common_extensions);
   };
@@ -174,8 +191,10 @@ export default function SongCreator() {
         if (response.ok) {
           setSavedSongs(songList);
           if (searchTerm) {
+            const term = searchTerm.toLowerCase();
             const filtered = songList.filter(song =>
-              song.title.toLowerCase().includes(searchTerm.toLowerCase())
+              (song.title && song.title.toLowerCase().includes(term)) ||
+              (song.artist && song.artist.toLowerCase().includes(term))
             );
             setFilteredSongs(filtered);
             setShowSongDropdown(filtered.length > 0);
@@ -199,30 +218,20 @@ export default function SongCreator() {
       return;
     }
 
-    if (term.length < 5) {
-      const normalize = str =>
-        str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-      const words = normalize(term).split(/\s+/).filter(Boolean);
+    const normalize = str =>
+      str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() : "";
 
-      const localResults = savedSongs.filter(song => {
-        const title = normalize(song.title || "");
-        return words.every(word => title.includes(word));
-      });
+    const words = normalize(term).split(/\s+/).filter(Boolean);
 
-      setFilteredSongs(localResults);
-      setShowSongDropdown(localResults.length > 0);
-      return;
-    }
+    const localResults = savedSongs.filter(song => {
+      const title = normalize(song.title || "");
+      const artist = normalize(song.artist || song.song_data?.artist || "");
+      const target = `${title} ${artist}`;
+      return words.every(word => target.includes(word));
+    });
 
-    try {
-      const response = await searchSongs(term);
-      setFilteredSongs(response);
-      setShowSongDropdown(response.length > 0);
-    } catch (error) {
-      console.error("Error en la búsqueda:", error);
-      setFilteredSongs([]);
-      setShowSongDropdown(false);
-    }
+    setFilteredSongs(localResults);
+    setShowSongDropdown(localResults.length > 0);
   };
 
   const handleAcordeChange = (seccionId, lineaIndex, compasIndex, divisionIndex, acorde) => {
@@ -355,6 +364,7 @@ export default function SongCreator() {
       alert("Por favor, ingresa el título de la canción antes de guardar.");
       return;
     }
+
     const songData = {
       title: tituloCancion,
       artist: artista,
@@ -362,7 +372,6 @@ export default function SongCreator() {
       tempo: tempo,
       time_signature: secciones[0]?.compas || "4/4",
       song_data: {
-        artist: artista,
         sections: secciones
       }
     };
@@ -411,6 +420,7 @@ export default function SongCreator() {
       alert("Por favor, ingresa el título de la canción antes de actualizar.");
       return;
     }
+
     const songData = {
       id: songId,
       title: tituloCancion,
@@ -419,7 +429,6 @@ export default function SongCreator() {
       tempo: tempo,
       time_signature: secciones[0]?.compas || "4/4",
       song_data: {
-        artist: artista,
         sections: secciones
       }
     };
@@ -479,10 +488,10 @@ export default function SongCreator() {
         return;
       }
 
-      setTituloCancion(song.title);
-      setArtista(song.artist);
-      setTono(song.key_signature);
-      setTempo(song.tempo);
+      setTituloCancion(song.title || "");
+      setArtista(song.artist || song.song_data?.artist || "");
+      setTono(song.key_signature || "C");
+      setTempo(song.tempo || "120");
       setSemitono(0);
       setSelectedSongId(songId);
 
@@ -548,36 +557,6 @@ export default function SongCreator() {
     } catch (error) {
       console.error('Error al cargar la canción:', error);
       alert('Error al cargar la canción');
-    }
-  };
-
-  const searchSongs = async (searchTerm) => {
-    const token = localStorage.getItem('easychart_token');
-    try {
-      const response = await fetch(`${API_URL}?search=${encodeURIComponent(searchTerm)}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.status === 401) {
-        localStorage.removeItem('easychart_token');
-        window.location.reload();
-        return [];
-      }
-
-      if (!response.ok) {
-        throw new Error('Error en la búsqueda');
-      }
-
-      const resData = await response.json();
-      const data = resData.data || resData;
-      return Array.isArray(data) ? data : [];
-    } catch (error) {
-      console.error('Error buscando canciones:', error);
-      return [];
     }
   };
 
@@ -678,8 +657,13 @@ export default function SongCreator() {
                   >
                     <div>
                       <div className="font-semibold text-stone-900 text-sm">{song.title}</div>
-                      <div className="text-xs text-stone-500 mt-0.5">
-                        {song.key_signature} • {song.tempo} BPM
+                      <div className="text-xs text-stone-600 mt-0.5">
+                        {song.artist && (
+                          <span className="font-semibold text-stone-800">{song.artist} • </span>
+                        )}
+                        <span className="font-mono text-stone-500">
+                          {song.key_signature} | {song.tempo} BPM
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -969,55 +953,56 @@ export default function SongCreator() {
                 </button>
               ))}
             </div>
-          </div>
-          {/* Entrada manual */}
-          <div className="pt-3 border-t border-stone-300">
-            <label className="block text-xs font-mono uppercase tracking-widest text-stone-500 mb-2">
-              Acorde Personalizado
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                id="customChordInput"
-                className="flex-1 px-3 py-2 bg-[#E2E8F0]/70 border border-stone-300/80 rounded-xl focus:outline-none focus:border-stone-500 text-stone-800 placeholder-stone-400 font-sans text-sm font-semibold"
-                placeholder="Ej: C#m7, G7sus4..."
-                onClick={(e) => {
-                  const keyboard = document.getElementById('musicKeyboard');
-                  if (keyboard) keyboard.classList.remove('hidden');
-                  e.stopPropagation();
-                }}
-              />
-              <button
-                className="px-4 py-2 bg-[#383023] hover:bg-[#252017] text-[#EAEAEA] font-mono text-xs tracking-wider uppercase font-semibold rounded-xl transition shadow cursor-pointer"
-                onClick={() => {
-                  const input = document.getElementById('customChordInput');
-                  if (input.value.trim()) {
-                    handleAcordeChange(
-                      modalData.seccionId,
-                      modalData.lineaIndex,
-                      modalData.compasIndex,
-                      modalData.divisionIndex,
-                      input.value.trim()
-                    );
-                  }
-                }}
-              >
-                Usar
-              </button>
-            </div>
-          </div>
 
-          {/* Teclado virtual encajado */}
-          <div id="musicKeyboard" className="hidden pt-1 w-full">
-            <MusicKeyboard
-              onKeyPress={(char) => {
-                const input = document.getElementById('customChordInput');
-                if (input) {
-                  input.value = (input.value || '') + char;
-                  input.focus();
-                }
-              }}
-            />
+            {/* Entrada manual */}
+            <div className="pt-3 border-t border-stone-300 space-y-2">
+              <label className="block text-xs font-mono uppercase tracking-widest text-stone-500">
+                Acorde Personalizado
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  id="customChordInput"
+                  className="flex-1 px-3 py-2 bg-stone-100 border border-stone-300 rounded-xl focus:outline-none focus:border-stone-500 text-stone-800 placeholder-stone-400 font-sans text-sm font-semibold"
+                  placeholder="Ej: C#m7, G7sus4..."
+                  onClick={(e) => {
+                    const keyboard = document.getElementById('musicKeyboard');
+                    if (keyboard) keyboard.classList.remove('hidden');
+                    e.stopPropagation();
+                  }}
+                />
+                <button
+                  className="px-4 py-2 bg-[#383023] hover:bg-[#252017] text-[#EAEAEA] font-mono text-xs tracking-wider uppercase font-semibold rounded-xl transition shadow cursor-pointer"
+                  onClick={() => {
+                    const input = document.getElementById('customChordInput');
+                    if (input && input.value.trim()) {
+                      handleAcordeChange(
+                        modalData.seccionId,
+                        modalData.lineaIndex,
+                        modalData.compasIndex,
+                        modalData.divisionIndex,
+                        input.value.trim()
+                      );
+                    }
+                  }}
+                >
+                  Usar
+                </button>
+              </div>
+
+              {/* Teclado virtual encajado */}
+              <div id="musicKeyboard" className="hidden pt-1 w-full">
+                <MusicKeyboard
+                  onKeyPress={(char) => {
+                    const input = document.getElementById('customChordInput');
+                    if (input) {
+                      input.value = (input.value || '') + char;
+                      input.focus();
+                    }
+                  }}
+                />
+              </div>
+            </div>
           </div>
         </div>
       )}

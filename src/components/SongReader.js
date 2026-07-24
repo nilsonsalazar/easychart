@@ -34,10 +34,16 @@ const SongReader = () => {
     window.location.href = '/';
   };
 
-  const tonos = [
+  // Verificar si el tono actual es menor
+  const esMenor = tono.endsWith("m");
+
+  // Lista de tonalidades cromáticas adaptables según el modo (Mayor o Menor)
+  const notasBase = [
     "C", "D♭", "D", "E♭", "E", "F",
     "G♭", "G", "A♭", "A", "B♭", "B"
   ];
+  const tonos = esMenor ? notasBase.map(n => `${n}m`) : notasBase;
+
   const [selectedSongId, setSelectedSongId] = useState(null);
   const [secciones, setSecciones] = useState([]);
   const [tituloCancion, setTituloCancion] = useState("");
@@ -109,7 +115,9 @@ const SongReader = () => {
     const noteOrderFlats = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"];
 
     const flatKeys = ["D♭", "E♭", "G♭", "A♭", "B♭"];
-    const useFlats = flatKeys.includes(currentKey);
+    // Extraer la nota base del tono de la canción (removiendo 'm' si es menor)
+    const cleanKey = currentKey.replace(/m$/, '');
+    const useFlats = flatKeys.includes(cleanKey);
 
     const baseNoteMatch = chord.match(/^[A-Ga-g](#|♭)?/);
     if (!baseNoteMatch) return chord;
@@ -139,9 +147,13 @@ const SongReader = () => {
   };
 
   const cambiarTonalidad = (nuevoTono) => {
+    // Normalizamos para comparar índices quitando la 'm' si existe
+    const cleanTonoActual = tono.replace(/m$/, '');
+    const cleanNuevoTono = nuevoTono.replace(/m$/, '');
+
     const notas = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"];
-    const indexActual = notas.indexOf(tono) !== -1 ? notas.indexOf(tono) : 0;
-    const indexNuevo = notas.indexOf(nuevoTono) !== -1 ? notas.indexOf(nuevoTono) : 0;
+    const indexActual = notas.indexOf(cleanTonoActual) !== -1 ? notas.indexOf(cleanTonoActual) : 0;
+    const indexNuevo = notas.indexOf(cleanNuevoTono) !== -1 ? notas.indexOf(cleanNuevoTono) : 0;
     const semitones = indexNuevo - indexActual;
 
     setTono(nuevoTono);
@@ -368,8 +380,9 @@ const SongReader = () => {
 
       const localResults = savedSongs.filter(song => {
         const title = normalize(song.title || "");
-        const artist = normalize(song.artist || song.song_data?.artist || "");
+        const artist = normalize(song.artist || "");
         const target = `${title} ${artist}`;
+
         return words.every(word => target.includes(word));
       });
       setFilteredSongs(localResults);
