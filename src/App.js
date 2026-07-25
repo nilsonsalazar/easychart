@@ -143,7 +143,7 @@ export default function App() {
 
       {/* Ruta para crear o editar canciones */}
       {/* Ruta para crear canción nueva */}
-      <Route path="/create" element={<SongEditor />} />
+      <Route path="/create" element={<SongCreator />} />
 
       {/* Ruta para editar una canción existente (debe incluir :id) */}
       <Route path="/edit/:id" element={<SongEditor />} />
