@@ -574,56 +574,79 @@ export default function SongCreator() {
   };
 
   return (
-    <div className="min-h-screen bg-black/40 p-4 pb-20 backdrop-blur-[2px]">
+    <div className="app-container p-4 pb-20">
       {/* HEADER ESTILO LOGIN */}
-      <header className="sticky top-0 z-10 bg-[#EAEAEA]/90 backdrop-blur-md shadow-lg py-4 px-6 rounded-2xl mb-6 border border-white/40">
-        <div className="max-w-4xl mx-auto flex justify-between items-center flex-wrap gap-4 mb-3 pb-3 border-b border-stone-300/60">
-          <div className="flex items-center space-x-3">
-            <div className="bg-[#383023] text-[#D8B45A] px-3 py-1 rounded-full text-xs font-mono tracking-widest uppercase flex items-center gap-1.5 shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-[#C29B38]"></span>
-              EASYCHART CREATOR
+      <header className="sticky top-0 z-20 app-card py-3 px-4 sm:px-6 mb-6 backdrop-blur-md bg-opacity-95 border-b-2 border-[#1A1918]/10 shadow-md">
+        <div className="max-w-4xl mx-auto relative">
+
+          {/* Detalle visual: "Tornillos" laterales tipo Rack de 19" */}
+          <div className="hidden md:flex absolute -left-3 top-1/2 -translate-y-1/2 flex-col gap-2 opacity-40 pointer-events-none">
+            <div className="w-1.5 h-1.5 rounded-full border border-[#2C2A29] bg-[#D3CEBE]" />
+          </div>
+          <div className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 flex-col gap-2 opacity-40 pointer-events-none">
+            <div className="w-1.5 h-1.5 rounded-full border border-[#2C2A29] bg-[#D3CEBE]" />
+          </div>
+
+          {/* Fila superior: Badge de modo + Botones de acción */}
+          <div className="flex justify-between items-center flex-wrap gap-4 mb-3 pb-3 border-b border-[#2C2A29]/10">
+
+            {/* Badge tipo módulo de grabación / rec status */}
+            <div className="flex items-center space-x-3">
+              <div className="bg-primary text-primary-foreground px-4 py-2 rounded-xl border border-border shadow-inner flex items-center gap-2.5">
+                {/* LED Indicador Vintage de Edición (Ámbar) */}
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)] animate-pulse" title="Recording / Edit Mode" />
+                <span className="text-sm font-mono font-bold tracking-widest uppercase text-primary-foreground">
+                  EASYCHART CREATOR
+                </span>
+              </div>
+            </div>
+
+            {/* Botones estilo equipo de rack */}
+            <div className="flex items-center gap-3">
+              <Link
+                to="/"
+                className="flex items-center px-3.5 py-2 bg-[#EBE9E1] text-[#2C2A29] hover:bg-[#D3CEBE] active:bg-[#C2BCAB] font-mono font-semibold text-xs rounded-xl transition-all border border-[#D3CEBE] shadow-sm uppercase tracking-wider"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Volver
+              </Link>
+
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="flex items-center px-3.5 py-2 bg-[#EBE9E1] text-[#2C2A29] hover:bg-[#D3CEBE] active:bg-[#C2BCAB] font-mono font-semibold text-xs rounded-xl transition-all border border-[#D3CEBE] shadow-sm cursor-pointer uppercase tracking-wider"
+                title="Cerrar Sesión"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span className="hidden sm:inline">Salir</span>
+              </button>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Link
-              to="/"
-              className="flex items-center px-3.5 py-1.5 bg-stone-300/60 text-stone-800 font-medium text-xs rounded-xl hover:bg-stone-300 transition-all border border-stone-400/30"
-            >
-              ← Volver a Consulta
-            </Link>
-
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="flex items-center px-3.5 py-1.5 bg-stone-300/60 text-stone-700 hover:bg-stone-300 font-medium text-xs rounded-xl transition-all border border-stone-400/30 cursor-pointer"
-              title="Cerrar Sesión"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              <span className="hidden sm:inline">Salir</span>
-            </button>
+          {/* Fila inferior: Entradas del título y autor con estilo serigrafía */}
+          <div className="space-y-1 py-1">
+            <input
+              type="text"
+              value={tituloCancion}
+              onChange={(e) => setTituloCancion(e.target.value)}
+              className="text-2xl font-bold w-full text-center bg-transparent focus:outline-none text-primary placeholder-[#5C5853]/50 border-b border-transparent focus:border-[#2C2A29]/20 transition-colors"
+              placeholder="Título de la canción"
+              style={{ fontFamily: 'Architects Daughter, cursive' }}
+            />
+            <input
+              type="text"
+              value={artista}
+              onChange={(e) => setArtista(e.target.value)}
+              className="text-lg font-semibold w-full text-center bg-transparent focus:outline-none text-[#5C5853] placeholder-[#5C5853]/40 border-b border-transparent focus:border-[#2C2A29]/20 transition-colors"
+              placeholder="Autor o Artista"
+              style={{ fontFamily: 'Architects Daughter, cursive' }}
+            />
           </div>
-        </div>
 
-        <div className="space-y-1">
-          <input
-            type="text"
-            value={tituloCancion}
-            onChange={(e) => setTituloCancion(e.target.value)}
-            className="text-2xl font-bold w-full text-center bg-transparent focus:outline-none text-stone-900 placeholder-stone-400"
-            placeholder="Título de la canción"
-            style={{ fontFamily: 'Architects Daughter, cursive' }}
-          />
-          <input
-            type="text"
-            value={artista}
-            onChange={(e) => setArtista(e.target.value)}
-            className="text-lg font-semibold w-full text-center bg-transparent focus:outline-none text-stone-600 placeholder-stone-400"
-            placeholder="Autor o Artista"
-            style={{ fontFamily: 'Architects Daughter, cursive' }}
-          />
         </div>
       </header>
 

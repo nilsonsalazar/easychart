@@ -147,7 +147,6 @@ const SongReader = () => {
   };
 
   const cambiarTonalidad = (nuevoTono) => {
-    // Normalizamos para comparar índices quitando la 'm' si existe
     const cleanTonoActual = tono.replace(/m$/, '');
     const cleanNuevoTono = nuevoTono.replace(/m$/, '');
 
@@ -403,38 +402,67 @@ const SongReader = () => {
 
   return (
     <div className="app-container p-4 pb-20">
-      {/* HEADER TIPO RACK */}
-      <header className="sticky top-0 z-10 app-card py-4 px-6 mb-6">
-        <div className="max-w-4xl mx-auto flex justify-between items-center flex-wrap gap-4">
-          <div className="flex items-center space-x-3">
-            <div className="bg-[#2C2A29] text-[#FAF9F5] p-2.5 rounded-xl border border-[#1A1918] shadow-sm">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      {/* HEADER TIPO RACK ANALÓGICO / MODERN VINTAGE */}
+      <header className="sticky top-0 z-20 app-card py-3 px-4 sm:px-6 mb-6 backdrop-blur-md shadow-md border-b">
+        <div className="max-w-4xl mx-auto flex justify-between items-center flex-wrap gap-4 relative">
+
+          {/* Detalle visual: "Tornillos" laterales tipo Rack de 19" */}
+          <div className="hidden md:flex absolute -left-3 top-1/2 -translate-y-1/2 flex-col gap-2 opacity-40 pointer-events-none">
+            <div className="w-1.5 h-1.5 rounded-full border border-current bg-muted" />
+          </div>
+          <div className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 flex-col gap-2 opacity-40 pointer-events-none">
+            <div className="w-1.5 h-1.5 rounded-full border border-current bg-muted" />
+          </div>
+
+          {/* Marca / Logo */}
+          <div className="flex items-center space-x-3.5">
+            <div className="bg-primary text-primary-foreground p-2.5 rounded-xl border border-border shadow-inner relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 relative z-10 transition-transform duration-300 group-hover:scale-105" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zm12 0c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zM9 10l12-3" />
               </svg>
             </div>
+
             <div>
-              <h1 className="text-2xl font-black text-primary tracking-tight">
-                EasyChart
-              </h1>
-              <p className="text-xs text-[#5C5853] font-medium">Chord Chart Viewer & Browser</p>
+              <div className="flex items-center space-x-3">
+                <div className="bg-primary text-primary-foreground px-4 py-2 rounded-xl border border-border shadow-inner flex items-center gap-2.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)] animate-pulse" title="Recording / Edit Mode" />
+                  <span className="text-sm font-mono font-bold tracking-widest uppercase text-primary-foreground">
+                    EASYCHART
+                  </span>
+                </div>
+              </div>
+              <span className="text-xs font-mono font-bold tracking-widest uppercase text-primary-foreground">
+                Viewer & Browser
+              </span>
             </div>
           </div>
 
+          {/* Acciones */}
           <div className="flex items-center gap-3">
             <Link
-              to="/crear"
-              className="app-button-primary flex items-center text-sm"
+              to="/create"
+              className="app-button-secondary flex items-center px-3.5 py-2 font-mono font-semibold text-xs rounded-xl transition-all hover:brightness-90 border shadow-sm cursor-pointer uppercase tracking-wider active:scale-95"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              Add / Edit
+              <span className="hidden sm:inline">Add Song</span>
+            </Link>
+            <Link
+              to="/edit"
+              className="app-button-secondary flex items-center px-3.5 py-2 font-mono font-semibold text-xs rounded-xl transition-all hover:brightness-90 border shadow-sm cursor-pointer uppercase tracking-wider active:scale-95"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              <span className="hidden sm:inline">Search & Edit</span>
             </Link>
 
             <button
               type="button"
               onClick={handleLogout}
-              className="flex items-center px-3.5 py-2.5 bg-[#EBE9E1] text-[#2C2A29] hover:bg-[#D3CEBE] font-medium text-sm rounded-xl transition-all border border-[#D3CEBE] cursor-pointer"
+              className="app-button-secondary flex items-center px-3.5 py-2 font-mono font-semibold text-xs rounded-xl transition-all hover:brightness-90 border shadow-sm cursor-pointer uppercase tracking-wider active:scale-95"
               title="Cerrar Sesión"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -443,6 +471,7 @@ const SongReader = () => {
               <span className="hidden sm:inline">Logout</span>
             </button>
           </div>
+
         </div>
       </header>
 
@@ -566,11 +595,24 @@ const SongReader = () => {
           <div className="app-card p-8" style={{
             fontFamily: 'Architects Daughter, cursive',
           }}>
-            <div className="text-center mb-8 border-b-2 border-[#2C2A29] pb-6">
+            <div className="text-center mb-8 border-b-2 border-[#2C2A29] pb-6 relative">
               <h2 className="text-3xl font-bold mb-2 text-[#2C2A29] tracking-wide">{tituloCancion} - {artista || "Autor"}</h2>
               <p className="text-lg text-[#5C5853] font-mono">
                 Tonalidad: {tono} • Compás: {compas} • Tempo: {tempo} BPM
               </p>
+
+              {/* BOTÓN DE EDICIÓN DIRECTA CON ID */}
+              <div className="mt-4 flex justify-center">
+                <Link
+                  to={`/edit/${selectedSongId}`}
+                  className="inline-flex items-center px-4 py-2 bg-[#383023] text-[#FAF9F5] hover:bg-[#252017] font-mono text-xs font-semibold tracking-wider uppercase rounded-xl transition shadow-sm border border-[#1A1918]"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Editar esta canción (/edit/{selectedSongId})
+                </Link>
+              </div>
             </div>
 
             {secciones.map((sec, secIdx) => (

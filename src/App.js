@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import SongReader from "./components/SongReader";
 import SongCreator from "./components/SongCreator";
+import SongEditor from "./components/SongEditor";
 
 // Componente para manejar el inicio de sesión
 // Componente Login - Estética Vintage/Live Stage (Hendrix / Floyd / Live Gospel)
@@ -141,7 +142,14 @@ export default function App() {
       <Route path="/" element={<SongReader />} />
 
       {/* Ruta para crear o editar canciones */}
-      <Route path="/crear" element={<SongCreator />} />
+      {/* Ruta para crear canción nueva */}
+      <Route path="/create" element={<SongEditor />} />
+
+      {/* Ruta para editar una canción existente (debe incluir :id) */}
+      <Route path="/edit/:id" element={<SongEditor />} />
+
+      {/* Si quieres que /edit sin ID renderice el editor de búsqueda, asegúrate de indicarlo */}
+      <Route path="/edit" element={<SongEditor />} />
     </Routes>
   );
 }
