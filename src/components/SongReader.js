@@ -71,18 +71,22 @@ const SongReader = () => {
     "B♭": 233.08, "B": 246.94
   };
 
-  // Generador de Impulso para Reverb sintética tipo Hall de Worship
-  const createReverbBuffer = (ctx) => {
+  // Generador de Impulso para Reverb con Shimmer Orgánico, Etéreo y Modulado (Cuerpo celestial y expansivo)
+  const createShimmerReverbBuffer = (ctx) => {
     const sampleRate = ctx.sampleRate;
-    const length = sampleRate * 3.5; // 3.5 segundos de cola
+    const length = sampleRate * 6.5; // Cola de reverb masiva y envolvente (6.5s) para suspender el tiempo
     const buffer = ctx.createBuffer(2, length, sampleRate);
     const left = buffer.getChannelData(0);
     const right = buffer.getChannelData(1);
 
     for (let i = 0; i < length; i++) {
-      const decay = Math.exp(-i / (sampleRate * 0.7));
-      left[i] = (Math.random() * 2 - 1) * decay;
-      right[i] = (Math.random() * 2 - 1) * decay;
+      const t = i / sampleRate;
+      const decay = Math.exp(-t / 1.6); // Caída suave, cálida y sedosa
+      // Modulación fluida y armónica cruzada para el efecto Shimmer (evita asperezas metálicas)
+      const shimmerMod = Math.sin(t * 6.28 * 1.5) * 0.25 + 0.75;
+      const noise = (Math.random() * 2 - 1);
+      left[i] = noise * decay * shimmerMod;
+      right[i] = noise * decay * (1.1 - shimmerMod * 0.2);
     }
     return buffer;
   };
@@ -99,21 +103,21 @@ const SongReader = () => {
   const stopAmbientPad = () => {
     if (padGainRef.current && audioCtxRef.current) {
       const now = audioCtxRef.current.currentTime;
-      // Release progresivo suave de 2.5 segundos para fade out natural
-      padGainRef.current.gain.linearRampToValueAtTime(0.0001, now + 2.5);
+      // Release progresivo y sumamente suave de 4 segundos para fundir la atmósfera celestial
+      padGainRef.current.gain.linearRampToValueAtTime(0.0001, now + 4.0);
       setTimeout(() => {
         padOscillatorsRef.current.forEach(osc => {
           try { osc.stop(); } catch (e) { }
         });
         padOscillatorsRef.current = [];
         setIsPlayingPad(false);
-      }, 2500);
+      }, 4000);
     } else {
       setIsPlayingPad(false);
     }
   };
 
-  // --- MOTOR SINTETIZADOR AMBIENTAL CON AMPLITUD Y REVERB ---
+  // --- MOTOR SINTETIZADOR AMBIENTAL CON SHIMMER CELESTIAL Y FEEDBACK ORGÁNICO ---
   const startAmbientPad = (rootNote) => {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     if (!audioCtxRef.current) {
@@ -131,46 +135,65 @@ const SongReader = () => {
     const baseFreq = FrecuenciasNotas[rootNote] || 130.81;
     const now = audioCtxRef.current.currentTime;
 
-    // Node Master Gain (Con ramp de Attack de 2.5s)
+    // Node Master Gain (Con Attack ultra-lento y orgánico de 4s para un swell sumamente emotivo)
     const masterGain = audioCtxRef.current.createGain();
     const targetGain = padVolume * 0.12;
     masterGain.gain.setValueAtTime(0.0001, now);
-    masterGain.gain.exponentialRampToValueAtTime(Math.max(targetGain, 0.001), now + 2.5);
+    masterGain.gain.exponentialRampToValueAtTime(Math.max(targetGain, 0.001), now + 4.0);
 
-    // Filtro Lowpass Warm Analógico
+    // Filtro Lowpass Modelado para calidez profunda y orgánica (elimina frecuencias duras)
     const filter = audioCtxRef.current.createBiquadFilter();
     filter.type = "lowpass";
-    filter.frequency.setValueAtTime(280, now);
-    filter.Q.setValueAtTime(1.1, now);
+    filter.frequency.setValueAtTime(1800, now); // Suaviza la zona media y realza el cuerpo cálido
+    filter.Q.setValueAtTime(0.5, now);
 
     masterGain.connect(filter);
 
-    // CADENA DE REVERB (Send FX)
+    // CADENA DE DELAY AMBIENTAL EXPANSIVO (Estilo Cloud/Timeline con repeticiones etéreas y difusas)
+    const delayNode = audioCtxRef.current.createDelay();
+    delayNode.delayTime.setValueAtTime(0.68, now); // Delay amplio y respirable
+
+    const delayFeedback = audioCtxRef.current.createGain();
+    delayFeedback.gain.setValueAtTime(0.55, now); // Feedback rico y envolvente para colas musicales interconectadas
+
+    const delayFilter = audioCtxRef.current.createBiquadFilter();
+    delayFilter.type = "lowpass";
+    delayFilter.frequency.setValueAtTime(900, now); // Oscurece progresivamente cada eco para disolver los transitorios
+
+    filter.connect(delayNode);
+    delayNode.connect(delayFilter);
+    delayFilter.connect(delayFeedback);
+    delayFeedback.connect(delayNode);
+
+    // CADENA DE REVERB CON SHIMMER ETÉREO (Octava superior flotante, cantarina y celestial)
     const convolver = audioCtxRef.current.createConvolver();
-    convolver.buffer = createReverbBuffer(audioCtxRef.current);
+    convolver.buffer = createShimmerReverbBuffer(audioCtxRef.current);
 
     const wetGain = audioCtxRef.current.createGain();
-    wetGain.gain.setValueAtTime(0.45, now); // Nivel de Reverb
+    wetGain.gain.setValueAtTime(0.8, now); // Inundado de espacio y profundidad emocional
 
     const dryGain = audioCtxRef.current.createGain();
-    dryGain.gain.setValueAtTime(0.85, now);
+    dryGain.gain.setValueAtTime(0.4, now);
 
     filter.connect(dryGain);
     filter.connect(convolver);
+    delayNode.connect(convolver); // Las repeticiones alimentan la reverb creando una neblina armónica
     convolver.connect(wetGain);
 
     dryGain.connect(audioCtxRef.current.destination);
     wetGain.connect(audioCtxRef.current.destination);
+    delayNode.connect(audioCtxRef.current.destination);
 
-    // CAPAS DE RANGO AMPLIO (Sub, Fundamental, Quinta, Octava 1, Octava 2)
+    // CAPAS DE RANGO AMPLIO + SHIMMER ORGÁNICO (Sub cálido, fundamentales corales en estéreo, quintas y octavas flotantes)
     const layers = [
-      { freq: baseFreq / 2, type: "sine", gain: 0.7, detune: 0 },         // Sub-Bass profundo (-1 Oct)
-      { freq: baseFreq, type: "sawtooth", gain: 0.3, detune: -11 },       // Fundamental Izq
-      { freq: baseFreq, type: "sawtooth", gain: 0.3, detune: 11 },        // Fundamental Der (Width)
-      { freq: baseFreq * 1.4983, type: "triangle", gain: 0.2, detune: 3 },// Quinta Justa
-      { freq: baseFreq * 2, type: "sawtooth", gain: 0.15, detune: -7 },   // Octava +1
-      { freq: baseFreq * 2, type: "sawtooth", gain: 0.15, detune: 7 },    // Octava +1 Detune
-      { freq: baseFreq * 4, type: "triangle", gain: 0.08, detune: 2 }     // Octava +2 (Aire / Rango Amplio)
+      { freq: baseFreq / 2, type: "sine", gain: 0.65, detune: 0 },         // Sub-Bass (-1 Oct) profundo
+      { freq: baseFreq, type: "triangle", gain: 0.38, detune: -18 },     // Fundamental Izq (Ancho y cálido)
+      { freq: baseFreq, type: "triangle", gain: 0.38, detune: 18 },      // Fundamental Der (Width Estéreo profundo)
+      { freq: baseFreq * 1.4983, type: "sine", gain: 0.25, detune: 5 },  // Quinta Justa armónica
+      { freq: baseFreq * 2, type: "sine", gain: 0.20, detune: -10 },     // Octava +1 (Cuerpo vocal suave)
+      { freq: baseFreq * 2, type: "triangle", gain: 0.18, detune: 10 },  // Octava +1 Detune corpulento
+      { freq: baseFreq * 4, type: "sine", gain: 0.14, detune: -6 },     // Octava +2 (SHIMMER CELESTIAL: Brillo etéreo y mágico)
+      { freq: baseFreq * 4, type: "triangle", gain: 0.11, detune: 7 }    // Octava +2 armónico etéreo abierto
     ];
 
     layers.forEach(({ freq, type, gain, detune }) => {
@@ -703,7 +726,7 @@ const SongReader = () => {
                   </span>
                 </div>
 
-                {/* BOTÓN Y DESLIZADOR DE VOLUMEN DE PAD WORSHIP */}
+                {/* BOTÓN Y DESLIZADOR DE VOLUMEN DE PAD WORSHIP CON SHIMMER/DELAY */}
                 <div className="flex items-center gap-3 px-3.5 py-1.5 bg-[#E8E5DC] rounded-xl border border-[#D3CEBE] shadow-sm">
                   <button
                     type="button"
@@ -712,10 +735,10 @@ const SongReader = () => {
                       ? "bg-amber-600 text-white border-amber-700 shadow-[0_0_8px_rgba(217,119,6,0.4)]"
                       : "bg-[#FAF9F5] text-[#2C2A29] border-[#D3CEBE] hover:bg-[#F2F0EA]"
                       }`}
-                    title="Activar o desactivar Pad ambiental Drone"
+                    title="Activar o desactivar Pad ambiental con Shimmer y Delay"
                   >
                     <span className={`w-2 h-2 rounded-full ${isPlayingPad ? "bg-white animate-ping" : "bg-stone-400"}`} />
-                    🎹 {isPlayingPad ? `Pad Drone (${notaRaiz})` : `Activar Pad (${notaRaiz})`}
+                    ✨ {isPlayingPad ? `Ambient Shimmer (${notaRaiz})` : `Activar Pad Shimmer (${notaRaiz})`}
                   </button>
 
                   {/* SLIDER DE VOLUMEN DEL PAD */}
