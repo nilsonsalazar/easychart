@@ -458,6 +458,15 @@ const SongReader = () => {
               </svg>
               <span className="hidden sm:inline">Search & Edit</span>
             </Link>
+            <Link
+              to="/setlist"
+              className="app-button-secondary flex items-center px-3.5 py-2 font-mono font-semibold text-xs rounded-xl transition-all hover:brightness-90 border shadow-sm cursor-pointer uppercase tracking-wider active:scale-95"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              <span className="hidden sm:inline">Setlist</span>
+            </Link>
 
             <button
               type="button"
