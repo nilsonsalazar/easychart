@@ -6,6 +6,9 @@ import { API_URL } from './config';
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import SongPDF from "./SongPDF";
 import toRoman from "./toRoman";
+import SongSearch from "./SongSearch";
+import Tuner from "./tools/Tuner";
+import Metronome from "./tools/Metronome";
 
 const SongReader = () => {
   const location = useLocation();
@@ -14,30 +17,32 @@ const SongReader = () => {
   const [compass, setCompass] = useState("4/4");
   const [compas, setCompas] = useState("4/4");
   const [semitono, setSemitono] = useState(0);
-  const [savedSongs, setSavedSongs] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filteredSongs, setFilteredSongs] = useState([]);
-  const [showSongDropdown, setShowSongDropdown] = useState(false);
   const [showToneMenu, setShowToneMenu] = useState(false);
 
-  // Posiciones para portales flotantes
-  const [toneMenuCoords, setToneMenuCoords] = useState({ top: 0, left: 0, width: 0 });
-  const [searchCoords, setSearchCoords] = useState({ top: 0, left: 0, width: 0 });
+  // Estado para el panel de Herramientas ('tuner', 'metronome' o null)
+  const [activeTool, setActiveTool] = useState(null);
 
-  const searchInputRef = useRef(null);
+  // Estados para el Pad Ambiental Worship, Volumen y Pulso de Tempo
+  const [isPlayingPad, setIsPlayingPad] = useState(false);
+  const [padVolume, setPadVolume] = useState(0.5); // Volumen del Pad (0.0 a 1.0)
+  const [tempoBeat, setTempoBeat] = useState(false);
+  const audioCtxRef = useRef(null);
+  const padOscillatorsRef = useRef([]);
+  const padGainRef = useRef(null);
+
+  // Posiciones para portal flotante de tonalidad
+  const [toneMenuCoords, setToneMenuCoords] = useState({ top: 0, left: 0, width: 0 });
+
   const toneBtnRef = useRef(null);
   const toneMenuRef = useRef(null);
-  const searchDropdownRef = useRef(null);
 
   const handleLogout = () => {
     localStorage.removeItem('easychart_token');
     window.location.href = '/';
   };
 
-  // Verificar si el tono actual es menor
   const esMenor = tono.endsWith("m");
 
-  // Lista de tonalidades cromáticas adaptables según el modo (Mayor o Menor)
   const notasBase = [
     "C", "D♭", "D", "E♭", "E", "F",
     "G♭", "G", "A♭", "A", "B♭", "B"
@@ -49,25 +54,191 @@ const SongReader = () => {
   const [tituloCancion, setTituloCancion] = useState("");
   const [artista, setArtista] = useState("");
 
-  // Calcular posiciones absolutas en pantalla al abrir desplegables o hacer scroll
+  // Extractor de nota raíz (Ej: "A♭m" -> "A♭", "C#m" -> "C#", "G" -> "G")
+  const obtenerNotaRaiz = (strTono) => {
+    if (!strTono) return "C";
+    const match = strTono.match(/^[A-Ga-g](#|♭|b)?/);
+    return match ? match[0].replace('b', '♭') : "C";
+  };
+
+  const notaRaiz = obtenerNotaRaiz(tono);
+
+  // --- TABLA DE FRECUENCIAS BASE ---
+  const FrecuenciasNotas = {
+    "C": 130.81, "C#": 138.59, "D♭": 138.59, "D": 146.83, "D#": 155.56,
+    "E♭": 155.56, "E": 164.81, "F": 174.61, "F#": 185.00, "G♭": 185.00,
+    "G": 196.00, "G#": 207.65, "A♭": 207.65, "A": 220.00, "A#": 233.08,
+    "B♭": 233.08, "B": 246.94
+  };
+
+  // Generador de Impulso para Reverb sintética tipo Hall de Worship
+  const createReverbBuffer = (ctx) => {
+    const sampleRate = ctx.sampleRate;
+    const length = sampleRate * 3.5; // 3.5 segundos de cola
+    const buffer = ctx.createBuffer(2, length, sampleRate);
+    const left = buffer.getChannelData(0);
+    const right = buffer.getChannelData(1);
+
+    for (let i = 0; i < length; i++) {
+      const decay = Math.exp(-i / (sampleRate * 0.7));
+      left[i] = (Math.random() * 2 - 1) * decay;
+      right[i] = (Math.random() * 2 - 1) * decay;
+    }
+    return buffer;
+  };
+
+  // Ajuste en tiempo real del volumen del Pad sin reiniciar el sonido
+  useEffect(() => {
+    if (padGainRef.current && audioCtxRef.current) {
+      const now = audioCtxRef.current.currentTime;
+      const targetGain = padVolume * 0.12;
+      padGainRef.current.gain.setTargetAtTime(targetGain, now, 0.05);
+    }
+  }, [padVolume]);
+
+  const stopAmbientPad = () => {
+    if (padGainRef.current && audioCtxRef.current) {
+      const now = audioCtxRef.current.currentTime;
+      // Release progresivo suave de 2.5 segundos para fade out natural
+      padGainRef.current.gain.linearRampToValueAtTime(0.0001, now + 2.5);
+      setTimeout(() => {
+        padOscillatorsRef.current.forEach(osc => {
+          try { osc.stop(); } catch (e) { }
+        });
+        padOscillatorsRef.current = [];
+        setIsPlayingPad(false);
+      }, 2500);
+    } else {
+      setIsPlayingPad(false);
+    }
+  };
+
+  // --- MOTOR SINTETIZADOR AMBIENTAL CON AMPLITUD Y REVERB ---
+  const startAmbientPad = (rootNote) => {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!audioCtxRef.current) {
+      audioCtxRef.current = new AudioContext();
+    }
+    if (audioCtxRef.current.state === "suspended") {
+      audioCtxRef.current.resume();
+    }
+
+    padOscillatorsRef.current.forEach(osc => {
+      try { osc.stop(); } catch (e) { }
+    });
+    padOscillatorsRef.current = [];
+
+    const baseFreq = FrecuenciasNotas[rootNote] || 130.81;
+    const now = audioCtxRef.current.currentTime;
+
+    // Node Master Gain (Con ramp de Attack de 2.5s)
+    const masterGain = audioCtxRef.current.createGain();
+    const targetGain = padVolume * 0.12;
+    masterGain.gain.setValueAtTime(0.0001, now);
+    masterGain.gain.exponentialRampToValueAtTime(Math.max(targetGain, 0.001), now + 2.5);
+
+    // Filtro Lowpass Warm Analógico
+    const filter = audioCtxRef.current.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(280, now);
+    filter.Q.setValueAtTime(1.1, now);
+
+    masterGain.connect(filter);
+
+    // CADENA DE REVERB (Send FX)
+    const convolver = audioCtxRef.current.createConvolver();
+    convolver.buffer = createReverbBuffer(audioCtxRef.current);
+
+    const wetGain = audioCtxRef.current.createGain();
+    wetGain.gain.setValueAtTime(0.45, now); // Nivel de Reverb
+
+    const dryGain = audioCtxRef.current.createGain();
+    dryGain.gain.setValueAtTime(0.85, now);
+
+    filter.connect(dryGain);
+    filter.connect(convolver);
+    convolver.connect(wetGain);
+
+    dryGain.connect(audioCtxRef.current.destination);
+    wetGain.connect(audioCtxRef.current.destination);
+
+    // CAPAS DE RANGO AMPLIO (Sub, Fundamental, Quinta, Octava 1, Octava 2)
+    const layers = [
+      { freq: baseFreq / 2, type: "sine", gain: 0.7, detune: 0 },         // Sub-Bass profundo (-1 Oct)
+      { freq: baseFreq, type: "sawtooth", gain: 0.3, detune: -11 },       // Fundamental Izq
+      { freq: baseFreq, type: "sawtooth", gain: 0.3, detune: 11 },        // Fundamental Der (Width)
+      { freq: baseFreq * 1.4983, type: "triangle", gain: 0.2, detune: 3 },// Quinta Justa
+      { freq: baseFreq * 2, type: "sawtooth", gain: 0.15, detune: -7 },   // Octava +1
+      { freq: baseFreq * 2, type: "sawtooth", gain: 0.15, detune: 7 },    // Octava +1 Detune
+      { freq: baseFreq * 4, type: "triangle", gain: 0.08, detune: 2 }     // Octava +2 (Aire / Rango Amplio)
+    ];
+
+    layers.forEach(({ freq, type, gain, detune }) => {
+      const osc = audioCtxRef.current.createOscillator();
+      const oscGain = audioCtxRef.current.createGain();
+
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, now);
+      osc.detune.setValueAtTime(detune, now);
+
+      oscGain.gain.setValueAtTime(gain, now);
+
+      osc.connect(oscGain);
+      oscGain.connect(masterGain);
+
+      osc.start(now);
+      padOscillatorsRef.current.push(osc);
+    });
+
+    padGainRef.current = masterGain;
+    setIsPlayingPad(true);
+  };
+
+  const toggleAmbientPad = () => {
+    if (isPlayingPad) {
+      stopAmbientPad();
+    } else {
+      startAmbientPad(notaRaiz);
+    }
+  };
+
+  // Re-sintonizar el pad al cambiar la tonalidad
+  useEffect(() => {
+    if (isPlayingPad) {
+      startAmbientPad(notaRaiz);
+    }
+  }, [tono]);
+
+  useEffect(() => {
+    return () => {
+      stopAmbientPad();
+    };
+  }, []);
+
+  // --- EFECTO PULSO VISUAL DE TEMPO ---
+  useEffect(() => {
+    if (!selectedSongId || !tempo) return;
+
+    const bpmNum = parseInt(tempo, 10);
+    if (isNaN(bpmNum) || bpmNum <= 0) return;
+
+    const intervalMs = (60 / bpmNum) * 1000;
+
+    const interval = setInterval(() => {
+      setTempoBeat(true);
+      setTimeout(() => setTempoBeat(false), 120);
+    }, intervalMs);
+
+    return () => clearInterval(interval);
+  }, [selectedSongId, tempo]);
+
   const updateToneCoords = () => {
     if (toneBtnRef.current) {
       const rect = toneBtnRef.current.getBoundingClientRect();
       setToneMenuCoords({
         top: rect.bottom + window.scrollY + 8,
         left: rect.left + window.scrollX,
-        width: Math.max(rect.width, 288) // 288px = w-72
-      });
-    }
-  };
-
-  const updateSearchCoords = () => {
-    if (searchInputRef.current) {
-      const rect = searchInputRef.current.getBoundingClientRect();
-      setSearchCoords({
-        top: rect.bottom + window.scrollY + 8,
-        left: rect.left + window.scrollX,
-        width: rect.width
+        width: Math.max(rect.width, 288)
       });
     }
   };
@@ -79,7 +250,6 @@ const SongReader = () => {
     setShowToneMenu(!showToneMenu);
   };
 
-  // Escuchar clics fuera de los menús
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -87,13 +257,6 @@ const SongReader = () => {
         toneMenuRef.current && !toneMenuRef.current.contains(event.target)
       ) {
         setShowToneMenu(false);
-      }
-
-      if (
-        searchInputRef.current && !searchInputRef.current.contains(event.target) &&
-        searchDropdownRef.current && !searchDropdownRef.current.contains(event.target)
-      ) {
-        setShowSongDropdown(false);
       }
     };
 
@@ -115,7 +278,6 @@ const SongReader = () => {
     const noteOrderFlats = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"];
 
     const flatKeys = ["D♭", "E♭", "G♭", "A♭", "B♭"];
-    // Extraer la nota base del tono de la canción (removiendo 'm' si es menor)
     const cleanKey = currentKey.replace(/m$/, '');
     const useFlats = flatKeys.includes(cleanKey);
 
@@ -197,46 +359,6 @@ const SongReader = () => {
       }))
     );
   };
-
-  useEffect(() => {
-    const fetchSongs = async () => {
-      const token = localStorage.getItem('easychart_token');
-      try {
-        const response = await fetch(API_URL, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (response.status === 401) {
-          localStorage.removeItem('easychart_token');
-          window.location.reload();
-          return;
-        }
-
-        const data = await response.json();
-        const songList = Array.isArray(data) ? data : (data.data || []);
-
-        if (response.ok) {
-          setSavedSongs(songList);
-          if (searchTerm) {
-            const filtered = songList.filter(song =>
-              song.title.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-            setFilteredSongs(filtered);
-            setShowSongDropdown(filtered.length > 0);
-            updateSearchCoords();
-          }
-        }
-      } catch (error) {
-        console.error('Error al cargar canciones:', error);
-      }
-    };
-
-    fetchSongs();
-  }, [searchTerm]);
 
   const generarId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
@@ -331,82 +453,12 @@ const SongReader = () => {
     }
   };
 
-  const searchSongs = async (searchTerm) => {
-    const token = localStorage.getItem('easychart_token');
-    try {
-      const response = await fetch(`${API_URL}?search=${encodeURIComponent(searchTerm)}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.status === 401) {
-        localStorage.removeItem('easychart_token');
-        window.location.reload();
-        return [];
-      }
-
-      if (!response.ok) {
-        throw new Error('Error en la búsqueda');
-      }
-
-      const resData = await response.json();
-      const data = resData.data || resData;
-      return Array.isArray(data) ? data : [];
-    } catch (error) {
-      console.error('Error buscando canciones:', error);
-      return [];
-    }
-  };
-
-  const handleSearch = async (term) => {
-    setSearchTerm(term);
-    updateSearchCoords();
-
-    if (!term.trim()) {
-      setFilteredSongs([]);
-      setShowSongDropdown(false);
-      return;
-    }
-
-    if (term.length < 5) {
-      const normalize = str =>
-        str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-
-      const words = normalize(term).split(/\s+/).filter(Boolean);
-
-      const localResults = savedSongs.filter(song => {
-        const title = normalize(song.title || "");
-        const artist = normalize(song.artist || "");
-        const target = `${title} ${artist}`;
-
-        return words.every(word => target.includes(word));
-      });
-      setFilteredSongs(localResults);
-      setShowSongDropdown(localResults.length > 0);
-      return;
-    }
-
-    try {
-      const response = await searchSongs(term);
-      setFilteredSongs(response);
-      setShowSongDropdown(response.length > 0);
-    } catch (error) {
-      console.error("Error en la búsqueda:", error);
-      setFilteredSongs([]);
-      setShowSongDropdown(false);
-    }
-  };
-
   return (
     <div className="app-container p-4 pb-20">
-      {/* HEADER TIPO RACK ANALÓGICO / MODERN VINTAGE */}
+      {/* HEADER */}
       <header className="sticky top-0 z-20 app-card py-3 px-4 sm:px-6 mb-6 backdrop-blur-md shadow-md border-b">
-        <div className="max-w-4xl mx-auto flex justify-between items-center flex-wrap gap-4 relative">
+        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row justify-center sm:justify-between items-center gap-3 sm:gap-4 relative">
 
-          {/* Detalle visual: "Tornillos" laterales tipo Rack de 19" */}
           <div className="hidden md:flex absolute -left-3 top-1/2 -translate-y-1/2 flex-col gap-2 opacity-40 pointer-events-none">
             <div className="w-1.5 h-1.5 rounded-full border border-current bg-muted" />
           </div>
@@ -414,35 +466,33 @@ const SongReader = () => {
             <div className="w-1.5 h-1.5 rounded-full border border-current bg-muted" />
           </div>
 
-          {/* Marca / Logo */}
-          <div className="flex items-center space-x-3.5">
-            <div className="bg-primary text-primary-foreground p-2.5 rounded-xl border border-border shadow-inner relative overflow-hidden group">
+          <div className="flex items-center space-x-3.5 text-center sm:text-left">
+            <div className="bg-primary text-primary-foreground p-2.5 rounded-xl border border-border shadow-inner relative overflow-hidden group shrink-0">
               <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 relative z-10 transition-transform duration-300 group-hover:scale-105" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zm12 0c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zM9 10l12-3" />
               </svg>
             </div>
 
-            <div>
+            <div className="flex flex-col items-center sm:items-start">
               <div className="flex items-center space-x-3">
-                <div className="bg-primary text-primary-foreground px-4 py-2 rounded-xl border border-border shadow-inner flex items-center gap-2.5">
+                <div className="bg-primary text-primary-foreground px-4 py-1.5 rounded-xl border border-border shadow-inner flex items-center gap-2.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)] animate-pulse" title="Recording / Edit Mode" />
                   <span className="text-sm font-mono font-bold tracking-widest uppercase text-primary-foreground">
                     EASYCHART
                   </span>
                 </div>
               </div>
-              <span className="text-xs font-mono font-bold tracking-widest uppercase text-primary-foreground">
+              <span className="text-[11px] font-mono font-bold tracking-widest uppercase text-primary-foreground mt-0.5">
                 Viewer & Browser
               </span>
             </div>
           </div>
 
-          {/* Acciones */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center gap-2 sm:gap-3 w-full sm:w-auto">
             <Link
               to="/create"
-              className="app-button-secondary flex items-center px-3.5 py-2 font-mono font-semibold text-xs rounded-xl transition-all hover:brightness-90 border shadow-sm cursor-pointer uppercase tracking-wider active:scale-95"
+              className="app-button-secondary flex items-center justify-center px-3.5 py-2 font-mono font-semibold text-xs rounded-xl transition-all hover:brightness-90 border shadow-sm cursor-pointer uppercase tracking-wider active:scale-95"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -451,19 +501,19 @@ const SongReader = () => {
             </Link>
             <Link
               to="/edit"
-              className="app-button-secondary flex items-center px-3.5 py-2 font-mono font-semibold text-xs rounded-xl transition-all hover:brightness-90 border shadow-sm cursor-pointer uppercase tracking-wider active:scale-95"
+              className="app-button-secondary flex items-center justify-center px-3.5 py-2 font-mono font-semibold text-xs rounded-xl transition-all hover:brightness-90 border shadow-sm cursor-pointer uppercase tracking-wider active:scale-95"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
               </svg>
               <span className="hidden sm:inline">Search & Edit</span>
             </Link>
             <Link
               to="/setlist"
-              className="app-button-secondary flex items-center px-3.5 py-2 font-mono font-semibold text-xs rounded-xl transition-all hover:brightness-90 border shadow-sm cursor-pointer uppercase tracking-wider active:scale-95"
+              className="app-button-secondary flex items-center justify-center px-3.5 py-2 font-mono font-semibold text-xs rounded-xl transition-all hover:brightness-90 border shadow-sm cursor-pointer uppercase tracking-wider active:scale-95"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
               </svg>
               <span className="hidden sm:inline">Setlist</span>
             </Link>
@@ -471,7 +521,7 @@ const SongReader = () => {
             <button
               type="button"
               onClick={handleLogout}
-              className="app-button-secondary flex items-center px-3.5 py-2 font-mono font-semibold text-xs rounded-xl transition-all hover:brightness-90 border shadow-sm cursor-pointer uppercase tracking-wider active:scale-95"
+              className="app-button-secondary flex items-center justify-center px-3.5 py-2 font-mono font-semibold text-xs rounded-xl transition-all hover:brightness-90 border shadow-sm cursor-pointer uppercase tracking-wider active:scale-95"
               title="Cerrar Sesión"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -485,31 +535,16 @@ const SongReader = () => {
       </header>
 
       <div className="max-w-4xl mx-auto space-y-6">
-        {/* CONTENEDOR BUSCADOR Y CONTROLES */}
+        {/* BUSCADOR */}
         <div className="app-card p-6 space-y-4">
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-[#5C5853] mb-2">
               Search by artist or song
             </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#8C867E]">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-              <input
-                ref={searchInputRef}
-                type="text"
-                value={searchTerm}
-                onChange={(e) => handleSearch(e.target.value)}
-                onFocus={() => {
-                  updateSearchCoords();
-                  if (filteredSongs.length > 0) setShowSongDropdown(true);
-                }}
-                placeholder="Search by artist or song..."
-                className="app-input w-full pl-10 pr-4"
-              />
-            </div>
+            <SongSearch
+              onSelectSong={(song) => loadSong(song.id)}
+              placeholder="Search by artist or song..."
+            />
           </div>
 
           {/* CONTROLES DE TONALIDAD / EXPORTACIÓN */}
@@ -599,6 +634,51 @@ const SongReader = () => {
           )}
         </div>
 
+        {/* NÚCLEO / SECCIÓN DE HERRAMIENTAS (TOOLS HUB) */}
+        <div className="app-card p-4 space-y-3 border border-[#D3CEBE]">
+          <div className="flex items-center justify-between pb-2 border-b border-[#D3CEBE]">
+            <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#5C5853] flex items-center gap-2">
+              🛠️ Herramientas
+            </span>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setActiveTool(activeTool === 'tuner' ? null : 'tuner')}
+                className={`px-3 py-1.5 font-mono font-bold text-xs rounded-xl border transition cursor-pointer flex items-center gap-1.5 ${activeTool === 'tuner'
+                  ? 'bg-[#2C2A29] text-[#FAF9F5] border-[#1A1918]'
+                  : 'bg-[#EBE9E1] text-[#2C2A29] border-[#D3CEBE] hover:bg-[#F2F0EA]'
+                  }`}
+              >
+                🎸 Afinador
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTool(activeTool === 'metronome' ? null : 'metronome')}
+                className={`px-3 py-1.5 font-mono font-bold text-xs rounded-xl border transition cursor-pointer flex items-center gap-1.5 ${activeTool === 'metronome'
+                  ? 'bg-[#2C2A29] text-[#FAF9F5] border-[#1A1918]'
+                  : 'bg-[#EBE9E1] text-[#2C2A29] border-[#D3CEBE] hover:bg-[#F2F0EA]'
+                  }`}
+              >
+                ⏱️ Metrónomo
+              </button>
+            </div>
+          </div>
+
+          {activeTool === 'tuner' && (
+            <div className="pt-2 animate-fadeIn">
+              <Tuner />
+            </div>
+          )}
+
+          {activeTool === 'metronome' && (
+            <div className="p-4 bg-stone-100/60 rounded-xl border border-dashed border-stone-300 text-center text-xs font-mono text-stone-600">
+              <Metronome externalBpm={tempo} />
+            </div>
+          )}
+        </div>
+
         {/* VISUALIZADOR DEL CHART DE ACORDES */}
         {selectedSongId ? (
           <div className="app-card p-8" style={{
@@ -606,11 +686,58 @@ const SongReader = () => {
           }}>
             <div className="text-center mb-8 border-b-2 border-[#2C2A29] pb-6 relative">
               <h2 className="text-3xl font-bold mb-2 text-[#2C2A29] tracking-wide">{tituloCancion} - {artista || "Autor"}</h2>
-              <p className="text-lg text-[#5C5853] font-mono">
-                Tonalidad: {tono} • Compás: {compas} • Tempo: {tempo} BPM
-              </p>
 
-              {/* BOTÓN DE EDICIÓN DIRECTA CON ID */}
+              {/* CONTENEDOR DE METRÓNOMO VISUAL, PAD AMBIENTAL Y SLIDER DE VOLUMEN */}
+              <div className="flex flex-wrap items-center justify-center gap-4 mt-4">
+                {/* LED VISUAL DE TEMPO */}
+                <div className="inline-flex items-center gap-2 px-3.5 py-2 bg-[#E8E5DC] rounded-xl border border-[#D3CEBE] shadow-sm">
+                  <span
+                    className={`w-3 h-3 rounded-full transition-all duration-75 ${tempoBeat
+                      ? "bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.9)] scale-110"
+                      : "bg-stone-400/60"
+                      }`}
+                    title="Pulso de tempo visual"
+                  />
+                  <span className="text-xs font-extrabold text-[#2C2A29] font-mono tracking-wide">
+                    Tonalidad: {tono} • Compás: {compas} • {tempo} BPM
+                  </span>
+                </div>
+
+                {/* BOTÓN Y DESLIZADOR DE VOLUMEN DE PAD WORSHIP */}
+                <div className="flex items-center gap-3 px-3.5 py-1.5 bg-[#E8E5DC] rounded-xl border border-[#D3CEBE] shadow-sm">
+                  <button
+                    type="button"
+                    onClick={toggleAmbientPad}
+                    className={`px-3 py-1 font-mono font-bold text-xs rounded-lg border transition-all cursor-pointer flex items-center gap-2 shadow-sm active:scale-95 ${isPlayingPad
+                      ? "bg-amber-600 text-white border-amber-700 shadow-[0_0_8px_rgba(217,119,6,0.4)]"
+                      : "bg-[#FAF9F5] text-[#2C2A29] border-[#D3CEBE] hover:bg-[#F2F0EA]"
+                      }`}
+                    title="Activar o desactivar Pad ambiental Drone"
+                  >
+                    <span className={`w-2 h-2 rounded-full ${isPlayingPad ? "bg-white animate-ping" : "bg-stone-400"}`} />
+                    🎹 {isPlayingPad ? `Pad Drone (${notaRaiz})` : `Activar Pad (${notaRaiz})`}
+                  </button>
+
+                  {/* SLIDER DE VOLUMEN DEL PAD */}
+                  <div className="flex items-center gap-1.5 font-mono text-xs text-[#2C2A29]">
+                    <span title="Volumen del Pad">🔊</span>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.02"
+                      value={padVolume}
+                      onChange={(e) => setPadVolume(parseFloat(e.target.value))}
+                      className="w-20 accent-amber-600 cursor-pointer h-1.5 bg-stone-300 rounded-lg"
+                      title={`Volumen del Pad: ${Math.round(padVolume * 100)}%`}
+                    />
+                    <span className="w-8 text-right font-bold text-[11px]">
+                      {Math.round(padVolume * 100)}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+
               <div className="mt-4 flex justify-center">
                 <Link
                   to={`/edit/${selectedSongId}`}
@@ -685,45 +812,6 @@ const SongReader = () => {
           </div>
         )}
       </div>
-
-      {/* PORTAL CERO-SUPERPOSICIÓN: DESPLEGABLE BUSCADOR */}
-      {showSongDropdown && filteredSongs.length > 0 && ReactDOM.createPortal(
-        <div
-          ref={searchDropdownRef}
-          style={{
-            position: 'absolute',
-            top: `${searchCoords.top}px`,
-            left: `${searchCoords.left}px`,
-            width: `${searchCoords.width}px`,
-            zIndex: 99999
-          }}
-          className="bg-[#FAF9F5] border-2 border-[#2C2A29] rounded-xl shadow-xl max-h-64 overflow-y-auto divide-y divide-[#D3CEBE]"
-        >
-          {filteredSongs.map(song => (
-            <div
-              key={song.id}
-              className={`p-3.5 hover:bg-[#F2F0EA] transition-colors cursor-pointer flex justify-between items-center ${selectedSongId === song.id ? 'bg-[#E8E5DC]' : ''}`}
-              onClick={() => {
-                loadSong(song.id);
-                setSearchTerm(song.title);
-                setSelectedSongId(song.id);
-                setShowSongDropdown(false);
-              }}
-            >
-              <div>
-                <div className="font-semibold text-[#2C2A29]">{song.title}</div>
-                <div className="text-xs text-[#5C5853] mt-0.5">
-                  {song.artist || song.song_data?.artist ? `Artista: ${song.artist || song.song_data?.artist} • ` : ''}Tonalidad: {song.key_signature}
-                </div>
-              </div>
-              <span className="text-xs font-semibold px-2.5 py-1 bg-[#EBE9E1] text-[#2C2A29] border border-[#D3CEBE] rounded-lg">
-                {song.tempo} BPM
-              </span>
-            </div>
-          ))}
-        </div>,
-        document.body
-      )}
 
       {/* PORTAL CERO-SUPERPOSICIÓN: DESPLEGABLE TONALIDAD */}
       {showToneMenu && ReactDOM.createPortal(
