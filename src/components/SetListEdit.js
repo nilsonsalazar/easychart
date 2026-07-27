@@ -15,6 +15,16 @@ export default function SetListEdit() {
   const [currentSetName, setCurrentSetName] = useState("");
 
   useEffect(() => {
+    // Validación de roles: solo admin o editor
+    const userRole = localStorage.getItem('easychart_role') || 'reader';
+    const token = localStorage.getItem('easychart_token');
+
+    if (!token || (userRole !== 'admin' && userRole !== 'editor')) {
+      alert("Acceso denegado. Se requieren permisos de editor o administrador.");
+      window.location.href = '/';
+      return;
+    }
+
     fetchInitialData();
   }, []);
 
@@ -161,7 +171,7 @@ export default function SetListEdit() {
     <div className="app-container p-4 max-w-4xl mx-auto text-[#2C2A29]">
       <header className="flex justify-between items-center mb-6 pb-4 border-b-2 border-[#2C2A29]">
         <h1 className="text-xl font-bold font-mono uppercase">Editor de Setlist</h1>
-        <Link to="/setlist" className="px-3 py-1.5 bg-[#EBE9E1] border border-[#D3CEBE] rounded-lg font-mono text-xs font-semibold">
+        <Link to="/" className="px-3 py-1.5 bg-[#EBE9E1] border border-[#D3CEBE] rounded-lg font-mono text-xs font-semibold">
           Volver al Reader
         </Link>
       </header>
@@ -174,8 +184,8 @@ export default function SetListEdit() {
               key={sl.id}
               onClick={() => handleTabChange(sl.id)}
               className={`px-4 py-2 font-mono text-xs font-bold rounded-lg border ${String(activeSetlistId) === String(sl.id)
-                  ? "bg-[#2C2A29] text-[#FAF9F5] border-[#2C2A29]"
-                  : "bg-[#EBE9E1] text-[#5C5853] border-[#D3CEBE]"
+                ? "bg-[#2C2A29] text-[#FAF9F5] border-[#2C2A29]"
+                : "bg-[#EBE9E1] text-[#5C5853] border-[#D3CEBE]"
                 }`}
             >
               {sl.setlist_name}
