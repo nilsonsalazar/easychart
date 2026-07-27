@@ -19,6 +19,10 @@ const SongReader = () => {
   const [semitono, setSemitono] = useState(0);
   const [showToneMenu, setShowToneMenu] = useState(false);
 
+  // Obtener el rol del usuario actual desde el almacenamiento local
+  const userRole = localStorage.getItem('easychart_role') || 'reader';
+  const canEdit = userRole === 'admin' || userRole === 'editor';
+
   // Estado para el panel de Herramientas ('tuner', 'metronome' o null)
   const [activeTool, setActiveTool] = useState(null);
 
@@ -38,6 +42,7 @@ const SongReader = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('easychart_token');
+    localStorage.removeItem('easychart_role');
     window.location.href = '/';
   };
 
@@ -398,6 +403,7 @@ const SongReader = () => {
 
       if (response.status === 401) {
         localStorage.removeItem('easychart_token');
+        localStorage.removeItem('easychart_role');
         window.location.reload();
         return;
       }
@@ -500,9 +506,9 @@ const SongReader = () => {
             <div className="flex flex-col items-center sm:items-start">
               <div className="flex items-center space-x-3">
                 <div className="bg-primary text-primary-foreground px-4 py-1.5 rounded-xl border border-border shadow-inner flex items-center gap-2.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)] animate-pulse" title="Recording / Edit Mode" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)] animate-pulse" title="Active Role" />
                   <span className="text-sm font-mono font-bold tracking-widest uppercase text-primary-foreground">
-                    EASYCHART
+                    EASYCHART ({userRole})
                   </span>
                 </div>
               </div>
@@ -513,24 +519,32 @@ const SongReader = () => {
           </div>
 
           <div className="flex items-center justify-center gap-2 sm:gap-3 w-full sm:w-auto">
-            <Link
-              to="/create"
-              className="app-button-secondary flex items-center justify-center px-3.5 py-2 font-mono font-semibold text-xs rounded-xl transition-all hover:brightness-90 border shadow-sm cursor-pointer uppercase tracking-wider active:scale-95"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              <span className="hidden sm:inline">Add Song</span>
-            </Link>
-            <Link
-              to="/edit"
-              className="app-button-secondary flex items-center justify-center px-3.5 py-2 font-mono font-semibold text-xs rounded-xl transition-all hover:brightness-90 border shadow-sm cursor-pointer uppercase tracking-wider active:scale-95"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-              </svg>
-              <span className="hidden sm:inline">Search & Edit</span>
-            </Link>
+            {/* Botón Crear Canción condicionado al rol (Admin o Editor) */}
+            {canEdit && (
+              <Link
+                to="/create"
+                className="app-button-secondary flex items-center justify-center px-3.5 py-2 font-mono font-semibold text-xs rounded-xl transition-all hover:brightness-90 border shadow-sm cursor-pointer uppercase tracking-wider active:scale-95"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                <span className="hidden sm:inline">Add Song</span>
+              </Link>
+            )}
+
+            {/* Botón Buscar y Editar condicionado al rol (Admin o Editor) */}
+            {canEdit && (
+              <Link
+                to="/edit"
+                className="app-button-secondary flex items-center justify-center px-3.5 py-2 font-mono font-semibold text-xs rounded-xl transition-all hover:brightness-90 border shadow-sm cursor-pointer uppercase tracking-wider active:scale-95"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+                <span className="hidden sm:inline">Search & Edit</span>
+              </Link>
+            )}
+
             <Link
               to="/setlist"
               className="app-button-secondary flex items-center justify-center px-3.5 py-2 font-mono font-semibold text-xs rounded-xl transition-all hover:brightness-90 border shadow-sm cursor-pointer uppercase tracking-wider active:scale-95"
@@ -761,17 +775,20 @@ const SongReader = () => {
                 </div>
               </div>
 
-              <div className="mt-4 flex justify-center">
-                <Link
-                  to={`/edit/${selectedSongId}`}
-                  className="inline-flex items-center px-4 py-2 bg-[#383023] text-[#FAF9F5] hover:bg-[#252017] font-mono text-xs font-semibold tracking-wider uppercase rounded-xl transition shadow-sm border border-[#1A1918]"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                  Editar esta canción (/edit/{selectedSongId})
-                </Link>
-              </div>
+              {/* Botón de edición de la canción actual condicionado al rol (Admin o Editor) */}
+              {canEdit && (
+                <div className="mt-4 flex justify-center">
+                  <Link
+                    to={`/edit/${selectedSongId}`}
+                    className="inline-flex items-center px-4 py-2 bg-[#383023] text-[#FAF9F5] hover:bg-[#252017] font-mono text-xs font-semibold tracking-wider uppercase rounded-xl transition shadow-sm border border-[#1A1918]"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Editar esta canción (/edit/{selectedSongId})
+                  </Link>
+                </div>
+              )}
             </div>
 
             {secciones.map((sec, secIdx) => (

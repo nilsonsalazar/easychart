@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { API_URL } from './config';
 import SongForm from "./SongForm";
@@ -13,6 +13,17 @@ export default function SongCreator() {
   const [secciones, setSecciones] = useState([]);
   const [tituloCancion, setTituloCancion] = useState("");
   const [artista, setArtista] = useState("");
+
+  useEffect(() => {
+    // Validación de roles: solo admin o editor[cite: 10]
+    const userRole = localStorage.getItem('easychart_role') || 'reader';
+    const token = localStorage.getItem('easychart_token');
+
+    if (!token || (userRole !== 'admin' && userRole !== 'editor')) {
+      alert("Acceso denegado. Se requieren permisos de editor o administrador.");
+      window.location.href = '/';
+    }
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('easychart_token');

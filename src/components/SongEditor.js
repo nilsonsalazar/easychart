@@ -17,20 +17,29 @@ export default function SongEditor() {
   const [tituloCancion, setTituloCancion] = useState("");
   const [artista, setArtista] = useState("");
 
+  useEffect(() => {
+    // Validación de roles: solo admin o editor[cite: 10]
+    const userRole = localStorage.getItem('easychart_role') || 'reader';
+    const token = localStorage.getItem('easychart_token');
+
+    if (!token || (userRole !== 'admin' && userRole !== 'editor')) {
+      alert("Acceso denegado. Se requieren permisos de editor o administrador.");
+      window.location.href = '/';
+      return;
+    }
+
+    if (id) {
+      setSelectedSongId(id);
+      loadSong(id);
+    }
+  }, [id]);
+
   const handleLogout = () => {
     localStorage.removeItem('easychart_token');
     window.location.href = '/';
   };
 
   const generarId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-
-  // Cargar canción si viene id en la URL
-  useEffect(() => {
-    if (id) {
-      setSelectedSongId(id);
-      loadSong(id);
-    }
-  }, [id]);
 
   const updateSong = async () => {
     if (!selectedSongId) {
