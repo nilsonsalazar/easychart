@@ -78,26 +78,30 @@ body {
      ------------------------------------------------------------------------ */
   .chord-box-global {
     font-family: 'Architects Daughter', cursive;
-    @apply bg-[var(--chord-bg)] border-[1.5px] border-[#2C2A29] text-[var(--chord-text)] font-extrabold text-center rounded-md p-1 sm:p-2 shadow-[1px_1px_0px_#2C2A291F] flex items-center justify-center overflow-hidden whitespace-nowrap select-none transition-all;
+    @apply bg-[var(--chord-bg)] border-[1.5px] border-[#2C2A29] text-[var(--chord-text)] font-extrabold text-center rounded-md shadow-[1px_1px_0px_#2C2A291F] flex items-center justify-center select-none transition-all w-full h-full;
 
-    /* Tamaño base para compases simples en móvil / tablet */
-    font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+    padding: 0.25rem 0.05rem;
+    line-height: 2;
+    font-size: clamp(1.4rem, 2.2vw, 1.4rem);
   }
 
   /* Ajustes dinámicos de tipografía según número de divisiones por compás */
   .divisiones-3 .chord-box-global {
-    font-size: clamp(0.9rem, 2vw, 1.15rem);
-    padding: 0.25rem;
+    font-size: clamp(0.7rem, 1.4vw, 0.95rem);
+    padding: 0.15rem 0.05rem;
+    letter-spacing: -0.02em;
   }
 
   .divisiones-4 .chord-box-global {
-    font-size: clamp(0.8rem, 1.6vw, 1rem);
-    padding: 0.2rem;
+    font-size: clamp(0.6rem, 1.1vw, 0.85rem);
+    padding: 0.1rem 0.05rem;
+    letter-spacing: -0.03em;
   }
 
   .divisiones-5 .chord-box-global,
   .divisiones-6 .chord-box-global {
-    font-size: clamp(0.7rem, 1.3vw, 0.9rem);
-    padding: 0.15rem;
+    font-size: clamp(0.55rem, 0.9vw, 0.75rem);
+    padding: 0.1rem 0rem;
+    letter-spacing: -0.04em;
   }
 }

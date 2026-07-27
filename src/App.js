@@ -4,14 +4,17 @@ import SongReader from "./components/SongReader";
 import SongCreator from "./components/SongCreator";
 import SongEditor from "./components/SongEditor";
 import SetList from "./components/SetList";
+import SetListEdit from "./components/SetListEdit";
 
 // Componente para manejar el inicio de sesión
+const userRole = localStorage.getItem('easychart_role') || 'reader';
 // Componente Login - Estética Vintage/Live Stage (Hendrix / Floyd / Live Gospel)
 function Login({ onLoginSuccess }) {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -32,7 +35,9 @@ function Login({ onLoginSuccess }) {
       }
 
       const token = resData.data.token;
+      const role = resData.data.role; // Asegúrate de que el backend devuelva el rol en la respuesta
       localStorage.setItem('easychart_token', token);
+      localStorage.setItem('easychart_role', role);
       onLoginSuccess(token);
     } catch (err) {
       setError(err.message);
@@ -152,6 +157,7 @@ export default function App() {
       {/* Si quieres que /edit sin ID renderice el editor de búsqueda, asegúrate de indicarlo */}
       <Route path="/edit" element={<SongEditor />} />
       <Route path="/setlist" element={<SetList />} />
+      <Route path="/setlist/edit" element={<SetListEdit />} />
     </Routes>
   );
 }
