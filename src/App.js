@@ -5,6 +5,8 @@ import SongCreator from "./components/SongCreator";
 import SongEditor from "./components/SongEditor";
 import SetList from "./components/SetList";
 import SetListEdit from "./components/SetListEdit";
+import ShowLyricsPage from "./components/ShowLyricsPage";
+import ShowLyricsPageEdit from "./components/ShowLyricsPageEdit";
 
 // Componente para manejar el inicio de sesión
 const userRole = localStorage.getItem('easychart_role') || 'reader';
@@ -156,6 +158,10 @@ export default function App() {
       <Route path="/edit" element={<SongEditor />} />
       <Route path="/setlist" element={<SetList />} />
       <Route path="/setlist/edit" element={<SetListEdit />} />
+
+      {/* Ruta para mostrar la letra de una canción específica */}
+      <Route path="/lyrics/:songId" element={<ShowLyricsPage />} />
+      <Route path="/lyrics/edit/:songId" element={<ShowLyricsPageEdit />} />
     </Routes>
   );
 }
