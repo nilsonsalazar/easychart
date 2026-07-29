@@ -95,7 +95,7 @@ function Login({ onLoginSuccess }) {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="+351 912 345 678"
+              placeholder="username"
               required
               className="w-full px-3.5 py-3 rounded-lg bg-[#080809] border border-stone-800 text-sm font-mono text-amber-100 placeholder-stone-500 outline-none focus:border-amber-700/80 transition-all"
             />
@@ -109,7 +109,7 @@ function Login({ onLoginSuccess }) {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="password"
               required
               className="w-full px-3.5 py-3 rounded-lg bg-[#080809] border border-stone-800 text-sm font-mono text-amber-100 placeholder-stone-500 outline-none focus:border-amber-700/80 transition-all"
             />
